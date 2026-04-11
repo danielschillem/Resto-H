@@ -9,6 +9,9 @@ return new class extends Migration {
         // Rename role 'gerant' -> 'prestataire' in users table
         DB::table('users')->where('role', 'gerant')->update(['role' => 'prestataire']);
 
+        // Update seeded gerant email to prestataire
+        DB::table('users')->where('email', 'gerant@chr-tenkodogo.bf')->update(['email' => 'prestataire@chr-tenkodogo.bf']);
+
         // Rename role in role_permissions table
         DB::table('role_permissions')->where('role', 'gerant')->update(['role' => 'prestataire']);
 
@@ -50,6 +53,7 @@ return new class extends Migration {
     public function down(): void
     {
         DB::table('users')->where('role', 'prestataire')->update(['role' => 'gerant']);
+        DB::table('users')->where('email', 'prestataire@chr-tenkodogo.bf')->update(['email' => 'gerant@chr-tenkodogo.bf']);
         DB::table('role_permissions')->where('role', 'prestataire')->update(['role' => 'gerant']);
         DB::table('role_permissions')->where('role', 'prestataire')->where('permission', 'commandes.livrer')->delete();
     }
