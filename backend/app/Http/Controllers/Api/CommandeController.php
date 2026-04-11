@@ -63,6 +63,14 @@ class CommandeController extends Controller
             'regimes_speciaux.*' => 'exists:regimes_speciaux,id',
         ]);
 
+        // Deadline: commandes must be submitted before 09:00
+        $now = Carbon::now();
+        if ($now->hour >= 9) {
+            return response()->json([
+                'message' => 'Les commandes doivent être saisies avant 09h00. Heure actuelle : ' . $now->format('H:i'),
+            ], 422);
+        }
+
         $lastRef = Commande::orderByDesc('id')->value('reference');
         $nextNum = $lastRef ? ((int) str_replace(['#', 'P-', 'C-'], '', $lastRef)) + 1 : 2401;
         $prefix = match ($data['type']) {
@@ -144,8 +152,8 @@ class CommandeController extends Controller
 
     public function livrer(Commande $commande): JsonResponse
     {
-        if (!in_array($commande->statut, ['validee', 'en_cours'])) {
-            return response()->json(['message' => 'Cette commande ne peut pas être marquée livrée.'], 422);
+        if ($commande->statut !== 'validee') {
+            return response()->json(['message' => 'Seules les commandes validées peuvent être livrées.'], 422);
         }
 
         $commande->update(['statut' => 'livree']);

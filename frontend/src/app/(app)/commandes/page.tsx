@@ -242,9 +242,7 @@ export default function CommandesPage() {
     doc.text("Document de conformité — Prestataire de restauration", 14, 31);
 
     // Section 1: Commandes à livrer
-    const cmdALivrer = commandes.filter(
-      (c) => c.statut === "validee" || c.statut === "en_cours",
-    );
+    const cmdALivrer = commandes.filter((c) => c.statut === "validee");
     const allCmd = commandes;
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
@@ -440,9 +438,7 @@ export default function CommandesPage() {
   };
 
   const exportBonLivraisonCsv = () => {
-    const cmdALivrer = commandes.filter(
-      (c) => c.statut === "validee" || c.statut === "en_cours",
-    );
+    const cmdALivrer = commandes.filter((c) => c.statut === "validee");
     const allCmd = commandes;
     const regimesActifs = regimesSpeciaux.filter(
       (r) => r.statut === "valide" || r.statut === "en_attente",
@@ -519,8 +515,34 @@ export default function CommandesPage() {
     );
   };
 
+  const isAfterDeadline = new Date().getHours() >= 9;
+
   return (
     <>
+      {/* Deadline banner */}
+      {user?.role !== "prestataire" && (
+        <div
+          style={{
+            background: isAfterDeadline ? "#FEE2E2" : "#D1FAE5",
+            color: isAfterDeadline ? "#991B1B" : "#065F46",
+            padding: "8px 16px",
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <i
+            className={`fa-solid ${isAfterDeadline ? "fa-lock" : "fa-clock"}`}
+          />
+          {isAfterDeadline
+            ? "Heure limite dépassée (09h00) — Les nouvelles commandes ne sont plus acceptées pour aujourd'hui."
+            : "Les commandes doivent être saisies avant 09h00 chaque jour."}
+        </div>
+      )}
       <div
         style={{
           display: "flex",
@@ -568,7 +590,17 @@ export default function CommandesPage() {
             <i className="fa-solid fa-file-csv" /> CSV
           </button>
           {user?.role !== "prestataire" && (
-            <button onClick={() => setModalOpen(true)} style={btn}>
+            <button
+              onClick={() => setModalOpen(true)}
+              style={{
+                ...btn,
+                ...(isAfterDeadline
+                  ? { opacity: 0.5, cursor: "not-allowed" }
+                  : {}),
+              }}
+              disabled={isAfterDeadline}
+              title={isAfterDeadline ? "Saisie fermée après 09h00" : ""}
+            >
               <i className="fa-solid fa-plus" /> Nouvelle commande
             </button>
           )}
@@ -823,7 +855,7 @@ export default function CommandesPage() {
                           </button>
                         </>
                       )}
-                      {(c.statut === "validee" || c.statut === "en_cours") && (
+                      {c.statut === "validee" && (
                         <button
                           onClick={() => setLivraisonModal(c)}
                           style={{
