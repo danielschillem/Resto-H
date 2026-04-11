@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\TenantScope;
+use App\Models\AuditLog;
 use App\Models\Notification;
 use App\Models\Parametre;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
@@ -154,5 +156,117 @@ class AdminController extends Controller
             ->update(['lu' => true]);
 
         return response()->json(['message' => 'Toutes les notifications ont été marquées comme lues.']);
+    }
+
+    // --- Journal d'audit ---
+
+    public function auditLogs(Request $request): JsonResponse
+    {
+        $query = AuditLog::orderByDesc('created_at');
+        TenantScope::apply($query);
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+        if ($request->filled('entity_type')) {
+            $query->where('entity_type', $request->entity_type);
+        }
+        if ($request->filled('user_name')) {
+            $query->where('user_name', 'like', '%' . $request->user_name . '%');
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $logs = $query->paginate(30);
+
+        return response()->json($logs);
+    }
+
+    // --- Exports CSV ---
+
+    public function exportUsers(): StreamedResponse
+    {
+        $query = User::orderBy('nom')->where('role', '!=', 'super_admin');
+        TenantScope::apply($query);
+        $users = $query->get(['nom', 'prenom', 'email', 'role', 'service', 'is_active', 'last_login_at', 'created_at']);
+
+        return $this->streamCsv('utilisateurs.csv', ['Nom', 'Prénom', 'Email', 'Profil', 'Service', 'Actif', 'Dernière connexion', 'Créé le'], $users->map(fn($u) => [
+            $u->nom, $u->prenom, $u->email, $u->role, $u->service ?? '', $u->is_active ? 'Oui' : 'Non',
+            $u->last_login_at?->format('d/m/Y H:i') ?? '—', $u->created_at->format('d/m/Y'),
+        ])->toArray());
+    }
+
+    public function exportServices(): StreamedResponse
+    {
+        $query = Service::orderBy('nom');
+        TenantScope::apply($query);
+        $services = $query->get();
+
+        return $this->streamCsv('services.csv', ['Service', 'Lits actifs', 'Responsable', 'Actif'], $services->map(fn($s) => [
+            $s->nom, $s->lits_actifs, $s->responsable ?? '—', $s->is_active ? 'Oui' : 'Non',
+        ])->toArray());
+    }
+
+    public function exportAuditLogs(Request $request): StreamedResponse
+    {
+        $query = AuditLog::orderByDesc('created_at');
+        TenantScope::apply($query);
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $logs = $query->limit(5000)->get();
+
+        return $this->streamCsv('journal-audit.csv', ['Date', 'Utilisateur', 'Action', 'Entité', 'Libellé', 'Détails', 'IP'], $logs->map(fn($l) => [
+            $l->created_at->format('d/m/Y H:i'), $l->user_name, $l->action,
+            $l->entity_type, $l->entity_label ?? '', $l->details ?? '', $l->ip_address ?? '',
+        ])->toArray());
+    }
+
+    // --- Opérations en masse ---
+
+    public function bulkActivateUsers(Request $request): JsonResponse
+    {
+        $data = $request->validate(['user_ids' => 'required|array', 'user_ids.*' => 'integer|exists:users,id']);
+
+        $query = User::whereIn('id', $data['user_ids'])->where('role', '!=', 'super_admin');
+        TenantScope::apply($query);
+        $count = $query->update(['is_active' => true]);
+
+        return response()->json(['message' => "$count utilisateur(s) activé(s).", 'count' => $count]);
+    }
+
+    public function bulkDeactivateUsers(Request $request): JsonResponse
+    {
+        $data = $request->validate(['user_ids' => 'required|array', 'user_ids.*' => 'integer|exists:users,id']);
+
+        $query = User::whereIn('id', $data['user_ids'])->where('role', '!=', 'super_admin');
+        TenantScope::apply($query);
+        $count = $query->update(['is_active' => false]);
+
+        return response()->json(['message' => "$count utilisateur(s) désactivé(s).", 'count' => $count]);
+    }
+
+    // --- Helper CSV ---
+
+    private function streamCsv(string $filename, array $headers, array $rows): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+            fputcsv($out, $headers, ';');
+            foreach ($rows as $row) {
+                fputcsv($out, $row, ';');
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

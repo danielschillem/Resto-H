@@ -71,6 +71,26 @@ export function getFormationPublicInfo(code: string) {
   });
 }
 
+// Download file helper
+async function downloadFile(path: string, filename: string): Promise<void> {
+  const token = getToken();
+  const headers: Record<string, string> = { Accept: "text/csv" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}${path}`, { headers });
+  if (!res.ok) {
+    emitToast("Erreur lors du téléchargement", "error");
+    throw new Error("Export failed");
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // Auth
 export const api = {
   login: (email: string, password: string, formation_code?: string) =>
@@ -86,6 +106,22 @@ export const api = {
   logout: () => request("/logout", { method: "POST" }),
 
   me: () => request<import("@/types").User>("/me"),
+
+  // Profil & Mot de passe
+  updateProfile: (data: { nom?: string; prenom?: string }) =>
+    request<{ message: string; user: import("@/types").User }>("/me/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  changePassword: (data: {
+    current_password: string;
+    new_password: string;
+    new_password_confirmation: string;
+  }) =>
+    request<{ message: string }>("/me/password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   // Dashboard
   dashboard: () =>
@@ -258,6 +294,36 @@ export const api = {
   adminPermissions: () =>
     request<{ all: string[]; grouped: Record<string, string[]> }>(
       "/admin/permissions",
+    ),
+
+  // Journal d'audit
+  auditLogs: (params?: string) =>
+    request<import("@/types").PaginatedResponse<import("@/types").AuditLog>>(
+      `/admin/audit-logs${params ? `?${params}` : ""}`,
+    ),
+
+  // Exports (retournent des blobs)
+  exportUsers: () => downloadFile("/admin/export/users", "utilisateurs.csv"),
+  exportServices: () => downloadFile("/admin/export/services", "services.csv"),
+  exportAuditLogs: (params?: string) =>
+    downloadFile(
+      `/admin/export/audit-logs${params ? `?${params}` : ""}`,
+      "journal-audit.csv",
+    ),
+
+  // Opérations en masse
+  bulkActivateUsers: (userIds: number[]) =>
+    request<{ message: string; count: number }>("/admin/users/bulk-activate", {
+      method: "POST",
+      body: JSON.stringify({ user_ids: userIds }),
+    }),
+  bulkDeactivateUsers: (userIds: number[]) =>
+    request<{ message: string; count: number }>(
+      "/admin/users/bulk-deactivate",
+      {
+        method: "POST",
+        body: JSON.stringify({ user_ids: userIds }),
+      },
     ),
 
   // Notifications

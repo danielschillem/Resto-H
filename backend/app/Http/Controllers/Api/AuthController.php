@@ -49,6 +49,12 @@ class AuthController extends Controller
             }
         }
 
+        // Tracking last login
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ]);
+
         $token = $user->createToken('sgrh-token')->plainTextToken;
 
         return response()->json([
@@ -62,6 +68,7 @@ class AuthController extends Controller
                 'service' => $user->service,
                 'formation_id' => $user->formation_id,
                 'permissions' => $user->permissions,
+                'must_change_password' => (bool) $user->must_change_password,
             ],
             'token' => $token,
         ]);
@@ -88,6 +95,60 @@ class AuthController extends Controller
             'service' => $user->service,
             'formation_id' => $user->formation_id,
             'permissions' => $user->permissions,
+            'last_login_at' => $user->last_login_at?->toISOString(),
+            'last_login_ip' => $user->last_login_ip,
+            'must_change_password' => (bool) $user->must_change_password,
         ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'prenom' => 'sometimes|string|max:255',
+        ]);
+
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'Profil mis à jour.',
+            'user' => [
+                'id' => $user->id,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'service' => $user->service,
+                'formation_id' => $user->formation_id,
+                'permissions' => $user->permissions,
+            ],
+        ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:4|confirmed',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Le mot de passe actuel est incorrect.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => bcrypt($request->new_password),
+            'password_changed_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        return response()->json(['message' => 'Mot de passe modifié avec succès.']);
     }
 }

@@ -26,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth — tous les rôles
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/me/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/me/password', [AuthController::class, 'changePassword']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Licence — activation (gérant/dsgl uniquement par convention)
@@ -125,6 +127,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/parametres', [AdminController::class, 'parametres']);
         Route::put('/admin/parametres/{parametre}', [AdminController::class, 'updateParametre']);
         Route::get('/admin/permissions', [AdminController::class, 'permissions']);
+        // Journal d'audit
+        Route::get('/admin/audit-logs', [AdminController::class, 'auditLogs']);
+        // Exports CSV
+        Route::get('/admin/export/users', [AdminController::class, 'exportUsers']);
+        Route::get('/admin/export/services', [AdminController::class, 'exportServices']);
+        Route::get('/admin/export/audit-logs', [AdminController::class, 'exportAuditLogs']);
+        // Opérations en masse
+        Route::post('/admin/users/bulk-activate', [AdminController::class, 'bulkActivateUsers']);
+        Route::post('/admin/users/bulk-deactivate', [AdminController::class, 'bulkDeactivateUsers']);
     });
 
     // ── Super Admin ─────────────────────────────────────────────────────────

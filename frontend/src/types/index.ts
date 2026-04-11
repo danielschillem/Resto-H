@@ -9,6 +9,9 @@ export interface User {
   formation_id: number | null;
   is_active?: boolean;
   permissions?: string[];
+  last_login_at?: string | null;
+  last_login_ip?: string | null;
+  must_change_password?: boolean;
 }
 
 export interface FormationSanitaire {
@@ -194,4 +197,25 @@ export interface Licence {
   jours_restants: number;
   titulaire: string | null;
   valide: boolean;
+}
+
+export interface AuditLog {
+  id: number;
+  user_id: number | null;
+  user_name: string;
+  action: string;
+  entity_type: string;
+  entity_id: number | null;
+  entity_label: string | null;
+  details: string | null;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  total: number;
+  per_page: number;
 }

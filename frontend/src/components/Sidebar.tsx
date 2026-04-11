@@ -22,6 +22,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "menus-speciaux", icon: "fa-heart-pulse", label: "Régimes spéciaux" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
+    { id: "profil", icon: "fa-user-circle", label: "Mon profil" },
   ],
   dsgl: [
     { section: "Principal" },
@@ -37,6 +38,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
     { id: "admin", icon: "fa-users-gear", label: "Administration" },
     { id: "licence", icon: "fa-key", label: "Licence" },
+    { id: "profil", icon: "fa-user-circle", label: "Mon profil" },
   ],
   csah: [
     { section: "Principal" },
@@ -50,6 +52,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "etats", icon: "fa-file-invoice", label: "États & Rapports" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
+    { id: "profil", icon: "fa-user-circle", label: "Mon profil" },
   ],
   sus: [
     { section: "Principal" },
@@ -60,6 +63,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "menus-hebdo", icon: "fa-calendar-week", label: "Voir les menus" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
+    { id: "profil", icon: "fa-user-circle", label: "Mon profil" },
   ],
   sut: [
     { section: "Principal" },
@@ -70,6 +74,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "menus-hebdo", icon: "fa-calendar-week", label: "Voir les menus" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
+    { id: "profil", icon: "fa-user-circle", label: "Mon profil" },
   ],
 };
 

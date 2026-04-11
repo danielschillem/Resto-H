@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import Modal from "@/components/Modal";
-import { User, Service, Parametre } from "@/types";
+import { User, Service, Parametre, AuditLog, PaginatedResponse } from "@/types";
 import { isEmailValid } from "@/lib/validation";
 
 // ── Constantes ───────────────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ const TABS = [
   { id: "services", icon: "fa-hospital", label: "Services" },
   { id: "params", icon: "fa-sliders", label: "Paramètres" },
   { id: "perms", icon: "fa-shield-halved", label: "Permissions" },
+  { id: "audit", icon: "fa-clock-rotate-left", label: "Journal" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -96,6 +97,20 @@ export default function AdminPage() {
     cle: string;
     valeur: string;
   } | null>(null);
+
+  // Audit logs
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditTotal, setAuditTotal] = useState(0);
+  const [auditLastPage, setAuditLastPage] = useState(1);
+  const [auditFilter, setAuditFilter] = useState({
+    action: "",
+    entity_type: "",
+    user_name: "",
+  });
+
+  // Bulk selection
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 
   // ── Chargement ──────────────────────────────────────────────────────────────
 
@@ -240,6 +255,71 @@ export default function AdminPage() {
     load();
   };
 
+  // ── Audit logs ──────────────────────────────────────────────────────────────
+
+  const loadAuditLogs = (page = 1) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    if (auditFilter.action) params.set("action", auditFilter.action);
+    if (auditFilter.entity_type)
+      params.set("entity_type", auditFilter.entity_type);
+    if (auditFilter.user_name) params.set("user_name", auditFilter.user_name);
+    api
+      .auditLogs(params.toString())
+      .then((res) => {
+        setAuditLogs(res.data);
+        setAuditPage(res.current_page);
+        setAuditTotal(res.total);
+        setAuditLastPage(res.last_page);
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (tab === "audit") loadAuditLogs(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // ── Bulk ops ────────────────────────────────────────────────────────────────
+
+  const toggleSelectUser = (id: number) => {
+    setSelectedUsers((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) setSelectedUsers([]);
+    else setSelectedUsers(filteredUsers.map((u) => u.id));
+  };
+
+  const handleBulkActivate = async () => {
+    if (!selectedUsers.length) return;
+    await api.bulkActivateUsers(selectedUsers);
+    setSelectedUsers([]);
+    load();
+  };
+
+  const handleBulkDeactivate = async () => {
+    if (!selectedUsers.length) return;
+    if (!confirm(`Désactiver ${selectedUsers.length} utilisateur(s) ?`)) return;
+    await api.bulkDeactivateUsers(selectedUsers);
+    setSelectedUsers([]);
+    load();
+  };
+
+  const ACTION_LABELS: Record<string, string> = {
+    creer: "Création",
+    modifier: "Modification",
+    supprimer: "Suppression",
+    valider: "Validation",
+    rejeter: "Rejet",
+    soumettre: "Soumission",
+    livrer: "Livraison",
+    paiement: "Paiement",
+    terminer: "Terminé",
+  };
+
   // ── KPI ─────────────────────────────────────────────────────────────────────
 
   const activeUsers = users.filter((u) => u.is_active !== false).length;
@@ -375,9 +455,51 @@ export default function AdminPage() {
               />
               Utilisateurs du système
             </div>
-            <button onClick={() => setUserModal(true)} style={btn}>
-              <i className="fa-solid fa-user-plus" /> Nouvel utilisateur
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              {selectedUsers.length > 0 && (
+                <>
+                  <button
+                    onClick={handleBulkActivate}
+                    style={{
+                      ...btn,
+                      background: "var(--success)",
+                      fontSize: 11,
+                      padding: "5px 10px",
+                    }}
+                  >
+                    <i className="fa-solid fa-check" /> Activer (
+                    {selectedUsers.length})
+                  </button>
+                  <button
+                    onClick={handleBulkDeactivate}
+                    style={{
+                      ...btn,
+                      background: "var(--danger)",
+                      fontSize: 11,
+                      padding: "5px 10px",
+                    }}
+                  >
+                    <i className="fa-solid fa-ban" /> Désactiver (
+                    {selectedUsers.length})
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => api.exportUsers()}
+                style={{
+                  ...btn,
+                  background: "var(--border)",
+                  color: "var(--text)",
+                  fontSize: 11,
+                  padding: "5px 10px",
+                }}
+              >
+                <i className="fa-solid fa-download" /> CSV
+              </button>
+              <button onClick={() => setUserModal(true)} style={btn}>
+                <i className="fa-solid fa-user-plus" /> Nouvel utilisateur
+              </button>
+            </div>
           </div>
 
           {/* Filtres */}
@@ -448,6 +570,16 @@ export default function AdminPage() {
               <table style={tableStyle}>
                 <thead>
                   <tr style={{ background: "#F8FAFC" }}>
+                    <th style={{ ...thStyle, width: 36 }}>
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedUsers.length === filteredUsers.length &&
+                          filteredUsers.length > 0
+                        }
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
                     <th style={thStyle}>Utilisateur</th>
                     <th style={thStyle}>Email</th>
                     <th style={thStyle}>Profil</th>
@@ -464,6 +596,13 @@ export default function AdminPage() {
                         key={u.id}
                         style={{ opacity: u.is_active !== false ? 1 : 0.6 }}
                       >
+                        <td style={tdStyle}>
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.includes(u.id)}
+                            onChange={() => toggleSelectUser(u.id)}
+                          />
+                        </td>
                         <td style={tdStyle}>
                           <div
                             style={{
@@ -594,9 +733,23 @@ export default function AdminPage() {
               />
               Services hospitaliers
             </div>
-            <button onClick={() => setServiceModal(true)} style={btn}>
-              <i className="fa-solid fa-plus" /> Nouveau service
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => api.exportServices()}
+                style={{
+                  ...btn,
+                  background: "var(--border)",
+                  color: "var(--text)",
+                  fontSize: 11,
+                  padding: "5px 10px",
+                }}
+              >
+                <i className="fa-solid fa-download" /> CSV
+              </button>
+              <button onClick={() => setServiceModal(true)} style={btn}>
+                <i className="fa-solid fa-plus" /> Nouveau service
+              </button>
+            </div>
           </div>
 
           {/* Recherche */}
@@ -902,6 +1055,217 @@ export default function AdminPage() {
             icon="fa-shield-halved"
             text="Aucune permission configurée"
           />
+        </div>
+      )}
+
+      {/* ── Onglet Journal d'audit ─────────────────────────────────────────── */}
+      {tab === "audit" && (
+        <div style={card}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 700 }}>
+              <i
+                className="fa-solid fa-clock-rotate-left"
+                style={{ marginRight: 8, color: "var(--primary)" }}
+              />
+              Journal d&apos;audit ({auditTotal})
+            </div>
+            <button
+              onClick={() => api.exportAuditLogs()}
+              style={{ ...btn, fontSize: 11, padding: "5px 12px" }}
+            >
+              <i className="fa-solid fa-download" /> Export CSV
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              marginBottom: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <input
+              value={auditFilter.user_name}
+              onChange={(e) =>
+                setAuditFilter({ ...auditFilter, user_name: e.target.value })
+              }
+              placeholder="Filtrer par utilisateur..."
+              style={{ ...inputStyle, width: "auto", minWidth: 180 }}
+            />
+            <select
+              value={auditFilter.action}
+              onChange={(e) =>
+                setAuditFilter({ ...auditFilter, action: e.target.value })
+              }
+              style={{ ...inputStyle, width: "auto", minWidth: 140 }}
+            >
+              <option value="">Toutes les actions</option>
+              <option value="creer">Création</option>
+              <option value="modifier">Modification</option>
+              <option value="valider">Validation</option>
+              <option value="rejeter">Rejet</option>
+              <option value="supprimer">Suppression</option>
+              <option value="soumettre">Soumission</option>
+              <option value="livrer">Livraison</option>
+              <option value="paiement">Paiement</option>
+            </select>
+            <select
+              value={auditFilter.entity_type}
+              onChange={(e) =>
+                setAuditFilter({ ...auditFilter, entity_type: e.target.value })
+              }
+              style={{ ...inputStyle, width: "auto", minWidth: 140 }}
+            >
+              <option value="">Toutes les entités</option>
+              <option value="commande">Commande</option>
+              <option value="menu_hebdomadaire">Menu hebdo</option>
+              <option value="regime_special">Régime spécial</option>
+              <option value="devis">Devis</option>
+              <option value="user">Utilisateur</option>
+              <option value="service">Service</option>
+            </select>
+            <button onClick={() => loadAuditLogs(1)} style={btn}>
+              <i className="fa-solid fa-search" /> Filtrer
+            </button>
+          </div>
+
+          {auditLogs.length === 0 ? (
+            <EmptyState
+              icon="fa-clock-rotate-left"
+              text="Aucune entrée dans le journal"
+            />
+          ) : (
+            <>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <th style={thStyle}>Date</th>
+                      <th style={thStyle}>Utilisateur</th>
+                      <th style={thStyle}>Action</th>
+                      <th style={thStyle}>Entité</th>
+                      <th style={thStyle}>Libellé</th>
+                      <th style={thStyle}>Détails</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log.id}>
+                        <td style={tdStyle}>
+                          <span style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+                            {new Date(log.created_at).toLocaleString("fr-FR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>{log.user_name}</td>
+                        <td style={tdStyle}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              padding: "2px 8px",
+                              borderRadius: 12,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              background:
+                                log.action === "valider"
+                                  ? "#D1FAE5"
+                                  : log.action === "rejeter"
+                                    ? "#FEE2E2"
+                                    : "#F1F5F9",
+                              color:
+                                log.action === "valider"
+                                  ? "#065F46"
+                                  : log.action === "rejeter"
+                                    ? "#991B1B"
+                                    : "#475569",
+                            }}
+                          >
+                            {ACTION_LABELS[log.action] || log.action}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>
+                          <span style={{ fontSize: 12 }}>
+                            {log.entity_type}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>{log.entity_label || "—"}</td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            maxWidth: 200,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {log.details || "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {auditLastPage > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 8,
+                    marginTop: 16,
+                  }}
+                >
+                  <button
+                    disabled={auditPage <= 1}
+                    onClick={() => loadAuditLogs(auditPage - 1)}
+                    style={{
+                      ...btn,
+                      background: "transparent",
+                      color: "var(--primary)",
+                      border: "1.5px solid var(--primary)",
+                    }}
+                  >
+                    <i className="fa-solid fa-chevron-left" />
+                  </button>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      padding: "6px 12px",
+                      color: "var(--text-sm)",
+                    }}
+                  >
+                    Page {auditPage} / {auditLastPage}
+                  </span>
+                  <button
+                    disabled={auditPage >= auditLastPage}
+                    onClick={() => loadAuditLogs(auditPage + 1)}
+                    style={{
+                      ...btn,
+                      background: "transparent",
+                      color: "var(--primary)",
+                      border: "1.5px solid var(--primary)",
+                    }}
+                  >
+                    <i className="fa-solid fa-chevron-right" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
