@@ -21,13 +21,14 @@ php artisan config:clear 2>&1 || true
 echo "Testing database connection..."
 php artisan db:monitor 2>&1 || echo "DB monitor not available"
 
-# Run database migrations (non-fatal if DB not ready yet)
+# Run database migrations (with fresh for first deployment)
 echo "Running migrations..."
-php artisan migrate --force 2>&1 || echo "WARNING: Migrations failed but continuing..."
-
-# Seed database if fresh
-echo "Seeding database..."
-php artisan db:seed --force 2>&1 || echo "Seeding skipped."
+php artisan migrate:fresh --force --seed 2>&1 || {
+  echo "WARNING: migrate:fresh failed, trying regular migrate..."
+  php artisan migrate --force 2>&1 || echo "WARNING: Migrations failed but continuing..."
+  echo "Seeding database..."
+  php artisan db:seed --force 2>&1 || echo "Seeding failed."
+}
 
 # Cache config & routes for performance
 echo "Caching..."
