@@ -7,7 +7,7 @@ const POLL_INTERVAL = 15_000; // 15 seconds
 
 export function useNotificationSSE() {
   const [unreadCount, setUnreadCount] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   const poll = useCallback(async () => {
     try {
