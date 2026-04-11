@@ -52,11 +52,11 @@ class ConsommationController extends Controller
 
         $semaine = Consommation::whereBetween('date', [$weekStart, $weekEnd]);
 
-        $portionsServies = $semaine->sum('total_portions') ?: 2184;
-        $coutReel = $semaine->sum('cout_reel') ?: 748500;
-        $ecart = $semaine->selectRaw('SUM(cout_reel) - SUM(cout_prevu) as e')->value('e') ?: 12350;
-        $totalPortions = $semaine->sum('total_portions') ?: 1;
-        $gaspillage = 4.2;
+        $portionsServies = (int) $semaine->sum('total_portions');
+        $coutReel = (int) $semaine->sum('cout_reel');
+        $ecart = (int) (TenantScope::apply(Consommation::query())->whereBetween('date', [$weekStart, $weekEnd])
+            ->selectRaw('COALESCE(SUM(cout_reel) - SUM(cout_prevu), 0) as e')->value('e'));
+        $gaspillage = ($portionsServies > 0 && $coutReel > 0) ? round(($ecart / $coutReel) * 100, 1) : 0;
 
         return response()->json([
             'portions_servies' => $portionsServies,
@@ -73,6 +73,13 @@ class ConsommationController extends Controller
 
         if ($request->has('semaine_debut')) {
             $query->where('semaine_debut', $request->semaine_debut);
+        } elseif ($request->has('periode')) {
+            match ($request->periode) {
+                'semaine' => $query->where('semaine_debut', Carbon::now()->startOfWeek()->format('Y-m-d')),
+                'semaine_precedente' => $query->where('semaine_debut', Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d')),
+                'mois' => $query->whereBetween('semaine_debut', [Carbon::now()->startOfMonth()->format('Y-m-d'), Carbon::now()->endOfMonth()->format('Y-m-d')]),
+                default => null,
+            };
         }
 
         $articles = $query->get();

@@ -132,13 +132,14 @@ class DatabaseSeeder extends Seeder
         Commande::create(['reference' => '#C-056', 'type' => 'client_externe', 'service_id' => $medecine->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[5]->id, 'nb_portions' => 1, 'montant' => 800, 'client_nom' => 'Visiteur (Médecine)', 'statut' => 'en_cours', 'statut_paiement' => 'en_attente']);
 
         // --- Consommations ---
+        $consoStart = Carbon::now()->startOfWeek();
         $consoData = [
-            ['2026-03-09', 'petit_dejeuner', 'Bouillie mil', 145, 18, 4, 167, 85000, 82400],
-            ['2026-03-09', 'dejeuner', 'Riz sauce arachide', 148, 22, 6, 176, 112000, 115200],
-            ['2026-03-09', 'diner', 'Haricot + pain', 140, 14, 2, 156, 78000, 77100],
-            ['2026-03-10', 'petit_dejeuner', 'Pain + café', 142, 20, 3, 165, 82500, 83000],
-            ['2026-03-10', 'dejeuner', 'Tô + haricot', 149, 19, 5, 173, 108000, 107300],
-            ['2026-03-11', 'dejeuner', 'Riz gras poulet', 151, 21, 7, 179, 118000, 122500],
+            [$consoStart->format('Y-m-d'), 'petit_dejeuner', 'Bouillie mil', 145, 18, 4, 167, 85000, 82400],
+            [$consoStart->format('Y-m-d'), 'dejeuner', 'Riz sauce arachide', 148, 22, 6, 176, 112000, 115200],
+            [$consoStart->format('Y-m-d'), 'diner', 'Haricot + pain', 140, 14, 2, 156, 78000, 77100],
+            [$consoStart->copy()->addDay()->format('Y-m-d'), 'petit_dejeuner', 'Pain + café', 142, 20, 3, 165, 82500, 83000],
+            [$consoStart->copy()->addDay()->format('Y-m-d'), 'dejeuner', 'Tô + haricot', 149, 19, 5, 173, 108000, 107300],
+            [$consoStart->copy()->addDays(2)->format('Y-m-d'), 'dejeuner', 'Riz gras poulet', 151, 21, 7, 179, 118000, 122500],
         ];
 
         foreach ($consoData as [$date, $repas, $menu, $mal, $pers, $cli, $total, $prevu, $reel]) {
@@ -174,8 +175,8 @@ class DatabaseSeeder extends Seeder
                 'ecart' => $ecart,
                 'cout_unitaire' => $cu,
                 'cout_reel' => $cr,
-                'semaine_debut' => '2026-03-09',
-                'semaine_fin' => '2026-03-15',
+                'semaine_debut' => $consoStart->format('Y-m-d'),
+                'semaine_fin' => $consoStart->copy()->addDays(6)->format('Y-m-d'),
             ]);
         }
 

@@ -53,22 +53,22 @@ class DashboardController extends Controller
 
         return match ($user->role) {
             'prestataire' => [
-                ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour ?: 312, 'label' => 'Portions prévues (auj.)', 'trend' => 'up', 'trendText' => '+8 vs hier'],
-                ['icon' => 'fa-clipboard-check', 'color' => 'green', 'val' => $commandesValidees ?: 18, 'label' => 'Commandes validées', 'trend' => 'up', 'trendText' => $commandesAttente . ' en attente'],
+                ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour, 'label' => 'Portions prévues (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
+                ['icon' => 'fa-clipboard-check', 'color' => 'green', 'val' => $commandesValidees, 'label' => 'Commandes validées', 'trend' => 'up', 'trendText' => $commandesAttente . ' en attente'],
                 ['icon' => 'fa-bed', 'color' => 'teal', 'val' => $patients, 'label' => 'Patients en cours', 'trend' => 'up', 'trendText' => 'Capacité totale'],
-                ['icon' => 'fa-sack-dollar', 'color' => 'amber', 'val' => number_format($consoSemaine ?: 118500, 0, ',', ' '), 'label' => 'Budget du jour (FCFA)', 'trend' => 'down', 'trendText' => '-2% vs prévision'],
+                ['icon' => 'fa-sack-dollar', 'color' => 'amber', 'val' => number_format($consoSemaine, 0, ',', ' '), 'label' => 'Budget semaine (FCFA)', 'trend' => 'down', 'trendText' => 'Consommation réelle'],
             ],
             'dsgl' => [
-                ['icon' => 'fa-file-circle-check', 'color' => 'green', 'val' => $commandesAttente ?: 4, 'label' => 'Documents à valider', 'trend' => 'down', 'trendText' => 'Urgents prioritaires'],
-                ['icon' => 'fa-chart-pie', 'color' => 'blue', 'val' => number_format($consoSemaine ?: 748500, 0, ',', ' '), 'label' => 'Consommation sem. (FCFA)', 'trend' => 'up', 'trendText' => '+1.2% vs S préc.'],
-                ['icon' => 'fa-users', 'color' => 'teal', 'val' => $patients, 'label' => 'Patients hospitalisés', 'trend' => 'up', 'trendText' => 'Taux occup. 82%'],
-                ['icon' => 'fa-scale-balanced', 'color' => 'amber', 'val' => number_format($ecartBudget, 0, ',', ' '), 'label' => 'Écart budgétaire (FCFA)', 'trend' => 'up', 'trendText' => 'Normes respectées'],
+                ['icon' => 'fa-file-circle-check', 'color' => 'green', 'val' => $commandesAttente, 'label' => 'Documents à valider', 'trend' => 'down', 'trendText' => 'En attente'],
+                ['icon' => 'fa-chart-pie', 'color' => 'blue', 'val' => number_format($consoSemaine, 0, ',', ' '), 'label' => 'Consommation sem. (FCFA)', 'trend' => 'up', 'trendText' => 'Semaine en cours'],
+                ['icon' => 'fa-users', 'color' => 'teal', 'val' => $patients, 'label' => 'Patients hospitalisés', 'trend' => 'up', 'trendText' => 'Lits actifs'],
+                ['icon' => 'fa-scale-balanced', 'color' => 'amber', 'val' => number_format($ecartBudget, 0, ',', ' '), 'label' => 'Écart budgétaire (FCFA)', 'trend' => 'up', 'trendText' => 'Semaine en cours'],
             ],
             'csah' => [
-                ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour ?: 312, 'label' => 'Repas à servir (auj.)', 'trend' => 'up', 'trendText' => '3 services'],
-                ['icon' => 'fa-heart-pulse', 'color' => 'red', 'val' => $regimesActifs ?: 7, 'label' => 'Régimes spéciaux actifs', 'trend' => 'up', 'trendText' => '2 nouveaux'],
-                ['icon' => 'fa-star', 'color' => 'green', 'val' => '4.6/5', 'label' => 'Satisfaction (sem.)', 'trend' => 'up', 'trendText' => '+0.2 pts'],
-                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => '98%', 'label' => "Livraisons à l'heure", 'trend' => 'up', 'trendText' => 'Excellent'],
+                ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour, 'label' => 'Repas à servir (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
+                ['icon' => 'fa-heart-pulse', 'color' => 'red', 'val' => $regimesActifs, 'label' => 'Régimes spéciaux actifs', 'trend' => 'up', 'trendText' => 'Validés'],
+                ['icon' => 'fa-star', 'color' => 'green', 'val' => '—', 'label' => 'Satisfaction (sem.)', 'trend' => 'up', 'trendText' => 'Non mesuré'],
+                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => '—', 'label' => "Livraisons à l'heure", 'trend' => 'up', 'trendText' => 'Non mesuré'],
             ],
             default => [
                 [
@@ -132,9 +132,9 @@ class DashboardController extends Controller
 
         for ($d = 1; $d <= 7; $d++) {
             $row = $data->get($d);
-            $malades[] = $row ? (int) $row->malades : [145, 149, 151, 148, 150, 62, 58][$d - 1];
-            $personnel[] = $row ? (int) $row->perso : [22, 19, 21, 20, 23, 8, 6][$d - 1];
-            $clients[] = $row ? (int) $row->cli : [6, 5, 7, 4, 8, 3, 2][$d - 1];
+            $malades[] = $row ? (int) $row->malades : 0;
+            $personnel[] = $row ? (int) $row->perso : 0;
+            $clients[] = $row ? (int) $row->cli : 0;
         }
 
         return [
@@ -147,10 +147,10 @@ class DashboardController extends Controller
 
     private function getRepartition(): array
     {
-        $total = TenantScope::apply(Commande::query())->count() ?: 100;
-        $malades = TenantScope::apply(Commande::query())->where('type', 'malades')->count() ?: 78;
-        $personnel = TenantScope::apply(Commande::query())->where('type', 'personnel')->count() ?: 15;
-        $clients = TenantScope::apply(Commande::query())->where('type', 'client_externe')->count() ?: 7;
+        $total = TenantScope::apply(Commande::query())->count() ?: 1;
+        $malades = TenantScope::apply(Commande::query())->where('type', 'malades')->count();
+        $personnel = TenantScope::apply(Commande::query())->where('type', 'personnel')->count();
+        $clients = TenantScope::apply(Commande::query())->where('type', 'client_externe')->count();
 
         return [
             'labels' => ['Malades', 'Personnel', 'Clients ext.'],
