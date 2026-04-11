@@ -42,8 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
     Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
 
-    // Menus : gestion (création, soumission) — prestataire, DSGL, CSAH
-    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
+    // Menus : gestion (création, soumission) — DSGL, CSAH
+    Route::middleware('role:dsgl,csah')->group(function () {
         Route::post('/menus', [MenuController::class, 'store']);
         Route::put('/menus/{menu}', [MenuController::class, 'update']);
         Route::delete('/menus/{menu}', [MenuController::class, 'destroy']);
@@ -95,13 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consommations/articles', [ConsommationController::class, 'articles']);
     Route::get('/consommations/ecarts-services', [ConsommationController::class, 'ecartsParService']);
 
-    // Saisie consommations : prestataire, CSAH, SUT
-    Route::middleware('role:prestataire,csah,sut')->group(function () {
+    // Saisie consommations : CSAH, SUT
+    Route::middleware('role:csah,sut')->group(function () {
         Route::post('/consommations', [ConsommationController::class, 'store']);
     });
 
-    // ── États & Rapports : prestataire, DSGL, CSAH ──────────────────────────
-    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
+    // ── États & Rapports : DSGL, CSAH ──────────────────────────────────────
+    Route::middleware('role:dsgl,csah')->group(function () {
         Route::get('/etats/commandes', [EtatController::class, 'etatCommandes']);
         Route::get('/etats/devis', [EtatController::class, 'devis']);
         Route::post('/etats/devis', [EtatController::class, 'storeDevis']);

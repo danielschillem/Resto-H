@@ -7,6 +7,7 @@ import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import { Commande, Service, Menu } from "@/types";
 import { isEmailValid, todayISO } from "@/lib/validation";
+import { useAuth } from "@/lib/auth";
 
 const STATUT_BADGE: Record<
   string,
@@ -37,6 +38,7 @@ const REPAS_LABELS: Record<string, string> = {
 type Tab = "malades" | "personnel" | "clients" | "valider";
 
 export default function CommandesPage() {
+  const { user } = useAuth();
   const [commandes, setCommandes] = useState<Commande[]>([]);
   const [aValider, setAValider] = useState<Commande[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -80,18 +82,26 @@ export default function CommandesPage() {
         }
       })
       .catch(() => {});
-    api
-      .commandesAValider()
-      .then(setAValider)
-      .catch(() => {});
-    api
-      .services()
-      .then(setServices)
-      .catch(() => {});
-    api
-      .menus()
-      .then(setMenus)
-      .catch(() => {});
+    if (
+      user?.role === "csah" ||
+      user?.role === "dsgl" ||
+      user?.role === "super_admin"
+    ) {
+      api
+        .commandesAValider()
+        .then(setAValider)
+        .catch(() => {});
+    }
+    if (user?.role !== "prestataire") {
+      api
+        .services()
+        .then(setServices)
+        .catch(() => {});
+      api
+        .menus()
+        .then(setMenus)
+        .catch(() => {});
+    }
   };
   useEffect(() => {
     load(1);
@@ -217,9 +227,11 @@ export default function CommandesPage() {
           <button onClick={exportCsv} style={{ ...btnSecondary, fontSize: 12 }}>
             <i className="fa-solid fa-file-csv" /> CSV
           </button>
-          <button onClick={() => setModalOpen(true)} style={btn}>
-            <i className="fa-solid fa-plus" /> Nouvelle commande
-          </button>
+          {user?.role !== "prestataire" && (
+            <button onClick={() => setModalOpen(true)} style={btn}>
+              <i className="fa-solid fa-plus" /> Nouvelle commande
+            </button>
+          )}
         </div>
       </div>
 
@@ -236,7 +248,17 @@ export default function CommandesPage() {
             { key: "malades", label: "Malades", count: maladesCount },
             { key: "personnel", label: "Personnel" },
             { key: "clients", label: "Clients externes" },
-            { key: "valider", label: "À valider", count: validerCount },
+            ...(user?.role === "csah" ||
+            user?.role === "dsgl" ||
+            user?.role === "super_admin"
+              ? [
+                  {
+                    key: "valider" as Tab,
+                    label: "À valider",
+                    count: validerCount,
+                  },
+                ]
+              : []),
           ] as { key: Tab; label: string; count?: number }[]
         ).map((t) => (
           <div
