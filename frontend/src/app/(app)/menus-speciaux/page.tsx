@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { RegimeSpecial, Service } from "@/types";
+import { useAuth } from "@/lib/auth";
 
 const STATUT_BADGE: Record<
   string,
@@ -38,6 +39,8 @@ const REGIME_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 export default function MenusSpeciauxPage() {
+  const { user } = useAuth();
+  const isPrestataire = user?.role === "prestataire";
   const [regimes, setRegimes] = useState<RegimeSpecial[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [tab, setTab] = useState<"demandes" | "valides" | "rejetes">(
@@ -171,9 +174,11 @@ export default function MenusSpeciauxPage() {
             Régimes thérapeutiques et demandes spécifiques des services
           </p>
         </div>
-        <button onClick={() => setModalOpen(true)} style={btn}>
-          <i className="fa-solid fa-plus" /> Nouvelle demande
-        </button>
+        {!isPrestataire && (
+          <button onClick={() => setModalOpen(true)} style={btn}>
+            <i className="fa-solid fa-plus" /> Nouvelle demande
+          </button>
+        )}
       </div>
 
       <div
@@ -307,9 +312,10 @@ export default function MenusSpeciauxPage() {
                 <th style={thStyle}>Durée</th>
                 <th style={thStyle}>Prescrit par</th>
                 <th style={thStyle}>Statut</th>
-                {(tab === "demandes" || tab === "valides") && (
-                  <th style={thStyle}>Actions</th>
-                )}
+                {!isPrestataire &&
+                  (tab === "demandes" || tab === "valides") && (
+                    <th style={thStyle}>Actions</th>
+                  )}
               </tr>
             </thead>
             <tbody>
@@ -358,7 +364,7 @@ export default function MenusSpeciauxPage() {
                         {sb.label}
                       </span>
                     </td>
-                    {tab === "demandes" && (
+                    {!isPrestataire && tab === "demandes" && (
                       <td style={tdStyle}>
                         <button
                           onClick={() => openEdit(r)}
@@ -396,27 +402,30 @@ export default function MenusSpeciauxPage() {
                         </button>
                       </td>
                     )}
-                    {tab === "valides" && r.statut === "valide" && (
-                      <td style={tdStyle}>
-                        <button
-                          onClick={async () => {
-                            await api.terminerRegime(r.id);
-                            load();
-                          }}
-                          style={{
-                            ...btnSm,
-                            background: "#475569",
-                            color: "white",
-                          }}
-                          title="Terminer"
-                        >
-                          <i className="fa-solid fa-flag-checkered" /> Terminer
-                        </button>
-                      </td>
-                    )}
-                    {tab === "valides" && r.statut === "termine" && (
-                      <td style={tdStyle} />
-                    )}
+                    {!isPrestataire &&
+                      tab === "valides" &&
+                      r.statut === "valide" && (
+                        <td style={tdStyle}>
+                          <button
+                            onClick={async () => {
+                              await api.terminerRegime(r.id);
+                              load();
+                            }}
+                            style={{
+                              ...btnSm,
+                              background: "#475569",
+                              color: "white",
+                            }}
+                            title="Terminer"
+                          >
+                            <i className="fa-solid fa-flag-checkered" />{" "}
+                            Terminer
+                          </button>
+                        </td>
+                      )}
+                    {!isPrestataire &&
+                      tab === "valides" &&
+                      r.statut === "termine" && <td style={tdStyle} />}
                   </tr>
                 );
               })}
@@ -789,4 +798,3 @@ const filterInput: React.CSSProperties = {
   background: "white",
   cursor: "pointer",
 };
-
