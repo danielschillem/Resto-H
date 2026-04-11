@@ -1,11 +1,10 @@
-FROM php:8.2-cli-alpine
+FROM php:8.2-cli
 
 # Install system dependencies + PHP extensions
-RUN apk add --no-cache bash git curl zip unzip \
-        postgresql-dev oniguruma-dev libxml2-dev curl-dev \
-        autoconf make g++ \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring xml bcmath curl fileinfo \
-    && apk del autoconf make g++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git curl zip unzip libpq-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring xml bcmath \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
