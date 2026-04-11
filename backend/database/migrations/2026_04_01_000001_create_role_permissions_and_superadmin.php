@@ -39,6 +39,10 @@ return new class extends Migration {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('role')->change();
             });
+            // PostgreSQL: drop the old enum check constraint that ->change() doesn't remove
+            if ($driver === 'pgsql') {
+                DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+            }
         }
 
         // Table des permissions par role

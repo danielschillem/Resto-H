@@ -18,30 +18,31 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 // Temporary debug endpoint — REMOVE after testing
 Route::get('/debug-db', function () {
     try {
-        // Check what tables currently exist
-        $tables = \Illuminate\Support\Facades\DB::select("SELECT tablename FROM pg_tables WHERE schemaname='public'");
-        $tableNames = array_map(fn($t) => $t->tablename, $tables);
+        // Wipe and re-migrate since DB is in broken state
+        \Illuminate\Support\Facades\Artisan::call('db:wipe', ['--force' => true]);
+        $wipeOutput = \Illuminate\Support\Facades\Artisan::output();
         
-        // Try running migrate and capture output
+        // Run migrations from scratch
         $exitCode = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
         
-        // Try seeding
+        // Seed
         $seedCode = \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
         $seedOutput = \Illuminate\Support\Facades\Artisan::output();
         
         return response()->json([
-            'tables_before' => $tableNames,
+            'wipe_output' => $wipeOutput,
             'migrate_exit_code' => $exitCode,
             'migrate_output' => $migrateOutput,
             'seed_exit_code' => $seedCode,
             'seed_output' => $seedOutput,
             'users_count' => \App\Models\User::count(),
+            'users' => \App\Models\User::select('id', 'email', 'role')->get(),
         ]);
     } catch (\Throwable $e) {
         return response()->json([
             'error' => $e->getMessage(),
-            'file' => $e->getFile(),
+            'file' => basename($e->getFile()),
             'line' => $e->getLine(),
         ], 500);
     }
