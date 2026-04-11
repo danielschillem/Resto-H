@@ -2,7 +2,7 @@ FROM php:8.2-cli
 
 # Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl zip unzip libpq-dev libonig-dev libxml2-dev \
+        git curl zip unzip libpq-dev libonig-dev libxml2-dev dos2unix \
     && docker-php-ext-install pdo pdo_pgsql pgsql mbstring xml bcmath \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +26,7 @@ RUN mkdir -p storage/framework/sessions storage/framework/views storage/framewor
     storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-RUN chmod +x render-build.sh
+RUN dos2unix render-build.sh && chmod +x render-build.sh
 
 EXPOSE 8000
 
