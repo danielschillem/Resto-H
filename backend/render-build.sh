@@ -1,7 +1,8 @@
 #!/bin/bash
 
 echo "=== SGRH Backend — Starting ==="
-echo "PORT=$PORT | DB_CONNECTION=$DB_CONNECTION | APP_ENV=$APP_ENV"
+echo "PORT=${PORT:-not set} | DB_CONNECTION=$DB_CONNECTION | APP_ENV=$APP_ENV"
+echo "DB_URL starts with: ${DB_URL:0:30}..."
 
 # Remove build-time .env so runtime env vars from Render take precedence
 rm -f .env
@@ -14,27 +15,25 @@ fi
 
 # Clear any cached config from build
 echo "Clearing config cache..."
-php artisan config:clear || true
+php artisan config:clear 2>&1 || true
 
-# Run database migrations
+# Test database connection
+echo "Testing database connection..."
+php artisan db:monitor 2>&1 || echo "DB monitor not available"
+
+# Run database migrations (non-fatal if DB not ready yet)
 echo "Running migrations..."
-php artisan migrate --force
-if [ $? -ne 0 ]; then
-  echo "ERROR: Migrations failed!"
-  exit 1
-fi
+php artisan migrate --force 2>&1 || echo "WARNING: Migrations failed but continuing..."
 
 # Seed database if fresh
 echo "Seeding database..."
-php artisan db:seed --force 2>/dev/null || echo "Seeding skipped (already seeded or error)."
+php artisan db:seed --force 2>&1 || echo "Seeding skipped."
 
 # Cache config & routes for performance
-echo "Caching config..."
-php artisan config:cache || true
-echo "Caching routes..."
-php artisan route:cache || echo "Route caching failed (non-fatal)"
-echo "Caching views..."
-php artisan view:cache || true
+echo "Caching..."
+php artisan config:cache 2>&1 || true
+php artisan route:cache 2>&1 || echo "Route caching skipped"
+php artisan view:cache 2>&1 || true
 
 echo "=== Starting server on port ${PORT:-8000} ==="
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-8000}"
