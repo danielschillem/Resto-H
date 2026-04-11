@@ -1,9 +1,3 @@
-databases:
-  - name: sgrh-db
-    plan: free
-    databaseName: sgrh
-    user: sgrh
-
 services:
   - type: web
     name: sgrh-api
@@ -25,9 +19,7 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_URL
-        fromDatabase:
-          name: sgrh-db
-          property: connectionString
+        sync: false
       - key: SESSION_DRIVER
         value: cookie
       - key: CACHE_STORE
