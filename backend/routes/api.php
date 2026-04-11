@@ -17,13 +17,34 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 
 // Temporary debug endpoint — REMOVE after testing
 Route::get('/debug-db', function () {
-    return response()->json([
-        'users_count' => \App\Models\User::count(),
-        'formations_count' => \App\Models\FormationSanitaire::count(),
-        'services_count' => \App\Models\Service::count(),
-        'users' => \App\Models\User::select('id', 'email', 'role', 'is_active')->get(),
-        'tables' => \Illuminate\Support\Facades\DB::select("SELECT tablename FROM pg_tables WHERE schemaname='public'"),
-    ]);
+    try {
+        // Check what tables currently exist
+        $tables = \Illuminate\Support\Facades\DB::select("SELECT tablename FROM pg_tables WHERE schemaname='public'");
+        $tableNames = array_map(fn($t) => $t->tablename, $tables);
+        
+        // Try running migrate and capture output
+        $exitCode = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+        
+        // Try seeding
+        $seedCode = \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $seedOutput = \Illuminate\Support\Facades\Artisan::output();
+        
+        return response()->json([
+            'tables_before' => $tableNames,
+            'migrate_exit_code' => $exitCode,
+            'migrate_output' => $migrateOutput,
+            'seed_exit_code' => $seedCode,
+            'seed_output' => $seedOutput,
+            'users_count' => \App\Models\User::count(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ], 500);
+    }
 });
 
 // Licence (publique pour la lecture)
