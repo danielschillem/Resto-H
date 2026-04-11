@@ -15,6 +15,17 @@ use Illuminate\Support\Facades\Route;
 // Auth publiques
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
+// Temporary debug endpoint — REMOVE after testing
+Route::get('/debug-db', function () {
+    return response()->json([
+        'users_count' => \App\Models\User::count(),
+        'formations_count' => \App\Models\FormationSanitaire::count(),
+        'services_count' => \App\Models\Service::count(),
+        'users' => \App\Models\User::select('id', 'email', 'role', 'is_active')->get(),
+        'tables' => \Illuminate\Support\Facades\DB::select("SELECT tablename FROM pg_tables WHERE schemaname='public'"),
+    ]);
+});
+
 // Licence (publique pour la lecture)
 Route::get('/licence', [LicenceController::class, 'index']);
 
