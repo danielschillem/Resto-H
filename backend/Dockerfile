@@ -5,6 +5,7 @@ FROM php:8.4-cli
 # simplexml, tokenizer, xml, xmlwriter are already built-in to php:8.4-cli
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git curl zip unzip libpq-dev libonig-dev libxml2-dev dos2unix \
+        ca-certificates libssl-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql bcmath \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
