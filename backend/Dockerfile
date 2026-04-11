@@ -1,13 +1,12 @@
-FROM php:8.2-cli
+FROM php:8.2-cli-alpine
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpq-dev libonig-dev libxml2-dev \
+RUN apk add --no-cache bash git curl zip unzip postgresql-dev oniguruma-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql mbstring xml bcmath \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apk del --no-cache
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
@@ -22,15 +21,12 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # Create storage directories
-RUN mkdir -p storage/framework/{sessions,views,cache/data} \
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data \
     storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Build script will run migrations at startup
-COPY render-build.sh /usr/local/bin/render-build.sh
-RUN chmod +x /usr/local/bin/render-build.sh
+RUN chmod +x render-build.sh
 
 EXPOSE 8000
 
-# Start: run migrations then serve
-CMD bash /usr/local/bin/render-build.sh && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+CMD ["bash", "render-build.sh"]

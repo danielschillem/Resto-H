@@ -1,12 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "=== SGRH Backend — Render Build ==="
+echo "=== SGRH Backend — Starting ==="
 
-# Install PHP dependencies (production)
-composer install --no-dev --optimize-autoloader --no-interaction
-
-# Generate APP_KEY if not set properly (Render generateValue gives a plain string)
+# Generate APP_KEY if not set properly
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then
   php artisan key:generate --force
 fi
@@ -14,12 +11,19 @@ fi
 # Run database migrations
 php artisan migrate --force
 
-# Seed database if fresh (check if users table is empty)
-php artisan tinker --execute="if(Schema\hasTable('users') && App\Models\User::count()===0){echo 'NEEDS_SEED';}" | grep -q "NEEDS_SEED" && php artisan db:seed --force || echo "Database already seeded."
+# Seed database if fresh
+USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tr -d '[:space:]')
+if [ "$USER_COUNT" = "0" ]; then
+  echo "Seeding database..."
+  php artisan db:seed --force
+else
+  echo "Database already seeded ($USER_COUNT users)."
+fi
 
 # Cache config & routes for performance
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "=== Build complete ==="
+echo "=== Starting server on port ${PORT:-8000} ==="
+exec php artisan serve --host=0.0.0.0 --port="${PORT:-8000}"
