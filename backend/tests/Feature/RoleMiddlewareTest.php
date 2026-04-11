@@ -53,7 +53,9 @@ class RoleMiddlewareTest extends TestCase
 
     public function test_sut_cannot_access_menus(): void
     {
-        $response = $this->actingAs($this->makeUser('sut'))->getJson('/api/menus');
+        $response = $this->actingAs($this->makeUser('sut'))->postJson('/api/menus', [
+            'intitule' => 'Test', 'type_repas' => 'dejeuner', 'portions_prevues' => 10, 'cout_unitaire' => 100,
+        ]);
         $response->assertStatus(403);
     }
 

@@ -6,6 +6,7 @@ use App\Models\Commande;
 use App\Models\FormationSanitaire;
 use App\Models\Service;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -55,6 +56,8 @@ class CommandeTest extends TestCase
 
     public function test_create_commande(): void
     {
+        Carbon::setTestNow(Carbon::today()->setHour(7));
+
         $response = $this->actingAs($this->sus)->postJson('/api/commandes', [
             'type' => 'malades',
             'service_id' => $this->service->id,
@@ -63,6 +66,8 @@ class CommandeTest extends TestCase
             'nb_portions' => 20,
         ]);
 
+        Carbon::setTestNow();
+
         $response->assertStatus(201)
             ->assertJsonPath('type', 'malades')
             ->assertJsonPath('nb_portions', 20);
@@ -70,10 +75,14 @@ class CommandeTest extends TestCase
 
     public function test_list_commandes(): void
     {
+        Carbon::setTestNow(Carbon::today()->setHour(7));
+
         $this->actingAs($this->sus)->postJson('/api/commandes', [
             'type' => 'malades', 'service_id' => $this->service->id,
             'date_repas' => now()->format('Y-m-d'), 'repas' => 'dejeuner', 'nb_portions' => 10,
         ]);
+
+        Carbon::setTestNow();
 
         $response = $this->actingAs($this->sus)->getJson('/api/commandes');
 

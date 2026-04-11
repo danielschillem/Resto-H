@@ -81,7 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── Régimes spéciaux : tous les rôles peuvent voir et créer ────────────
-    Route::apiResource('regimes-speciaux', RegimeSpecialController::class)->only(['index', 'store', 'show']);
+    Route::apiResource('regimes-speciaux', RegimeSpecialController::class)->only(['index', 'store', 'show'])->parameters(['regimes-speciaux' => 'regime']);
     Route::put('/regimes-speciaux/{regime}', [RegimeSpecialController::class, 'update']);
 
     // Valider/rejeter/terminer régimes : CSAH, DSGL
@@ -166,5 +166,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/licence/activer', [SuperAdminController::class, 'activerLicence']);
         Route::post('/licence/reset', [SuperAdminController::class, 'resetEssai']);
         Route::get('/licence/generer-cle', [SuperAdminController::class, 'genererCle']);
+
+        // Audit logs & Exports
+        Route::get('/audit-logs', [SuperAdminController::class, 'auditLogs']);
+        Route::get('/export/users', [SuperAdminController::class, 'exportUsers']);
+        Route::get('/export/formations', [SuperAdminController::class, 'exportFormations']);
+        Route::get('/export/audit-logs', [SuperAdminController::class, 'exportAuditLogs']);
+
+        // Analytics
+        Route::get('/analytics', [SuperAdminController::class, 'analytics']);
+
+        // Services
+        Route::get('/services', [SuperAdminController::class, 'services']);
+        Route::post('/services', [SuperAdminController::class, 'storeService']);
+        Route::put('/services/{service}', [SuperAdminController::class, 'updateService']);
+        Route::delete('/services/{service}', [SuperAdminController::class, 'destroyService']);
+
+        // Bulk operations
+        Route::post('/users/bulk-activate', [SuperAdminController::class, 'bulkActivateUsers']);
+        Route::post('/users/bulk-deactivate', [SuperAdminController::class, 'bulkDeactivateUsers']);
+        Route::post('/formations/bulk-activate', [SuperAdminController::class, 'bulkActivateFormations']);
+        Route::post('/formations/bulk-deactivate', [SuperAdminController::class, 'bulkDeactivateFormations']);
+
+        // System config
+        Route::get('/config', [SuperAdminController::class, 'systemConfig']);
+        Route::post('/config', [SuperAdminController::class, 'updateSystemConfig']);
     });
 });

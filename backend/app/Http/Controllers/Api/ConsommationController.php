@@ -50,7 +50,7 @@ class ConsommationController extends Controller
         $weekStart = Carbon::now()->startOfWeek();
         $weekEnd = Carbon::now()->endOfWeek();
 
-        $semaine = Consommation::whereBetween('date', [$weekStart, $weekEnd]);
+        $semaine = TenantScope::apply(Consommation::query())->whereBetween('date', [$weekStart, $weekEnd]);
 
         $portionsServies = (int) $semaine->sum('total_portions');
         $coutReel = (int) $semaine->sum('cout_reel');
@@ -75,8 +75,8 @@ class ConsommationController extends Controller
             $query->where('semaine_debut', $request->semaine_debut);
         } elseif ($request->has('periode')) {
             match ($request->periode) {
-                'semaine' => $query->where('semaine_debut', Carbon::now()->startOfWeek()->format('Y-m-d')),
-                'semaine_precedente' => $query->where('semaine_debut', Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d')),
+                'semaine' => $query->whereDate('semaine_debut', Carbon::now()->startOfWeek()->format('Y-m-d')),
+                'semaine_precedente' => $query->whereDate('semaine_debut', Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d')),
                 'mois' => $query->whereBetween('semaine_debut', [Carbon::now()->startOfMonth()->format('Y-m-d'), Carbon::now()->endOfMonth()->format('Y-m-d')]),
                 default => null,
             };

@@ -14,6 +14,7 @@ class RegimeSpecial extends Model
         'date_debut', 'duree_jours', 'medecin_prescripteur',
         'instructions', 'statut', 'motif_rejet',
         'soumis_par', 'valide_par',
+        'formation_id',
     ];
 
     protected function casts(): array

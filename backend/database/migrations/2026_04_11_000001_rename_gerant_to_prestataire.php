@@ -23,7 +23,7 @@ return new class extends Migration {
             ->delete();
 
         // Add 'commandes.livrer' permission for prestataire
-        DB::table('role_permissions')->insert([
+        DB::table('role_permissions')->insertOrIgnore([
             'role' => 'prestataire',
             'permission' => 'commandes.livrer',
             'created_at' => now(),
@@ -36,7 +36,7 @@ return new class extends Migration {
         $now = now();
         foreach ($dsglNeeded as $perm) {
             if (!in_array($perm, $dsglExisting)) {
-                DB::table('role_permissions')->insert(['role' => 'dsgl', 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
+                DB::table('role_permissions')->insertOrIgnore(['role' => 'dsgl', 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
             }
         }
 
@@ -45,7 +45,7 @@ return new class extends Migration {
         $csahNeeded = ['dashboard', 'menus', 'commandes', 'commandes.valider', 'consommations', 'etats', 'regimes', 'regimes.valider'];
         foreach ($csahNeeded as $perm) {
             if (!in_array($perm, $csahExisting)) {
-                DB::table('role_permissions')->insert(['role' => 'csah', 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
+                DB::table('role_permissions')->insertOrIgnore(['role' => 'csah', 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
             }
         }
     }

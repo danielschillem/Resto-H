@@ -10,6 +10,7 @@ class Menu extends Model
     protected $fillable = [
         'intitule', 'type_repas', 'portions_prevues',
         'cout_unitaire', 'allergenes', 'notes_nutritionnelles',
+        'formation_id',
     ];
 
     public function commandes(): HasMany

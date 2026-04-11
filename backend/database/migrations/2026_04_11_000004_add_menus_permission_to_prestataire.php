@@ -13,7 +13,7 @@ return new class extends Migration {
             ->exists();
 
         if (!$exists) {
-            DB::table('role_permissions')->insert([
+            DB::table('role_permissions')->insertOrIgnore([
                 'role' => 'prestataire',
                 'permission' => 'menus',
                 'created_at' => now(),

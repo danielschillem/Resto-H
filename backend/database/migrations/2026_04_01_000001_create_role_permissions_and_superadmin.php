@@ -65,7 +65,7 @@ return new class extends Migration {
         $now = now();
         foreach ($defaults as $role => $perms) {
             foreach ($perms as $perm) {
-                DB::table('role_permissions')->insert(['role' => $role, 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
+                DB::table('role_permissions')->insertOrIgnore(['role' => $role, 'permission' => $perm, 'created_at' => $now, 'updated_at' => $now]);
             }
         }
 

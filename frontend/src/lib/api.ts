@@ -424,4 +424,84 @@ export const api = {
       `/super-admin/formations/${formationId}/users`,
       { method: "POST", body: JSON.stringify(data) },
     ),
+
+  // Super Admin — Audit & Exports
+  saAuditLogs: (params?: string) =>
+    request<import("@/types").PaginatedResponse<import("@/types").AuditLog>>(
+      `/super-admin/audit-logs${params ? `?${params}` : ""}`,
+    ),
+  saExportUsers: () =>
+    downloadFile("/super-admin/export/users", "utilisateurs.csv"),
+  saExportFormations: () =>
+    downloadFile("/super-admin/export/formations", "formations.csv"),
+  saExportAuditLogs: (params?: string) =>
+    downloadFile(
+      `/super-admin/export/audit-logs${params ? `?${params}` : ""}`,
+      "journal-audit.csv",
+    ),
+
+  // Super Admin — Analytics
+  saAnalytics: (days?: number) =>
+    request<{
+      users_over_time: { date: string; total: number }[];
+      commandes_over_time: { date: string; total: number; montant: number }[];
+      consommations_over_time: {
+        date: string;
+        total: number;
+        portions: number;
+      }[];
+      roles_distribution: Record<string, number>;
+      total_commandes: number;
+      total_montant: number;
+      total_consommations: number;
+      total_portions: number;
+    }>(`/super-admin/analytics${days ? `?days=${days}` : ""}`),
+
+  // Super Admin — Services
+  saServices: () =>
+    request<(import("@/types").Service & { commandes_count: number })[]>(
+      "/super-admin/services",
+    ),
+  saCreateService: (data: Record<string, unknown>) =>
+    request<import("@/types").Service>("/super-admin/services", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  saUpdateService: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Service>(`/super-admin/services/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  saDeleteService: (id: number) =>
+    request(`/super-admin/services/${id}`, { method: "DELETE" }),
+
+  // Super Admin — Bulk operations
+  saBulkActivateUsers: (ids: number[]) =>
+    request("/super-admin/users/bulk-activate", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+  saBulkDeactivateUsers: (ids: number[]) =>
+    request("/super-admin/users/bulk-deactivate", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+  saBulkActivateFormations: (ids: number[]) =>
+    request("/super-admin/formations/bulk-activate", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+  saBulkDeactivateFormations: (ids: number[]) =>
+    request("/super-admin/formations/bulk-deactivate", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+
+  // Super Admin — System config
+  saConfig: () => request<import("@/types").Parametre[]>("/super-admin/config"),
+  saUpdateConfig: (configs: { cle: string; valeur: string }[]) =>
+    request("/super-admin/config", {
+      method: "POST",
+      body: JSON.stringify({ configs }),
+    }),
 };

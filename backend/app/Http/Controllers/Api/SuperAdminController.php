@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Models\Commande;
+use App\Models\Consommation;
 use App\Models\FormationSanitaire;
 use App\Models\Licence;
+use App\Models\Parametre;
 use App\Models\RolePermission;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SuperAdminController extends Controller
 {
@@ -330,5 +338,228 @@ class SuperAdminController extends Controller
         $cle = 'RESTO-' . implode('-', $segments);
 
         return response()->json(['cle' => $cle]);
+    }
+
+    // ── Phase 1 : Journal d'audit & Exports ────────────────────────────────
+
+    public function auditLogs(Request $request): JsonResponse
+    {
+        $query = AuditLog::orderByDesc('created_at');
+
+        if ($f = $request->query('action')) $query->where('action', $f);
+        if ($f = $request->query('entity_type')) $query->where('entity_type', $f);
+        if ($f = $request->query('user_name')) $query->where('user_name', 'like', "%{$f}%");
+        if ($f = $request->query('formation_id')) $query->where('formation_id', $f);
+        if ($f = $request->query('date_from')) $query->whereDate('created_at', '>=', $f);
+        if ($f = $request->query('date_to')) $query->whereDate('created_at', '<=', $f);
+
+        return response()->json($query->paginate(30));
+    }
+
+    public function exportUsers(): StreamedResponse
+    {
+        return $this->streamCsv(
+            'utilisateurs.csv',
+            ['ID', 'Nom', 'Prénom', 'Email', 'Rôle', 'Service', 'Actif', 'Dernière connexion', 'Créé le'],
+            User::where('role', '!=', 'super_admin')->orderBy('nom')->cursor(),
+            fn($u) => [$u->id, $u->nom, $u->prenom, $u->email, $u->role, $u->service ?? '', $u->is_active ? 'Oui' : 'Non', $u->last_login_at ?? '', $u->created_at->format('Y-m-d H:i')]
+        );
+    }
+
+    public function exportFormations(): StreamedResponse
+    {
+        return $this->streamCsv(
+            'formations.csv',
+            ['ID', 'Nom', 'Code', 'Type', 'Ville', 'Région', 'Directeur', 'Actif', 'Nb utilisateurs'],
+            FormationSanitaire::withCount('users')->orderBy('nom')->cursor(),
+            fn($f) => [$f->id, $f->nom, $f->code, $f->type, $f->ville ?? '', $f->region ?? '', $f->directeur ?? '', $f->is_active ? 'Oui' : 'Non', $f->users_count]
+        );
+    }
+
+    public function exportAuditLogs(Request $request): StreamedResponse
+    {
+        $query = AuditLog::orderByDesc('created_at');
+        if ($f = $request->query('formation_id')) $query->where('formation_id', $f);
+
+        return $this->streamCsv(
+            'journal-audit.csv',
+            ['ID', 'Date', 'Utilisateur', 'Action', 'Entité', 'ID Entité', 'Label', 'Détails', 'IP'],
+            $query->cursor(),
+            fn($l) => [$l->id, $l->created_at->format('Y-m-d H:i'), $l->user_name, $l->action, $l->entity_type, $l->entity_id ?? '', $l->entity_label ?? '', $l->details ?? '', $l->ip_address ?? '']
+        );
+    }
+
+    private function streamCsv(string $filename, array $headers, $rows, \Closure $mapper): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($headers, $rows, $mapper) {
+            echo "\xEF\xBB\xBF"; // BOM UTF-8
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headers, ';');
+            foreach ($rows as $row) {
+                fputcsv($out, $mapper($row), ';');
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    // ── Phase 2 : Analytics ─────────────────────────────────────────────────
+
+    public function analytics(Request $request): JsonResponse
+    {
+        $days = (int) ($request->query('days') ?? 30);
+        $from = Carbon::now()->subDays($days);
+
+        // Évolution utilisateurs par jour (derniers N jours)
+        $usersOverTime = User::where('role', '!=', 'super_admin')
+            ->where('created_at', '>=', $from)
+            ->selectRaw("DATE(created_at) as date, count(*) as total")
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
+            ->get();
+
+        // Commandes par jour
+        $commandesOverTime = Commande::where('created_at', '>=', $from)
+            ->selectRaw("DATE(created_at) as date, count(*) as total, COALESCE(sum(montant),0) as montant")
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
+            ->get();
+
+        // Consommations par jour
+        $consommationsOverTime = Consommation::where('created_at', '>=', $from)
+            ->selectRaw("DATE(created_at) as date, count(*) as total, COALESCE(sum(total_portions),0) as portions")
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
+            ->get();
+
+        // Répartition par rôle
+        $rolesDistribution = User::where('role', '!=', 'super_admin')
+            ->selectRaw('role, count(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        // Totaux globaux
+        $totalCommandes = Commande::count();
+        $totalMontant = Commande::sum('montant');
+        $totalConsommations = Consommation::count();
+        $totalPortions = Consommation::sum('total_portions');
+
+        return response()->json([
+            'users_over_time' => $usersOverTime,
+            'commandes_over_time' => $commandesOverTime,
+            'consommations_over_time' => $consommationsOverTime,
+            'roles_distribution' => $rolesDistribution,
+            'total_commandes' => $totalCommandes,
+            'total_montant' => $totalMontant,
+            'total_consommations' => $totalConsommations,
+            'total_portions' => $totalPortions,
+        ]);
+    }
+
+    // ── Phase 3 : Services CRUD ─────────────────────────────────────────────
+
+    public function services(): JsonResponse
+    {
+        $services = Service::withCount('commandes')
+            ->orderBy('nom')
+            ->get();
+
+        return response()->json($services);
+    }
+
+    public function storeService(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nom' => 'required|string|max:255',
+            'lits_actifs' => 'nullable|integer|min:0',
+            'responsable' => 'nullable|string|max:255',
+        ]);
+
+        $service = Service::create([
+            'nom' => $data['nom'],
+            'lits_actifs' => $data['lits_actifs'] ?? 0,
+            'responsable' => $data['responsable'] ?? null,
+            'is_active' => true,
+        ]);
+
+        return response()->json($service, 201);
+    }
+
+    public function updateService(Request $request, Service $service): JsonResponse
+    {
+        $data = $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'lits_actifs' => 'nullable|integer|min:0',
+            'responsable' => 'nullable|string|max:255',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        $service->update($data);
+
+        return response()->json($service->fresh());
+    }
+
+    public function destroyService(Service $service): JsonResponse
+    {
+        if ($service->commandes()->count() > 0) {
+            return response()->json(['message' => 'Impossible de supprimer un service avec des commandes.'], 422);
+        }
+        $service->delete();
+        return response()->json(['message' => 'Service supprimé.']);
+    }
+
+    // ── Phase 4 : Opérations en masse ───────────────────────────────────────
+
+    public function bulkActivateUsers(Request $request): JsonResponse
+    {
+        $data = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+        $count = User::whereIn('id', $data['ids'])->where('role', '!=', 'super_admin')->update(['is_active' => true]);
+        return response()->json(['message' => "{$count} utilisateur(s) activé(s)."]);
+    }
+
+    public function bulkDeactivateUsers(Request $request): JsonResponse
+    {
+        $data = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+        $count = User::whereIn('id', $data['ids'])->where('role', '!=', 'super_admin')->update(['is_active' => false]);
+        return response()->json(['message' => "{$count} utilisateur(s) désactivé(s)."]);
+    }
+
+    public function bulkActivateFormations(Request $request): JsonResponse
+    {
+        $data = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+        $count = FormationSanitaire::whereIn('id', $data['ids'])->update(['is_active' => true]);
+        return response()->json(['message' => "{$count} formation(s) activée(s)."]);
+    }
+
+    public function bulkDeactivateFormations(Request $request): JsonResponse
+    {
+        $data = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+        $count = FormationSanitaire::whereIn('id', $data['ids'])->update(['is_active' => false]);
+        return response()->json(['message' => "{$count} formation(s) désactivée(s)."]);
+    }
+
+    // ── Phase 5 : Paramètres système ────────────────────────────────────────
+
+    public function systemConfig(): JsonResponse
+    {
+        $params = Parametre::orderBy('cle')->get();
+        return response()->json($params);
+    }
+
+    public function updateSystemConfig(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'configs' => 'required|array',
+            'configs.*.cle' => 'required|string',
+            'configs.*.valeur' => 'required|string',
+        ]);
+
+        foreach ($data['configs'] as $cfg) {
+            Parametre::updateOrCreate(
+                ['cle' => $cfg['cle']],
+                ['valeur' => $cfg['valeur']]
+            );
+        }
+
+        return response()->json(['message' => 'Configuration mise à jour.']);
     }
 }

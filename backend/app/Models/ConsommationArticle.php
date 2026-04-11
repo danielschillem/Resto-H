@@ -12,6 +12,7 @@ class ConsommationArticle extends Model
         'article', 'unite', 'qte_prevue', 'qte_reelle',
         'ecart', 'cout_unitaire', 'cout_reel',
         'semaine_debut', 'semaine_fin',
+        'formation_id',
     ];
 
     protected function casts(): array

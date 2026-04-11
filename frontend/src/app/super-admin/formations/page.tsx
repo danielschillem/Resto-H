@@ -7,9 +7,9 @@ import { FormationSanitaire, User } from "@/types";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const card: React.CSSProperties = {
-  background: "#1e293b",
+  background: "#ffffff",
   borderRadius: 12,
-  border: "1px solid #334155",
+  border: "1px solid #e2e8f0",
   padding: 24,
   marginBottom: 16,
 };
@@ -28,11 +28,11 @@ const btn: React.CSSProperties = {
 const inputDark: React.CSSProperties = {
   width: "100%",
   padding: "9px 12px",
-  background: "#0f172a",
-  border: "1px solid #334155",
+  background: "#f1f5f9",
+  border: "1px solid #64748b",
   borderRadius: 7,
   fontSize: 13,
-  color: "white",
+  color: "#ffffff",
   fontFamily: "inherit",
   outline: "none",
 };
@@ -127,7 +127,7 @@ function CopyLinkRow({ code }: { code: string }) {
       <span
         style={{
           fontSize: 11,
-          color: "#64748B",
+          color: "#64748b",
           maxWidth: 160,
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -140,9 +140,9 @@ function CopyLinkRow({ code }: { code: string }) {
       <button
         onClick={copy}
         style={{
-          background: copied ? "#052e16" : "#1e3a5f",
+          background: copied ? "#ecfdf5" : "#1e3a5f",
           border: `1px solid ${copied ? "#14532d" : "#1e40af"}`,
-          color: copied ? "#34D399" : "#60A5FA",
+          color: copied ? "#10b981" : "#60A5FA",
           borderRadius: 5,
           padding: "3px 8px",
           cursor: "pointer",
@@ -332,16 +332,16 @@ export default function FormationsPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0f172a",
-        color: "white",
+        background: "#f8fafc",
+        color: "#1e293b",
         fontFamily: "Inter, sans-serif",
       }}
     >
       {/* Topbar */}
       <div
         style={{
-          background: "#1e293b",
-          borderBottom: "1px solid #334155",
+          background: "#ffffff",
+          borderBottom: "1px solid #e2e8f0",
           padding: "0 16px",
           display: "flex",
           alignItems: "center",
@@ -355,8 +355,8 @@ export default function FormationsPage() {
             onClick={() => router.push("/super-admin")}
             style={{
               ...btn,
-              background: "#334155",
-              color: "#94A3B8",
+              background: "#e2e8f0",
+              color: "#94a3b8",
               padding: "7px 10px",
             }}
           >
@@ -393,12 +393,12 @@ export default function FormationsPage() {
         {error && (
           <div
             style={{
-              background: "#450a0a",
-              border: "1px solid #7f1d1d",
+              background: "#fef2f2",
+              border: "1px solid #ef4444",
               borderRadius: 8,
               padding: "12px 16px",
               marginBottom: 16,
-              color: "#fca5a5",
+              color: "#ef4444",
               fontSize: 13,
               display: "flex",
               justifyContent: "space-between",
@@ -410,7 +410,7 @@ export default function FormationsPage() {
               style={{
                 background: "none",
                 border: "none",
-                color: "#fca5a5",
+                color: "#ef4444",
                 cursor: "pointer",
               }}
             >
@@ -421,12 +421,12 @@ export default function FormationsPage() {
         {success && (
           <div
             style={{
-              background: "#052e16",
+              background: "#ecfdf5",
               border: "1px solid #14532d",
               borderRadius: 8,
               padding: "12px 16px",
               marginBottom: 16,
-              color: "#34D399",
+              color: "#10b981",
               fontSize: 13,
             }}
           >
@@ -458,7 +458,7 @@ export default function FormationsPage() {
               setForm(emptyForm());
               setError("");
             }}
-            style={{ ...btn, background: "#1D4ED8", color: "white" }}
+            style={{ ...btn, background: "#2563eb", color: "#1e293b" }}
           >
             <i className="fa-solid fa-plus" /> Nouvelle formation
           </button>
@@ -483,7 +483,7 @@ export default function FormationsPage() {
               }}
             >
               <thead>
-                <tr style={{ borderBottom: "1px solid #334155" }}>
+                <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
                   {[
                     "Formation",
                     "Code",
@@ -500,7 +500,7 @@ export default function FormationsPage() {
                       style={{
                         padding: "12px 16px",
                         textAlign: "left",
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         fontWeight: 600,
                         textTransform: "uppercase",
@@ -515,13 +515,13 @@ export default function FormationsPage() {
               </thead>
               <tbody>
                 {filtered.map((f) => (
-                  <tr key={f.id} style={{ borderBottom: "1px solid #1a2740" }}>
+                  <tr key={f.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ color: "white", fontWeight: 600 }}>
+                      <div style={{ color: "#1e293b", fontWeight: 600 }}>
                         {f.nom}
                       </div>
                       {f.directeur && (
-                        <div style={{ color: "#64748B", fontSize: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 12 }}>
                           Dir. {f.directeur}
                         </div>
                       )}
@@ -542,7 +542,7 @@ export default function FormationsPage() {
                     <td
                       style={{
                         padding: "12px 16px",
-                        color: "#94A3B8",
+                        color: "#94a3b8",
                         fontSize: 13,
                       }}
                     >
@@ -551,7 +551,7 @@ export default function FormationsPage() {
                     <td
                       style={{
                         padding: "12px 16px",
-                        color: "#94A3B8",
+                        color: "#94a3b8",
                         fontSize: 13,
                       }}
                     >
@@ -578,7 +578,7 @@ export default function FormationsPage() {
                     <td
                       style={{
                         padding: "12px 16px",
-                        color: "#94A3B8",
+                        color: "#94a3b8",
                         fontSize: 13,
                       }}
                     >
@@ -591,9 +591,9 @@ export default function FormationsPage() {
                           ...btn,
                           padding: "4px 10px",
                           fontSize: 12,
-                          background: f.is_active ? "#052e16" : "#450a0a",
-                          color: f.is_active ? "#34D399" : "#fca5a5",
-                          border: `1px solid ${f.is_active ? "#14532d" : "#7f1d1d"}`,
+                          background: f.is_active ? "#ecfdf5" : "#fef2f2",
+                          color: f.is_active ? "#10b981" : "#ef4444",
+                          border: `1px solid ${f.is_active ? "#14532d" : "#ef4444"}`,
                         }}
                       >
                         <i
@@ -609,8 +609,8 @@ export default function FormationsPage() {
                           style={{
                             ...btn,
                             padding: "5px 10px",
-                            background: "#334155",
-                            color: "#94A3B8",
+                            background: "#e2e8f0",
+                            color: "#94a3b8",
                           }}
                           title="Modifier"
                         >
@@ -621,8 +621,8 @@ export default function FormationsPage() {
                           style={{
                             ...btn,
                             padding: "5px 10px",
-                            background: "#450a0a",
-                            color: "#fca5a5",
+                            background: "#fef2f2",
+                            color: "#ef4444",
                           }}
                           title="Supprimer"
                         >
@@ -677,7 +677,7 @@ export default function FormationsPage() {
         >
           <div
             style={{
-              background: "#1e293b",
+              background: "#ffffff",
               borderRadius: 16,
               padding: 36,
               width: "100%",
@@ -690,7 +690,7 @@ export default function FormationsPage() {
               style={{
                 width: 64,
                 height: 64,
-                background: "#052e16",
+                background: "#ecfdf5",
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
@@ -700,12 +700,12 @@ export default function FormationsPage() {
             >
               <i
                 className="fa-solid fa-circle-check"
-                style={{ fontSize: 30, color: "#34D399" }}
+                style={{ fontSize: 30, color: "#10b981" }}
               />
             </div>
             <h3
               style={{
-                color: "white",
+                color: "#1e293b",
                 fontSize: 18,
                 fontWeight: 700,
                 marginBottom: 8,
@@ -713,16 +713,16 @@ export default function FormationsPage() {
             >
               Formation créée !
             </h3>
-            <p style={{ color: "#94A3B8", fontSize: 14, marginBottom: 24 }}>
-              <strong style={{ color: "white" }}>{createdLink.nom}</strong> est
-              prête. Partagez ce lien aux utilisateurs :
+            <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: 24 }}>
+              <strong style={{ color: "#1e293b" }}>{createdLink.nom}</strong>{" "}
+              est prête. Partagez ce lien aux utilisateurs :
             </p>
             <div
               style={{
-                background: "#0f172a",
+                background: "#f8fafc",
                 borderRadius: 10,
                 padding: "14px 16px",
-                border: "1px solid #334155",
+                border: "1px solid #e2e8f0",
                 marginBottom: 20,
                 display: "flex",
                 alignItems: "center",
@@ -754,8 +754,8 @@ export default function FormationsPage() {
                 }
                 style={{
                   ...btn,
-                  background: "#1D4ED8",
-                  color: "white",
+                  background: "#2563eb",
+                  color: "#1e293b",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -766,8 +766,8 @@ export default function FormationsPage() {
                 onClick={() => setCreatedLink(null)}
                 style={{
                   ...btn,
-                  background: "#334155",
-                  color: "#94A3B8",
+                  background: "#e2e8f0",
+                  color: "#94a3b8",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -803,19 +803,19 @@ export default function FormationsPage() {
         >
           <div
             style={{
-              background: "#1e293b",
+              background: "#ffffff",
               borderRadius: 14,
               padding: 32,
               width: "100%",
               maxWidth: 600,
-              border: "1px solid #334155",
+              border: "1px solid #e2e8f0",
               maxHeight: "90vh",
               overflowY: "auto",
             }}
           >
             <h3
               style={{
-                color: "white",
+                color: "#1e293b",
                 marginBottom: 24,
                 fontSize: 16,
                 fontWeight: 700,
@@ -832,7 +832,7 @@ export default function FormationsPage() {
             {form.code && (
               <div
                 style={{
-                  background: "#0f172a",
+                  background: "#f8fafc",
                   borderRadius: 8,
                   padding: "10px 14px",
                   marginBottom: 16,
@@ -846,7 +846,7 @@ export default function FormationsPage() {
                   className="fa-solid fa-link"
                   style={{ color: "#3B82F6", fontSize: 12 }}
                 />
-                <span style={{ color: "#64748B", fontSize: 11 }}>
+                <span style={{ color: "#64748b", fontSize: 11 }}>
                   Lien de connexion :
                 </span>
                 <span style={{ color: "#60A5FA", fontSize: 11 }}>
@@ -866,7 +866,7 @@ export default function FormationsPage() {
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -885,7 +885,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -911,7 +911,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -936,7 +936,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -955,7 +955,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -981,7 +981,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1001,7 +1001,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1021,7 +1021,7 @@ export default function FormationsPage() {
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1042,16 +1042,16 @@ export default function FormationsPage() {
             {/* Prestataire initial */}
             <div
               style={{
-                background: "#0f172a",
+                background: "#f8fafc",
                 borderRadius: 10,
                 padding: 16,
                 marginBottom: 20,
-                border: "1px solid #334155",
+                border: "1px solid #e2e8f0",
               }}
             >
               <p
                 style={{
-                  color: "#64748B",
+                  color: "#64748b",
                   fontSize: 12,
                   fontWeight: 600,
                   textTransform: "uppercase",
@@ -1075,7 +1075,7 @@ export default function FormationsPage() {
                 <div>
                   <label
                     style={{
-                      color: "#94A3B8",
+                      color: "#94a3b8",
                       fontSize: 11,
                       display: "block",
                       marginBottom: 4,
@@ -1086,7 +1086,10 @@ export default function FormationsPage() {
                   <input
                     value={form.prestataire_nom}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, prestataire_nom: e.target.value }))
+                      setForm((f) => ({
+                        ...f,
+                        prestataire_nom: e.target.value,
+                      }))
                     }
                     style={inputDark}
                   />
@@ -1094,7 +1097,7 @@ export default function FormationsPage() {
                 <div>
                   <label
                     style={{
-                      color: "#94A3B8",
+                      color: "#94a3b8",
                       fontSize: 11,
                       display: "block",
                       marginBottom: 4,
@@ -1105,7 +1108,10 @@ export default function FormationsPage() {
                   <input
                     value={form.prestataire_prenom}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, prestataire_prenom: e.target.value }))
+                      setForm((f) => ({
+                        ...f,
+                        prestataire_prenom: e.target.value,
+                      }))
                     }
                     style={inputDark}
                   />
@@ -1113,7 +1119,7 @@ export default function FormationsPage() {
                 <div>
                   <label
                     style={{
-                      color: "#94A3B8",
+                      color: "#94a3b8",
                       fontSize: 11,
                       display: "block",
                       marginBottom: 4,
@@ -1125,7 +1131,10 @@ export default function FormationsPage() {
                     type="email"
                     value={form.prestataire_email}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, prestataire_email: e.target.value }))
+                      setForm((f) => ({
+                        ...f,
+                        prestataire_email: e.target.value,
+                      }))
                     }
                     style={inputDark}
                   />
@@ -1133,7 +1142,7 @@ export default function FormationsPage() {
                 <div>
                   <label
                     style={{
-                      color: "#94A3B8",
+                      color: "#94a3b8",
                       fontSize: 11,
                       display: "block",
                       marginBottom: 4,
@@ -1159,10 +1168,10 @@ export default function FormationsPage() {
             {error && (
               <div
                 style={{
-                  background: "#450a0a",
+                  background: "#fef2f2",
                   borderRadius: 8,
                   padding: "10px 14px",
-                  color: "#fca5a5",
+                  color: "#ef4444",
                   fontSize: 13,
                   marginBottom: 12,
                 }}
@@ -1176,8 +1185,8 @@ export default function FormationsPage() {
                 disabled={saving || !form.nom || !form.code}
                 style={{
                   ...btn,
-                  background: saving ? "#334155" : "#1D4ED8",
-                  color: "white",
+                  background: saving ? "#e2e8f0" : "#2563eb",
+                  color: "#1e293b",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -1196,8 +1205,8 @@ export default function FormationsPage() {
                 }}
                 style={{
                   ...btn,
-                  background: "#334155",
-                  color: "#94A3B8",
+                  background: "#e2e8f0",
+                  color: "#94a3b8",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -1225,19 +1234,19 @@ export default function FormationsPage() {
         >
           <div
             style={{
-              background: "#1e293b",
+              background: "#ffffff",
               borderRadius: 14,
               padding: 32,
               width: "100%",
               maxWidth: 560,
-              border: "1px solid #334155",
+              border: "1px solid #e2e8f0",
               maxHeight: "90vh",
               overflowY: "auto",
             }}
           >
             <h3
               style={{
-                color: "white",
+                color: "#1e293b",
                 marginBottom: 24,
                 fontSize: 16,
                 fontWeight: 700,
@@ -1260,7 +1269,7 @@ export default function FormationsPage() {
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1279,7 +1288,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1298,7 +1307,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1323,7 +1332,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1344,7 +1353,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1372,7 +1381,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1393,7 +1402,7 @@ export default function FormationsPage() {
               <div>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1415,7 +1424,7 @@ export default function FormationsPage() {
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 11,
                     display: "block",
                     marginBottom: 4,
@@ -1439,7 +1448,7 @@ export default function FormationsPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 13,
                     cursor: "pointer",
                   }}
@@ -1461,10 +1470,10 @@ export default function FormationsPage() {
             {error && (
               <div
                 style={{
-                  background: "#450a0a",
+                  background: "#fef2f2",
                   borderRadius: 8,
                   padding: "10px 14px",
-                  color: "#fca5a5",
+                  color: "#ef4444",
                   fontSize: 13,
                   marginBottom: 12,
                 }}
@@ -1478,8 +1487,8 @@ export default function FormationsPage() {
                 disabled={saving}
                 style={{
                   ...btn,
-                  background: saving ? "#334155" : "#1D4ED8",
-                  color: "white",
+                  background: saving ? "#e2e8f0" : "#2563eb",
+                  color: "#1e293b",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -1499,8 +1508,8 @@ export default function FormationsPage() {
                 }}
                 style={{
                   ...btn,
-                  background: "#334155",
-                  color: "#94A3B8",
+                  background: "#e2e8f0",
+                  color: "#94a3b8",
                   flex: 1,
                   justifyContent: "center",
                 }}
@@ -1528,12 +1537,12 @@ export default function FormationsPage() {
         >
           <div
             style={{
-              background: "#1e293b",
+              background: "#ffffff",
               borderRadius: 14,
               padding: 28,
               width: "100%",
               maxWidth: 620,
-              border: "1px solid #334155",
+              border: "1px solid #e2e8f0",
               maxHeight: "90vh",
               overflowY: "auto",
             }}
@@ -1549,7 +1558,7 @@ export default function FormationsPage() {
               <div>
                 <h3
                   style={{
-                    color: "white",
+                    color: "#1e293b",
                     fontSize: 16,
                     fontWeight: 700,
                     marginBottom: 8,
@@ -1592,8 +1601,8 @@ export default function FormationsPage() {
                 style={{
                   ...btn,
                   padding: "6px 10px",
-                  background: "#334155",
-                  color: "#94A3B8",
+                  background: "#e2e8f0",
+                  color: "#94a3b8",
                 }}
               >
                 <i className="fa-solid fa-xmark" />
@@ -1603,11 +1612,11 @@ export default function FormationsPage() {
             {/* Lien de connexion dans le modal */}
             <div
               style={{
-                background: "#0f172a",
+                background: "#f8fafc",
                 borderRadius: 8,
                 padding: "10px 14px",
                 marginBottom: 16,
-                border: "1px solid #334155",
+                border: "1px solid #e2e8f0",
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
@@ -1618,7 +1627,7 @@ export default function FormationsPage() {
                 className="fa-solid fa-link"
                 style={{ color: "#3B82F6", fontSize: 12 }}
               />
-              <span style={{ color: "#64748B", fontSize: 12 }}>
+              <span style={{ color: "#64748b", fontSize: 12 }}>
                 Lien de connexion :
               </span>
               <CopyLinkRow code={manageUsers.formation.code} />
@@ -1633,8 +1642,8 @@ export default function FormationsPage() {
                 }}
                 style={{
                   ...btn,
-                  background: "#1D4ED8",
-                  color: "white",
+                  background: "#2563eb",
+                  color: "#1e293b",
                   marginBottom: 16,
                 }}
               >
@@ -1645,16 +1654,16 @@ export default function FormationsPage() {
             {showActeurForm && (
               <div
                 style={{
-                  background: "#0f172a",
+                  background: "#f8fafc",
                   borderRadius: 10,
                   padding: 16,
                   marginBottom: 16,
-                  border: "1px solid #334155",
+                  border: "1px solid #e2e8f0",
                 }}
               >
                 <p
                   style={{
-                    color: "#94A3B8",
+                    color: "#94a3b8",
                     fontSize: 12,
                     fontWeight: 600,
                     textTransform: "uppercase",
@@ -1664,7 +1673,7 @@ export default function FormationsPage() {
                 >
                   <i
                     className="fa-solid fa-user-plus"
-                    style={{ marginRight: 6, color: "#1D4ED8" }}
+                    style={{ marginRight: 6, color: "#2563eb" }}
                   />
                   Nouvel acteur dans {manageUsers.formation.nom}
                 </p>
@@ -1678,7 +1687,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1697,7 +1706,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1716,7 +1725,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1736,7 +1745,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1759,7 +1768,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1784,7 +1793,7 @@ export default function FormationsPage() {
                   <div>
                     <label
                       style={{
-                        color: "#64748B",
+                        color: "#64748b",
                         fontSize: 11,
                         display: "block",
                         marginBottom: 4,
@@ -1808,10 +1817,10 @@ export default function FormationsPage() {
                 {acteurError && (
                   <div
                     style={{
-                      background: "#450a0a",
+                      background: "#fef2f2",
                       borderRadius: 6,
                       padding: "8px 12px",
-                      color: "#fca5a5",
+                      color: "#ef4444",
                       fontSize: 12,
                       marginTop: 10,
                     }}
@@ -1830,8 +1839,8 @@ export default function FormationsPage() {
                     }
                     style={{
                       ...btn,
-                      background: savingActeur ? "#334155" : "#1D4ED8",
-                      color: "white",
+                      background: savingActeur ? "#e2e8f0" : "#2563eb",
+                      color: "#1e293b",
                       fontSize: 13,
                     }}
                   >
@@ -1849,8 +1858,8 @@ export default function FormationsPage() {
                     }}
                     style={{
                       ...btn,
-                      background: "#334155",
-                      color: "#94A3B8",
+                      background: "#e2e8f0",
+                      color: "#94a3b8",
                       fontSize: 13,
                     }}
                   >
@@ -1910,7 +1919,7 @@ export default function FormationsPage() {
                         <div
                           key={u.id}
                           style={{
-                            background: "#1e293b",
+                            background: "#ffffff",
                             borderRadius: 8,
                             padding: "10px 14px",
                             display: "flex",
@@ -1922,21 +1931,21 @@ export default function FormationsPage() {
                           <div>
                             <div
                               style={{
-                                color: "white",
+                                color: "#1e293b",
                                 fontWeight: 500,
                                 fontSize: 13,
                               }}
                             >
                               {u.prenom} {u.nom}
                             </div>
-                            <div style={{ color: "#64748B", fontSize: 12 }}>
+                            <div style={{ color: "#64748b", fontSize: 12 }}>
                               {u.email}
                               {u.service ? ` · ${u.service}` : ""}
                             </div>
                           </div>
                           <span
                             style={{
-                              color: u.is_active ? "#34D399" : "#fca5a5",
+                              color: u.is_active ? "#10b981" : "#ef4444",
                               fontSize: 11,
                             }}
                           >
@@ -1959,5 +1968,3 @@ export default function FormationsPage() {
     </div>
   );
 }
-
-
