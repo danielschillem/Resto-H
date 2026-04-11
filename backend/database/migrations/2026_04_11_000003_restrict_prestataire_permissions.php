@@ -9,7 +9,7 @@ return new class extends Migration {
         // Remove permissions the prestataire should not have
         DB::table('role_permissions')
             ->where('role', 'prestataire')
-            ->whereIn('permission', ['menus', 'menus.valider', 'consommations', 'etats', 'etats.valider'])
+            ->whereIn('permission', ['menus.valider', 'consommations', 'etats', 'etats.valider'])
             ->delete();
     }
 

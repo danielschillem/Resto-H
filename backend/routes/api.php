@@ -42,8 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
     Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
 
-    // Menus : gestion (création, soumission) — DSGL, CSAH
-    Route::middleware('role:dsgl,csah')->group(function () {
+    // Menus : gestion (création, soumission) — prestataire, DSGL, CSAH
+    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
         Route::post('/menus', [MenuController::class, 'store']);
         Route::put('/menus/{menu}', [MenuController::class, 'update']);
         Route::delete('/menus/{menu}', [MenuController::class, 'destroy']);

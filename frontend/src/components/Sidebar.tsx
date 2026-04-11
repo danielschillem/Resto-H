@@ -11,8 +11,14 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
   prestataire: [
     { section: "Principal" },
     { id: "dashboard", icon: "fa-gauge-high", label: "Tableau de bord" },
-    { section: "Commandes" },
-    { id: "commandes", icon: "fa-clipboard-list", label: "Commandes" },
+    { section: "Menus" },
+    {
+      id: "menus-hebdo",
+      icon: "fa-calendar-week",
+      label: "Proposer des menus",
+    },
+    { section: "Commandes & Livraisons" },
+    { id: "commandes", icon: "fa-clipboard-list", label: "Commandes à livrer" },
     { id: "menus-speciaux", icon: "fa-heart-pulse", label: "Régimes spéciaux" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
