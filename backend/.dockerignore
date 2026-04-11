@@ -1,0 +1,23 @@
+# Dependencies
+vendor/
+node_modules/
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dev files
+tests/
+phpunit.xml
+.editorconfig
+.gitattributes
+*.md
