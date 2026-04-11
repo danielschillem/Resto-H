@@ -36,11 +36,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/{notification}/lu', [AdminController::class, 'marquerLu']);
     Route::post('/notifications/tout-lire', [AdminController::class, 'toutMarquerLu']);
 
-    // ── Menus : gérant, CSAH (gestion), DSGL (validation) ─────────────────
+    // ── Menus : consultation pour tous les rôles ─────────────────────────
+    Route::get('/menus', [MenuController::class, 'index']);
+    Route::get('/menus/{menu}', [MenuController::class, 'show']);
+    Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
+    Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
+
+    // Menus : gestion (création, soumission) — prestataire, DSGL, CSAH
     Route::middleware('role:prestataire,dsgl,csah')->group(function () {
-        Route::apiResource('menus', MenuController::class);
-        Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
-        Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
+        Route::post('/menus', [MenuController::class, 'store']);
+        Route::put('/menus/{menu}', [MenuController::class, 'update']);
+        Route::delete('/menus/{menu}', [MenuController::class, 'destroy']);
         Route::post('/menus-hebdomadaires', [MenuController::class, 'storeHebdomadaire']);
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/soumettre', [MenuController::class, 'soumettre']);
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/items', [MenuController::class, 'addItem']);
