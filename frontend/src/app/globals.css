@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #1b2e4b;
+  --navy-dark: #122038;
+  --navy-light: #243d5f;
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --teal: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-sm: #64748b;
+}
+
+html.dark {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #e2e8f0;
+  --text-sm: #94a3b8;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Scrollbar personnalisée pour la sidebar */
+.sidebar-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Responsive grid helpers ─────────────────────────────────────────────── */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+/* ─── App shell ──────────────────────────────────────────────────────────── */
+.app-shell {
+  margin-left: 260px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-pad {
+  flex: 1;
+  padding: 28px;
+}
+
+/* ─── Sidebar drawer ─────────────────────────────────────────────────────── */
+.sidebar-drawer {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 98;
+  cursor: pointer;
+}
+
+.hamburger-btn {
+  display: none !important;
+}
+
+.topbar-date {
+  display: block;
+}
+
+/* ─── Table wrapper ──────────────────────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Breakpoint: ≤1200px ────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .grid-kpi {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-2-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Breakpoint: ≤1024px — tablette / petit laptop ─────────────────────── */
+@media (max-width: 1024px) {
+  .app-shell {
+    margin-left: 0 !important;
+  }
+
+  .page-pad {
+    padding: 20px;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .topbar-date {
+    display: none;
+  }
+
+  .sidebar-drawer {
+    transform: translateX(-260px);
+  }
+
+  .sidebar-drawer.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop.sidebar-open {
+    display: block;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ─── Breakpoint: ≤768px — mobile ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .grid-kpi {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .page-pad {
+    padding: 14px;
+  }
+}
+
+/* ─── Breakpoint: ≤480px ─────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .grid-kpi {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Login responsive ───────────────────────────────────────────────────── */
+.login-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 40px;
+  color: white;
+}
+
+.login-right {
+  width: 480px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 50px;
+}
+
+.login-wrap {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1b2e4b 0%, #0f4c81 50%, #0ea5e9 100%);
+}
+
+@media (max-width: 860px) {
+  .login-wrap {
+    flex-direction: column;
+  }
+
+  .login-left {
+    padding: 40px 24px;
+    flex: none;
+    min-height: 220px;
+  }
+
+  .login-right {
+    width: 100%;
+    padding: 32px 24px;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-left {
+    padding: 28px 16px;
+    min-height: 180px;
+  }
+
+  .login-right {
+    padding: 24px 16px;
+  }
+}
+
+/* ─── Super admin responsive ─────────────────────────────────────────────── */
+.sa-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .sa-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .sa-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}

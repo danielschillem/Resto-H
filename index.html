@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHR Tenkodogo — Gestion de la Restauration Hospitalière</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #1B2E4B;
+  --navy-dark: #122038;
+  --navy-light: #243d5f;
+  --primary: #2563EB;
+  --primary-light: #3B82F6;
+  --teal: #0EA5E9;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --purple: #8B5CF6;
+  --bg: #F1F5F9;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #1E293B;
+  --text-sm: #64748B;
+  --sidebar-w: 260px;
+  --topbar-h: 64px;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+/* =========== LOGIN =========== */
+#login-screen{display:flex;min-height:100vh;background:linear-gradient(135deg,#1B2E4B 0%,#0f4c81 50%,#0EA5E9 100%);}
+.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 40px;color:white;}
+.login-logo{width:90px;height:90px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:24px;border:3px solid rgba(255,255,255,0.3);}
+.login-logo i{font-size:40px;color:white;}
+.login-left h1{font-size:26px;font-weight:700;text-align:center;margin-bottom:8px;}
+.login-left p{opacity:.8;text-align:center;max-width:320px;line-height:1.6;}
+.login-badge{display:inline-block;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 16px;font-size:12px;margin-top:20px;letter-spacing:1px;}
+.login-right{width:480px;background:white;display:flex;flex-direction:column;justify-content:center;padding:60px 50px;}
+.login-right h2{font-size:22px;font-weight:700;margin-bottom:6px;}
+.login-right .sub{color:var(--text-sm);margin-bottom:32px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.role-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px 12px;cursor:pointer;transition:all .2s;text-align:center;}
+.role-card:hover{border-color:var(--primary);background:#EFF6FF;}
+.role-card.selected{border-color:var(--primary);background:#EFF6FF;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+.role-card i{font-size:22px;margin-bottom:8px;display:block;}
+.role-card.gerant i{color:var(--teal);}
+.role-card.dsgl i{color:var(--primary);}
+.role-card.csah i{color:var(--success);}
+.role-card.sus i{color:var(--purple);}
+.role-card .role-name{font-weight:600;font-size:13px;margin-bottom:2px;}
+.role-card .role-desc{font-size:11px;color:var(--text-sm);}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;font-weight:500;margin-bottom:6px;font-size:13px;}
+.form-control{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;transition:border-color .2s;}
+.form-control:focus{outline:none;border-color:var(--primary);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+.btn-primary{background:var(--primary);color:white;}
+.btn-primary:hover{background:#1D4ED8;}
+.btn-success{background:var(--success);color:white;}
+.btn-success:hover{background:#059669;}
+.btn-warning{background:var(--warning);color:white;}
+.btn-warning:hover{background:#D97706;}
+.btn-danger{background:var(--danger);color:white;}
+.btn-danger:hover{background:#DC2626;}
+.btn-secondary{background:var(--border);color:var(--text);}
+.btn-secondary:hover{background:#CBD5E1;}
+.btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+.btn-outline:hover{background:#EFF6FF;}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-full{width:100%;justify-content:center;}
+/* =========== APP SHELL =========== */
+#app{display:none;min-height:100vh;}
+/* SIDEBAR */
+#sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--navy);color:white;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-logo .hospital-name{font-size:13px;font-weight:700;color:white;line-height:1.3;}
+.sidebar-logo .sys-name{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.8px;}
+.sidebar-logo .logo-row{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:40px;height:40px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon i{font-size:18px;}
+.role-badge{margin:12px 20px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;}
+.role-badge .rb-label{color:rgba(255,255,255,.5);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}
+.role-badge .rb-name{color:white;font-weight:600;margin-top:2px;}
+.sidebar-nav{flex:1;padding:12px 0;}
+.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:rgba(255,255,255,.7);transition:all .15s;font-size:13px;font-weight:500;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:white;}
+.nav-item.active{background:rgba(37,99,235,.25);color:white;border-left-color:var(--primary-light);}
+.nav-item i{width:18px;text-align:center;font-size:14px;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);}
+.user-mini{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+.user-mini .u-name{font-size:13px;font-weight:600;color:white;}
+.user-mini .u-role{font-size:11px;color:rgba(255,255,255,.5);}
+.btn-logout{margin-top:10px;width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:none;padding:9px;border-radius:7px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s;}
+.btn-logout:hover{background:rgba(239,68,68,.3);color:#FCA5A5;}
+/* MAIN */
+#main-content{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;}
+.topbar{height:var(--topbar-h);background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50;}
+.topbar h2{font-size:17px;font-weight:700;flex:1;}
+.topbar-icon-btn{width:38px;height:38px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-sm);transition:all .2s;position:relative;}
+.topbar-icon-btn:hover{border-color:var(--primary);color:var(--primary);}
+.notif-dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid white;}
+.page-content{flex:1;padding:28px;}
+/* VIEWS */
+.view{display:none;}
+.view.active{display:block;}
+/* CARDS */
+.card{background:white;border-radius:var(--radius);border:1px solid var(--border);padding:20px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;}
+.card-subtitle{font-size:12px;color:var(--text-sm);margin-top:2px;}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi-card{background:white;border-radius:var(--radius);border:1px solid var(--border);padding:20px;display:flex;align-items:flex-start;gap:16px;transition:box-shadow .2s;}
+.kpi-card:hover{box-shadow:var(--shadow-md);}
+.kpi-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.kpi-icon.blue{background:#EFF6FF;color:var(--primary);}
+.kpi-icon.teal{background:#F0FDFA;color:var(--teal);}
+.kpi-icon.green{background:#F0FDF4;color:var(--success);}
+.kpi-icon.amber{background:#FFFBEB;color:var(--warning);}
+.kpi-icon.purple{background:#F5F3FF;color:var(--purple);}
+.kpi-icon.red{background:#FEF2F2;color:var(--danger);}
+.kpi-icon i{font-size:20px;}
+.kpi-val{font-size:26px;font-weight:700;line-height:1;}
+.kpi-label{font-size:12px;color:var(--text-sm);margin-top:4px;}
+.kpi-trend{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px;}
+.kpi-trend.up{color:var(--success);}
+.kpi-trend.down{color:var(--danger);}
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px;}
+.chart-wrap{position:relative;height:240px;}
+/* TABLES */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#F8FAFC;}
+th{padding:11px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--text-sm);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;border-bottom:1px solid #F1F5F9;font-size:13px;vertical-align:middle;}
+tr:hover td{background:#FAFBFC;}
+tr:last-child td{border-bottom:none;}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-success{background:#D1FAE5;color:#065F46;}
+.badge-warning{background:#FEF3C7;color:#92400E;}
+.badge-danger{background:#FEE2E2;color:#991B1B;}
+.badge-info{background:#DBEAFE;color:#1E40AF;}
+.badge-purple{background:#EDE9FE;color:#5B21B6;}
+.badge-gray{background:#F1F5F9;color:#475569;}
+/* GRID 2 COL */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+/* SECTION HEAD */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.section-head h3{font-size:18px;font-weight:700;}
+.section-head p{font-size:13px;color:var(--text-sm);margin-top:2px;}
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.tab{padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-sm);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+/* WEEK CALENDAR */
+.week-nav{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+.week-nav .wk-label{font-size:15px;font-weight:600;flex:1;text-align:center;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+.day-col{background:white;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
+.day-header{background:var(--navy);color:white;padding:10px;text-align:center;}
+.day-header .day-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;opacity:.7;}
+.day-header .day-num{font-size:18px;font-weight:700;}
+.day-header.today{background:var(--primary);}
+.meal-slot{padding:10px;border-bottom:1px solid #F1F5F9;cursor:pointer;transition:background .15s;min-height:70px;}
+.meal-slot:last-child{border-bottom:none;}
+.meal-slot:hover{background:#F8FAFC;}
+.meal-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-sm);margin-bottom:4px;}
+.meal-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.meal-empty{font-size:11px;color:#CBD5E1;font-style:italic;}
+.meal-add-btn{font-size:11px;color:var(--primary);cursor:pointer;display:flex;align-items:center;gap:3px;margin-top:4px;}
+/* STATS BAR */
+.stat-bar{margin-bottom:12px;}
+.stat-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.stat-bar-track{height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+/* FILTERS */
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.filters .form-control{flex:0 0 auto;width:auto;min-width:140px;}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{font-size:16px;font-weight:700;}
+.modal-close{width:32px;height:32px;border-radius:6px;border:none;background:#F1F5F9;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-sm);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+/* FORM ROWS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group label{color:var(--text);font-weight:500;}
+select.form-control{cursor:pointer;}
+textarea.form-control{resize:vertical;min-height:80px;}
+/* STATUS TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:12px;}
+.timeline-item{display:flex;gap:14px;align-items:flex-start;}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.tl-dot.done{background:var(--success);}
+.tl-dot.active{background:var(--primary);}
+.tl-dot.pending{background:#CBD5E1;}
+.tl-content .tl-label{font-size:13px;font-weight:600;}
+.tl-content .tl-time{font-size:11px;color:var(--text-sm);}
+/* ALERT */
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;}
+.alert-info{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;}
+.alert-success{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
+.alert-warning{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
+/* RESPONSIVE UTILS */
+.flex{display:flex;}.flex-1{flex:1;}.items-center{align-items:center;}.justify-between{justify-content:space-between;}.gap-2{gap:8px;}.gap-3{gap:12px;}.mt-1{margin-top:4px;}.mt-2{margin-top:8px;}.mt-3{margin-top:12px;}.mt-4{margin-top:16px;}.mb-4{margin-bottom:16px;}.text-sm{font-size:12px;color:var(--text-sm);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+/* NOTIFICATION PANEL */
+.notif-panel{position:absolute;top:52px;right:0;width:340px;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);z-index:300;display:none;}
+.notif-panel.open{display:block;}
+.notif-item{padding:14px 16px;border-bottom:1px solid #F1F5F9;cursor:pointer;transition:background .15s;}
+.notif-item:hover{background:#F8FAFC;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:#EFF6FF;}
+.notif-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.notif-body{font-size:12px;color:var(--text-sm);}
+.notif-time{font-size:11px;color:#94A3B8;margin-top:4px;}
+/* PROGRESS */
+.progress-ring{display:inline-block;}
+/* NUTRITION TABLE */
+.nutri-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin-top:4px;}
+/* ECART */
+.ecart-pos{color:var(--success);font-weight:600;}
+.ecart-neg{color:var(--danger);font-weight:600;}
+.ecart-zero{color:var(--text-sm);}
+/* Print */
+@media print{#sidebar,#topbar{display:none!important;}.view{display:block!important;}#main-content{margin-left:0!important;}}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="login-screen">
+  <div class="login-left">
+    <div class="login-logo"><i class="fa-solid fa-hospital"></i></div>
+    <h1>CHR Tenkodogo</h1>
+    <p>Centre Hospitalier Régional de Tenkodogo — Système intégré de gestion de la restauration</p>
+    <span class="login-badge">SGRH — v1.0</span>
+  </div>
+  <div class="login-right">
+    <h2>Connexion</h2>
+    <p class="sub">Sélectionnez votre profil et entrez votre code d'accès</p>
+    <div class="role-grid">
+      <div class="role-card gerant" onclick="selectRole('gerant',this)">
+        <i class="fa-solid fa-utensils"></i>
+        <div class="role-name">Gérant</div>
+        <div class="role-desc">Restauration</div>
+      </div>
+      <div class="role-card dsgl" onclick="selectRole('dsgl',this)">
+        <i class="fa-solid fa-building-columns"></i>
+        <div class="role-name">DSGL</div>
+        <div class="role-desc">Direction Gén.</div>
+      </div>
+      <div class="role-card csah" onclick="selectRole('csah',this)">
+        <i class="fa-solid fa-concierge-bell"></i>
+        <div class="role-name">CSAH</div>
+        <div class="role-desc">Accueil & Hôtellerie</div>
+      </div>
+      <div class="role-card sus" onclick="selectRole('sus',this)">
+        <i class="fa-solid fa-user-nurse"></i>
+        <div class="role-name">SUS / SUT</div>
+        <div class="role-desc">Soins / Technique</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Code d'accès</label>
+      <input type="password" id="login-code" class="form-control" placeholder="Entrez votre code" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter</button>
+    <div id="login-error" style="margin-top:12px;font-size:13px;color:var(--danger);display:none;"><i class="fa-solid fa-circle-exclamation"></i> Veuillez sélectionner un profil.</div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-row">
+        <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
+        <div>
+          <div class="hospital-name">CHR Tenkodogo</div>
+          <div class="sys-name">Restauration Hospitalière</div>
+        </div>
+      </div>
+    </div>
+    <div class="role-badge">
+      <div class="rb-label">Profil connecté</div>
+      <div class="rb-name" id="sidebar-role-name">—</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-mini">
+        <div class="user-avatar" id="user-avatar-initial">G</div>
+        <div>
+          <div class="u-name" id="user-display-name">Utilisateur</div>
+          <div class="u-role" id="user-display-role">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main-content">
+    <div class="topbar" id="topbar">
+      <h2 id="topbar-title">Tableau de Bord</h2>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="font-size:12px;color:var(--text-sm);text-align:right;">
+          <div id="topbar-date" style="font-weight:600;"></div>
+        </div>
+        <div style="position:relative;">
+          <button class="topbar-icon-btn" onclick="toggleNotif()"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
+          <div class="notif-panel" id="notif-panel">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-weight:700;font-size:14px;">Notifications</span>
+              <span style="font-size:12px;color:var(--primary);cursor:pointer;">Tout lire</span>
+            </div>
+            <div class="notif-item unread"><div class="notif-title">Nouveau menu en attente</div><div class="notif-body">Menu semaine 12 soumis par le gérant</div><div class="notif-time">Il y a 15 min</div></div>
+            <div class="notif-item unread"><div class="notif-title">Commande SUS/Pédiatrie</div><div class="notif-body">3 régimes spéciaux demandés</div><div class="notif-time">Il y a 1h</div></div>
+            <div class="notif-item"><div class="notif-title">État de consommation validé</div><div class="notif-body">Semaine 11 validée par DSGL</div><div class="notif-time">Hier, 16:30</div></div>
+            <div class="notif-item"><div class="notif-title">Alerte écart budgétaire</div><div class="notif-body">Dépassement +12% sur les protéines</div><div class="notif-time">Hier, 09:15</div></div>
+          </div>
+        </div>
+        <button class="topbar-icon-btn" onclick="window.print()"><i class="fa-solid fa-print"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- VIEW: DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="section-head mb-4">
+          <div><h3 id="dash-welcome">Tableau de bord</h3><p id="dash-subtitle">Vue d'ensemble de la journée</p></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="showView('view-commandes')"><i class="fa-solid fa-plus"></i> Nouvelle commande</button>
+          </div>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="charts-row">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Consommations hebdomadaires</div><div class="card-subtitle">Quantités servies par repas (semaine en cours)</div></div>
+            <select class="form-control" style="width:120px;padding:6px 10px;font-size:12px;" onchange="updateWeekChart(this.value)"><option value="7">7 jours</option><option value="14">14 jours</option></select></div>
+            <div class="chart-wrap"><canvas id="chart-week"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Répartition par type</div></div>
+            <div class="chart-wrap" style="height:200px;"><canvas id="chart-donut"></canvas></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Commandes récentes</div><button class="btn btn-outline btn-sm" onclick="showView('view-commandes')">Voir tout</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Réf.</th><th>Service</th><th>Type</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td><b>#2401</b></td><td>Pédiatrie</td><td>Malades</td><td><span class="badge badge-success">Validée</span></td></tr>
+                  <tr><td><b>#2402</b></td><td>Médecine</td><td>Personnel</td><td><span class="badge badge-warning">En attente</span></td></tr>
+                  <tr><td><b>#2403</b></td><td>Chirurgie</td><td>Malades</td><td><span class="badge badge-info">En cours</span></td></tr>
+                  <tr><td><b>#2404</b></td><td>Gynéco</td><td>Malades</td><td><span class="badge badge-warning">En attente</span></td></tr>
+                  <tr><td><b>#2405</b></td><td>Urgences</td><td>Personnel</td><td><span class="badge badge-success">Validée</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Menus de la semaine</div><button class="btn btn-outline btn-sm" onclick="showView('view-menus-hebdo')">Gérer</button></div>
+            <div class="timeline">
+              <div class="timeline-item"><div class="tl-dot done"></div><div class="tl-content"><div class="tl-label">Lundi — Riz sauce d'arachide</div><div class="tl-time">Validé · 320 portions</div></div></div>
+              <div class="timeline-item"><div class="tl-dot done"></div><div class="tl-content"><div class="tl-label">Mardi — Tô + haricot</div><div class="tl-time">Validé · 305 portions</div></div></div>
+              <div class="timeline-item"><div class="tl-dot active"></div><div class="tl-content"><div class="tl-label">Mercredi — Riz gras poulet</div><div class="tl-time">En cours · 312 portions prévues</div></div></div>
+              <div class="timeline-item"><div class="tl-dot pending"></div><div class="tl-content"><div class="tl-label">Jeudi — Haricot + plantain</div><div class="tl-time">En attente de validation</div></div></div>
+              <div class="timeline-item"><div class="tl-dot pending"></div><div class="tl-content"><div class="tl-label">Vendredi — Riz + légumes</div><div class="tl-time">En attente de validation</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: MENUS HEBDOMADAIRES -->
+      <div class="view" id="view-menus-hebdo">
+        <div class="section-head">
+          <div><h3>Menus Hebdomadaires</h3><p>Planification et validation des menus de la semaine</p></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline btn-sm" id="btn-validate-menu" onclick="validerMenus()"><i class="fa-solid fa-check-circle"></i> Soumettre pour validation</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-menu')"><i class="fa-solid fa-plus"></i> Ajouter un repas</button>
+          </div>
+        </div>
+        <div class="card mb-4">
+          <div class="week-nav">
+            <button class="btn btn-secondary btn-sm" onclick="changeWeek(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="wk-label" id="week-label">Semaine du 10 au 16 Mars 2025</div>
+            <button class="btn btn-secondary btn-sm" onclick="changeWeek(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            <span class="badge badge-warning" id="menu-status-badge">En attente de validation</span>
+          </div>
+          <div class="week-grid" id="week-grid"></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Valeurs nutritionnelles estimées</div></div>
+            <div id="nutri-stats">
+              <div class="stat-bar"><div class="stat-bar-label"><span>Calories</span><span style="font-weight:600;">2 450 kcal / jour</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:82%;background:var(--primary);"></div></div></div>
+              <div class="stat-bar"><div class="stat-bar-label"><span>Protéines</span><span style="font-weight:600;">68g / 80g objectif</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:85%;background:var(--success);"></div></div></div>
+              <div class="stat-bar"><div class="stat-bar-label"><span>Glucides</span><span style="font-weight:600;">320g</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:72%;background:var(--warning);"></div></div></div>
+              <div class="stat-bar"><div class="stat-bar-label"><span>Lipides</span><span style="font-weight:600;">78g</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:65%;background:var(--teal);"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Coût estimatif hebdomadaire</div></div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;justify-content:space-between;padding:10px;background:#F8FAFC;border-radius:8px;"><span class="text-sm">Coût matières premières</span><span style="font-weight:700;">685 000 FCFA</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px;background:#F8FAFC;border-radius:8px;"><span class="text-sm">Main-d'œuvre estimée</span><span style="font-weight:700;">120 000 FCFA</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px;background:#F8FAFC;border-radius:8px;"><span class="text-sm">Coût par patient/jour</span><span style="font-weight:700;color:var(--primary);">2 850 FCFA</span></div>
+              <div style="display:flex;justify-content:space-between;padding:12px;background:var(--navy);border-radius:8px;color:white;"><span style="font-weight:500;">Total estimé</span><span style="font-weight:700;font-size:16px;">805 000 FCFA</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: MENUS SPECIAUX -->
+      <div class="view" id="view-menus-speciaux">
+        <div class="section-head">
+          <div><h3>Menus Spéciaux</h3><p>Régimes thérapeutiques et demandes spécifiques des services</p></div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-special')"><i class="fa-solid fa-plus"></i> Nouvelle demande</button>
+        </div>
+        <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> Les régimes spéciaux doivent être validés 24h avant le service. Toute modification tardive requiert l'accord du gérant.</div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'tab-speciaux-demandes')">Demandes en attente <span class="badge badge-danger" style="margin-left:4px;">4</span></div>
+          <div class="tab" onclick="switchTab(this,'tab-speciaux-valides')">Régimes validés</div>
+          <div class="tab" onclick="switchTab(this,'tab-speciaux-rejetes')">Rejetés / Annulés</div>
+        </div>
+        <div class="tab-pane active" id="tab-speciaux-demandes">
+          <div class="card">
+            <div class="filters">
+              <select class="form-control"><option>Tous les services</option><option>Pédiatrie</option><option>Médecine interne</option><option>Chirurgie</option><option>Gynéco-obstétrique</option></select>
+              <select class="form-control"><option>Tous les régimes</option><option>Sans sel</option><option>Diabétique</option><option>Hyposodé</option><option>Mixé</option></select>
+              <input type="date" class="form-control" style="width:160px;">
+              <button class="btn btn-outline btn-sm"><i class="fa-solid fa-filter"></i> Filtrer</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Patient</th><th>Lit</th><th>Service</th><th>Type de régime</th><th>Durée</th><th>Prescrit par</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>OUEDRAOGO S.</b></td><td>Pédiatrie-12</td><td>Pédiatrie</td><td><span class="badge badge-purple">Sans sel</span></td><td>7 jours</td><td>Dr. Kaboré</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Régime validé')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i></button></td></tr>
+                  <tr><td><b>TAPSOBA R.</b></td><td>Med-08</td><td>Médecine</td><td><span class="badge badge-info">Diabétique</span></td><td>14 jours</td><td>Dr. Zongo</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Régime validé')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i></button></td></tr>
+                  <tr><td><b>SAWADOGO M.</b></td><td>Chir-03</td><td>Chirurgie</td><td><span class="badge badge-warning">Post-op mixé</span></td><td>3 jours</td><td>Dr. Nana</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Régime validé')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i></button></td></tr>
+                  <tr><td><b>COMPAORE A.</b></td><td>Gyn-06</td><td>Gynéco</td><td><span class="badge badge-success">Hyper protéiné</span></td><td>5 jours</td><td>Dr. Ilboudo</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Régime validé')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-speciaux-valides">
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Patient</th><th>Lit</th><th>Service</th><th>Régime</th><th>Du</th><th>Au</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td><b>BANCÉ L.</b></td><td>Med-11</td><td>Médecine</td><td><span class="badge badge-purple">Hyposodé</span></td><td>10/03</td><td>17/03</td><td><span class="badge badge-success">Actif</span></td></tr>
+                  <tr><td><b>SOME W.</b></td><td>Pédiatrie-04</td><td>Pédiatrie</td><td><span class="badge badge-info">Enrichi</span></td><td>08/03</td><td>15/03</td><td><span class="badge badge-success">Actif</span></td></tr>
+                  <tr><td><b>KABORE F.</b></td><td>Chir-09</td><td>Chirurgie</td><td><span class="badge badge-warning">Mixé</span></td><td>12/03</td><td>14/03</td><td><span class="badge badge-gray">Terminé</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-speciaux-rejetes">
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Patient</th><th>Service</th><th>Régime demandé</th><th>Motif rejet</th><th>Date</th></tr></thead>
+                <tbody>
+                  <tr><td><b>TIENDREBEOGO H.</b></td><td>Urgences</td><td>Sans gluten</td><td>Non disponible en stock</td><td>11/03</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: COMMANDES -->
+      <div class="view" id="view-commandes">
+        <div class="section-head">
+          <div><h3>Gestion des Commandes</h3><p>Commandes des services, du personnel et des clients externes</p></div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-commande')"><i class="fa-solid fa-plus"></i> Nouvelle commande</button>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'tab-cmd-malades')">Malades <span class="badge badge-info" style="margin-left:4px;">12</span></div>
+          <div class="tab" onclick="switchTab(this,'tab-cmd-personnel')">Personnel</div>
+          <div class="tab" onclick="switchTab(this,'tab-cmd-clients')">Clients externes</div>
+          <div class="tab" onclick="switchTab(this,'tab-cmd-valider')">À valider <span class="badge badge-warning" style="margin-left:4px;">5</span></div>
+        </div>
+        <div class="tab-pane active" id="tab-cmd-malades">
+          <div class="card">
+            <div class="filters">
+              <select class="form-control"><option>Tous les services</option><option>Pédiatrie</option><option>Médecine interne</option><option>Chirurgie</option><option>Gynéco</option><option>Urgences</option></select>
+              <select class="form-control"><option>Tous les repas</option><option>Petit-déjeuner</option><option>Déjeuner</option><option>Dîner</option></select>
+              <input type="date" class="form-control" style="width:160px;" value="2025-03-14">
+              <button class="btn btn-outline btn-sm"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Réf.</th><th>Service</th><th>Nb malades</th><th>Repas</th><th>Menu</th><th>Régimes spéciaux</th><th>Heure</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>#2401</b></td><td>Pédiatrie</td><td>24</td><td>Déjeuner</td><td>Riz gras poulet</td><td><span class="badge badge-purple">2 sans sel</span></td><td>11:30</td><td><span class="badge badge-success">Validée</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detail-cmd')"><i class="fa-solid fa-eye"></i></button></td></tr>
+                  <tr><td><b>#2403</b></td><td>Chirurgie</td><td>18</td><td>Déjeuner</td><td>Riz gras poulet</td><td><span class="badge badge-warning">1 post-op</span></td><td>11:30</td><td><span class="badge badge-info">En cours</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-outline btn-sm" onclick="openModal('modal-detail-cmd')"><i class="fa-solid fa-eye"></i></button></td></tr>
+                  <tr><td><b>#2404</b></td><td>Gynéco</td><td>31</td><td>Déjeuner</td><td>Riz gras poulet</td><td><span class="badge badge-success">1 hyper-prot.</span></td><td>11:30</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i></button></td></tr>
+                  <tr><td><b>#2407</b></td><td>Médecine</td><td>42</td><td>Petit-déj.</td><td>Bouillie mil + pain</td><td><span class="badge badge-info">3 diabétiques</span></td><td>07:00</td><td><span class="badge badge-success">Validée</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detail-cmd')"><i class="fa-solid fa-eye"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-cmd-personnel">
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Réf.</th><th>Service</th><th>Nb agents</th><th>Repas</th><th>Menu</th><th>Heure</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>#P-101</b></td><td>Bloc opératoire</td><td>8</td><td>Déjeuner</td><td>Riz gras poulet</td><td>12:30</td><td><span class="badge badge-success">Validée</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></button></td></tr>
+                  <tr><td><b>#P-102</b></td><td>Urgences</td><td>12</td><td>Dîner</td><td>Tô + sauce</td><td>19:00</td><td><span class="badge badge-warning">En attente</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i></button></td></tr>
+                  <tr><td><b>#P-103</b></td><td>Soins intensifs</td><td>6</td><td>Petit-déj.</td><td>Pain + café</td><td>07:30</td><td><span class="badge badge-success">Validée</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-cmd-clients">
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Réf.</th><th>Client / Visiteur</th><th>Nb couverts</th><th>Menu</th><th>Montant</th><th>Statut pmt</th><th>Statut cmd</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>#C-055</b></td><td>Visiteur (Pédiatrie)</td><td>2</td><td>Riz gras</td><td>2 000 FCFA</td><td><span class="badge badge-success">Payé</span></td><td><span class="badge badge-success">Servi</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></button></td></tr>
+                  <tr><td><b>#C-056</b></td><td>Visiteur (Médecine)</td><td>1</td><td>Tô + sauce</td><td>800 FCFA</td><td><span class="badge badge-warning">En attente</span></td><td><span class="badge badge-info">En cours</span></td><td><button class="btn btn-success btn-sm" onclick="showSuccessToast('Paiement enregistré')"><i class="fa-solid fa-check"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-cmd-valider">
+          <div class="card">
+            <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> Ces commandes ont été soumises par les SUS/SUT et nécessitent votre validation avant traitement.</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Réf.</th><th>Soumis par</th><th>Service</th><th>Type</th><th>Nb portions</th><th>Soumis le</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>#2402</b></td><td>SUS Médecine</td><td>Médecine</td><td>Malades</td><td>42</td><td>14/03 08:15</td><td><button class="btn btn-success btn-sm" style="margin-right:6px;" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i> Valider</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i> Rejeter</button></td></tr>
+                  <tr><td><b>#2406</b></td><td>SUT Labo</td><td>Laboratoire</td><td>Personnel</td><td>5</td><td>14/03 08:40</td><td><button class="btn btn-success btn-sm" style="margin-right:6px;" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i> Valider</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i> Rejeter</button></td></tr>
+                  <tr><td><b>#2408</b></td><td>SUS Pédiatrie</td><td>Pédiatrie</td><td>Malades</td><td>26</td><td>14/03 09:10</td><td><button class="btn btn-success btn-sm" style="margin-right:6px;" onclick="showSuccessToast('Commande validée')"><i class="fa-solid fa-check"></i> Valider</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-reject')"><i class="fa-solid fa-times"></i> Rejeter</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: CONSOMMATIONS -->
+      <div class="view" id="view-consommations">
+        <div class="section-head">
+          <div><h3>Suivi des Consommations</h3><p>Quantités servies, coûts réels et analyse des écarts</p></div>
+          <div style="display:flex;gap:10px;">
+            <select class="form-control" style="width:150px;padding:8px 12px;font-size:13px;"><option>Semaine en cours</option><option>Semaine précédente</option><option>Ce mois</option></select>
+            <button class="btn btn-outline btn-sm"><i class="fa-solid fa-file-export"></i> Exporter</button>
+          </div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi-card"><div class="kpi-icon blue"><i class="fa-solid fa-bowl-food"></i></div><div><div class="kpi-val">2 184</div><div class="kpi-label">Portions servies (sem.)</div><div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +3.2% vs sem. préc.</div></div></div>
+          <div class="kpi-card"><div class="kpi-icon green"><i class="fa-solid fa-sack-dollar"></i></div><div><div class="kpi-val">748 500</div><div class="kpi-label">Coût réel (FCFA)</div><div class="kpi-trend down"><i class="fa-solid fa-arrow-trend-down"></i> -1.8% vs prévision</div></div></div>
+          <div class="kpi-card"><div class="kpi-icon amber"><i class="fa-solid fa-scale-balanced"></i></div><div><div class="kpi-val">+12 350</div><div class="kpi-label">Écart budgétaire (FCFA)</div><div class="kpi-trend up"><i class="fa-solid fa-check"></i> Dans les normes</div></div></div>
+          <div class="kpi-card"><div class="kpi-icon teal"><i class="fa-solid fa-recycle"></i></div><div><div class="kpi-val">4.2%</div><div class="kpi-label">Taux de gaspillage</div><div class="kpi-trend down"><i class="fa-solid fa-arrow-trend-down"></i> -0.8% objectif atteint</div></div></div>
+        </div>
+        <div class="card mb-4">
+          <div class="card-header"><div class="card-title">Tableau des consommations journalières</div><button class="btn btn-outline btn-sm"><i class="fa-solid fa-print"></i> Imprimer</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Repas</th><th>Menu servi</th><th>Malades</th><th>Personnel</th><th>Clients</th><th>Total</th><th>Coût prévu</th><th>Coût réel</th><th>Écart</th></tr></thead>
+              <tbody>
+                <tr><td>Lun 10/03</td><td>Petit-déj.</td><td>Bouillie mil</td><td>145</td><td>18</td><td>4</td><td>167</td><td>85 000</td><td>82 400</td><td class="ecart-pos">-2 600</td></tr>
+                <tr><td>Lun 10/03</td><td>Déjeuner</td><td>Riz sauce arachide</td><td>148</td><td>22</td><td>6</td><td>176</td><td>112 000</td><td>115 200</td><td class="ecart-neg">+3 200</td></tr>
+                <tr><td>Lun 10/03</td><td>Dîner</td><td>Haricot + pain</td><td>140</td><td>14</td><td>2</td><td>156</td><td>78 000</td><td>77 100</td><td class="ecart-pos">-900</td></tr>
+                <tr><td>Mar 11/03</td><td>Petit-déj.</td><td>Pain + café</td><td>142</td><td>20</td><td>3</td><td>165</td><td>82 500</td><td>83 000</td><td class="ecart-neg">+500</td></tr>
+                <tr><td>Mar 11/03</td><td>Déjeuner</td><td>Tô + haricot</td><td>149</td><td>19</td><td>5</td><td>173</td><td>108 000</td><td>107 300</td><td class="ecart-pos">-700</td></tr>
+                <tr><td>Mer 12/03</td><td>Déjeuner</td><td>Riz gras poulet</td><td>151</td><td>21</td><td>7</td><td>179</td><td>118 000</td><td>122 500</td><td class="ecart-neg">+4 500</td></tr>
+              </tbody>
+              <tfoot>
+                <tr style="background:#F8FAFC;font-weight:700;"><td colspan="6">TOTAL SEMAINE</td><td>1 016</td><td>583 500</td><td>587 500</td><td class="ecart-neg">+4 000</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Analyse des écarts par service</div></div>
+            <div id="chart-ecarts-wrap" class="chart-wrap"><canvas id="chart-ecarts"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Gaspillage & surplus</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="padding:12px;background:#FEF2F2;border-radius:8px;border-left:4px solid var(--danger);">
+                <div style="font-weight:600;font-size:13px;margin-bottom:2px;">Surplus détecté</div>
+                <div class="text-sm">Riz gras lundi : 14 portions non servies (8 400 FCFA)</div>
+              </div>
+              <div style="padding:12px;background:#FFFBEB;border-radius:8px;border-left:4px solid var(--warning);">
+                <div style="font-weight:600;font-size:13px;margin-bottom:2px;">Écart matières premières</div>
+                <div class="text-sm">Huile végétale : +1.2L consommé vs prévu</div>
+              </div>
+              <div style="padding:12px;background:#F0FDF4;border-radius:8px;border-left:4px solid var(--success);">
+                <div style="font-weight:600;font-size:13px;margin-bottom:2px;">Économie réalisée</div>
+                <div class="text-sm">Légumes frais : -3 200 FCFA grâce aux approvisionnements locaux</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: ETATS -->
+      <div class="view" id="view-etats">
+        <div class="section-head">
+          <div><h3>États & Rapports</h3><p>Bilan des consommations, devis estimatif et validation DSGL</p></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline btn-sm"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+            <button class="btn btn-outline btn-sm"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'tab-etat-commandes')">État des commandes</div>
+          <div class="tab" onclick="switchTab(this,'tab-etat-conso')">État des consommations</div>
+          <div class="tab" onclick="switchTab(this,'tab-etat-devis')">Devis estimatif</div>
+          <div class="tab" onclick="switchTab(this,'tab-etat-validation')">Validation DSGL</div>
+        </div>
+        <div class="tab-pane active" id="tab-etat-commandes">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">État récapitulatif des commandes — Semaine 11</div><div class="card-subtitle">Du 04/03/2025 au 08/03/2025</div></div><span class="badge badge-success">Validé DSGL</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Service</th><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Total</th><th>% du total</th></tr></thead>
+                <tbody>
+                  <tr><td>Pédiatrie</td><td>72</td><td>71</td><td>74</td><td>69</td><td>73</td><td><b>359</b></td><td>24%</td></tr>
+                  <tr><td>Médecine interne</td><td>126</td><td>129</td><td>124</td><td>130</td><td>128</td><td><b>637</b></td><td>43%</td></tr>
+                  <tr><td>Chirurgie</td><td>54</td><td>51</td><td>57</td><td>53</td><td>55</td><td><b>270</b></td><td>18%</td></tr>
+                  <tr><td>Gynéco-obst.</td><td>93</td><td>96</td><td>91</td><td>95</td><td>94</td><td><b>469</b></td><td>31%</td></tr>
+                  <tr><td>Urgences</td><td>45</td><td>42</td><td>48</td><td>44</td><td>46</td><td><b>225</b></td><td>15%</td></tr>
+                  <tfoot><tr style="font-weight:700;background:#F8FAFC;"><td>TOTAL</td><td>390</td><td>389</td><td>394</td><td>391</td><td>396</td><td>1 960</td><td>100%</td></tr></tfoot>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-etat-conso">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">État des consommations — Semaine 11</div></div><span class="badge badge-success">Validé DSGL</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Article</th><th>Unité</th><th>Qté prévue</th><th>Qté réelle</th><th>Écart</th><th>Coût unit.</th><th>Coût réel</th></tr></thead>
+                <tbody>
+                  <tr><td>Riz importé</td><td>kg</td><td>480</td><td>485</td><td class="ecart-neg">+5</td><td>650</td><td>315 250</td></tr>
+                  <tr><td>Huile végétale</td><td>L</td><td>42</td><td>43.2</td><td class="ecart-neg">+1.2</td><td>1 100</td><td>47 520</td></tr>
+                  <tr><td>Viande bœuf</td><td>kg</td><td>85</td><td>83</td><td class="ecart-pos">-2</td><td>3 500</td><td>290 500</td></tr>
+                  <tr><td>Légumes frais</td><td>kg</td><td>120</td><td>117</td><td class="ecart-pos">-3</td><td>350</td><td>40 950</td></tr>
+                  <tr><td>Pain de mie</td><td>unité</td><td>300</td><td>298</td><td class="ecart-pos">-2</td><td>250</td><td>74 500</td></tr>
+                </tbody>
+                <tfoot><tr style="font-weight:700;background:#F8FAFC;"><td colspan="6">TOTAL SEMAINE</td><td>768 720 FCFA</td></tr></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-etat-devis">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Devis estimatif — Semaine 12</div><div class="card-subtitle">Du 10/03/2025 au 14/03/2025 — En attente de validation DSGL</div></div><span class="badge badge-warning">En attente</span></div>
+            <div class="alert alert-warning mt-2"><i class="fa-solid fa-clock"></i> Ce devis a été soumis le 08/03/2025 et attend la validation du DSGL.</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Article</th><th>Unité</th><th>Qté estimée</th><th>Prix unit. (FCFA)</th><th>Montant estimé (FCFA)</th></tr></thead>
+                <tbody>
+                  <tr><td>Riz importé</td><td>kg</td><td>500</td><td>650</td><td>325 000</td></tr>
+                  <tr><td>Huile végétale</td><td>L</td><td>44</td><td>1 100</td><td>48 400</td></tr>
+                  <tr><td>Viande bœuf</td><td>kg</td><td>88</td><td>3 500</td><td>308 000</td></tr>
+                  <tr><td>Légumes frais</td><td>kg</td><td>125</td><td>350</td><td>43 750</td></tr>
+                  <tr><td>Mil/Sorgho</td><td>kg</td><td>60</td><td>400</td><td>24 000</td></tr>
+                  <tr><td>Pain de mie</td><td>unité</td><td>310</td><td>250</td><td>77 500</td></tr>
+                </tbody>
+                <tfoot><tr style="font-weight:700;background:#F8FAFC;"><td colspan="4">TOTAL ESTIMÉ</td><td>826 650 FCFA</td></tr></tfoot>
+              </table>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;" id="devis-btns">
+              <button class="btn btn-success" onclick="validerDevis()"><i class="fa-solid fa-check-circle"></i> Valider le devis</button>
+              <button class="btn btn-danger btn-outline" onclick="openModal('modal-reject')"><i class="fa-solid fa-times-circle"></i> Rejeter</button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tab-etat-validation">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Historique des validations</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Document</th><th>Période</th><th>Soumis par</th><th>Date soumission</th><th>Validé par</th><th>Date validation</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>État commandes S11</td><td>04-08/03</td><td>Gérant Kaboré</td><td>09/03 14:00</td><td>DSGL Traoré</td><td>10/03 09:15</td><td><span class="badge badge-success">Validé</span></td></tr>
+                  <tr><td>État conso. S11</td><td>04-08/03</td><td>Gérant Kaboré</td><td>09/03 14:30</td><td>DSGL Traoré</td><td>10/03 09:20</td><td><span class="badge badge-success">Validé</span></td></tr>
+                  <tr><td>Devis estimatif S12</td><td>10-14/03</td><td>Gérant Kaboré</td><td>08/03 16:45</td><td>—</td><td>—</td><td><span class="badge badge-warning">En attente</span></td></tr>
+                  <tr><td>Menus hebdo S12</td><td>10-14/03</td><td>Gérant Kaboré</td><td>07/03 10:00</td><td>DSGL Traoré</td><td>08/03 11:00</td><td><span class="badge badge-success">Validé</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: ADMINISTRATION -->
+      <div class="view" id="view-admin">
+        <div class="section-head"><div><h3>Administration</h3><p>Gestion des utilisateurs, services et paramètres</p></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-add-user')"><i class="fa-solid fa-plus"></i> Nouvel utilisateur</button></div>
+        <div class="grid-2 mb-4">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Utilisateurs du système</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nom</th><th>Profil</th><th>Service</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td><b>Kaboré Serge</b></td><td><span class="badge badge-info">Gérant</span></td><td>Restauration</td><td><span class="badge badge-success">Actif</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td><b>Traoré Aminata</b></td><td><span class="badge badge-purple">DSGL</span></td><td>Direction</td><td><span class="badge badge-success">Actif</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td><b>Ouédraogo Jean</b></td><td><span class="badge badge-success">CSAH</span></td><td>Hôtellerie</td><td><span class="badge badge-success">Actif</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td><b>Sawadogo Fatou</b></td><td><span class="badge badge-warning">SUS</span></td><td>Pédiatrie</td><td><span class="badge badge-success">Actif</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td><b>Compaoré Luc</b></td><td><span class="badge badge-warning">SUT</span></td><td>Labo.</td><td><span class="badge badge-gray">Inactif</span></td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Services hospitaliers</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Service</th><th>Lits actifs</th><th>SUS/SUT</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td>Pédiatrie</td><td>28</td><td>Sawadogo F.</td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td>Médecine interne</td><td>52</td><td>Zongo A.</td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td>Chirurgie</td><td>30</td><td>Nana P.</td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td>Gynéco-obstétrique</td><td>40</td><td>Ilboudo S.</td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                  <tr><td>Urgences 24h/24</td><td>12</td><td>Barro C.</td><td><button class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Paramètres tarifaires</div></div>
+          <div class="grid-3">
+            <div style="background:#F8FAFC;border-radius:8px;padding:14px;">
+              <div class="text-sm">Tarif malade / jour</div>
+              <div style="font-size:22px;font-weight:700;margin-top:4px;">2 500 <span style="font-size:13px;font-weight:500;color:var(--text-sm);">FCFA</span></div>
+              <button class="btn btn-outline btn-sm mt-2">Modifier</button>
+            </div>
+            <div style="background:#F8FAFC;border-radius:8px;padding:14px;">
+              <div class="text-sm">Tarif personnel / repas</div>
+              <div style="font-size:22px;font-weight:700;margin-top:4px;">1 200 <span style="font-size:13px;font-weight:500;color:var(--text-sm);">FCFA</span></div>
+              <button class="btn btn-outline btn-sm mt-2">Modifier</button>
+            </div>
+            <div style="background:#F8FAFC;border-radius:8px;padding:14px;">
+              <div class="text-sm">Tarif visiteur / couvert</div>
+              <div style="font-size:22px;font-weight:700;margin-top:4px;">1 000 <span style="font-size:13px;font-weight:500;color:var(--text-sm);">FCFA</span></div>
+              <button class="btn btn-outline btn-sm mt-2">Modifier</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end page-content -->
+  </div><!-- end main-content -->
+</div><!-- end app -->
+
+<!-- ==================== MODALS ==================== -->
+<!-- Modal: Ajouter Menu -->
+<div class="modal-overlay" id="modal-add-menu">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fa-solid fa-utensils" style="color:var(--primary);margin-right:8px;"></i>Ajouter un repas au menu</h3><button class="modal-close" onclick="closeModal('modal-add-menu')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Jour</label><select class="form-control"><option>Lundi</option><option>Mardi</option><option>Mercredi</option><option>Jeudi</option><option>Vendredi</option><option>Samedi</option><option>Dimanche</option></select></div>
+        <div class="form-group"><label>Type de repas</label><select class="form-control"><option>Petit-déjeuner</option><option>Déjeuner</option><option>Dîner</option></select></div>
+      </div>
+      <div class="form-group"><label>Intitulé du menu</label><input class="form-control" placeholder="Ex: Riz gras au poulet avec légumes"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Nb. portions prévues</label><input type="number" class="form-control" value="180"></div>
+        <div class="form-group"><label>Coût unitaire estimé (FCFA)</label><input type="number" class="form-control" value="650"></div>
+      </div>
+      <div class="form-group"><label>Allergènes / avertissements</label><select class="form-control"><option>Aucun</option><option>Gluten</option><option>Arachides</option><option>Lactose</option><option>Œufs</option></select></div>
+      <div class="form-group"><label>Notes nutritionnelles</label><textarea class="form-control" placeholder="Informations nutritionnelles optionnelles..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-add-menu')">Annuler</button><button class="btn btn-primary" onclick="closeModal('modal-add-menu');showSuccessToast('Repas ajouté au menu')"><i class="fa-solid fa-check"></i> Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal: Menu Spécial -->
+<div class="modal-overlay" id="modal-add-special">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fa-solid fa-heart-pulse" style="color:var(--danger);margin-right:8px;"></i>Demande de régime spécial</h3><button class="modal-close" onclick="closeModal('modal-add-special')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Nom du patient</label><input class="form-control" placeholder="Nom et prénom"></div>
+        <div class="form-group"><label>N° de lit</label><input class="form-control" placeholder="Ex: Pédiatrie-12"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Service</label><select class="form-control"><option>Pédiatrie</option><option>Médecine interne</option><option>Chirurgie</option><option>Gynéco-obstétrique</option><option>Urgences</option></select></div>
+        <div class="form-group"><label>Type de régime</label><select class="form-control"><option>Sans sel</option><option>Diabétique</option><option>Hyposodé</option><option>Post-opératoire mixé</option><option>Hyper-protéiné</option><option>Sans gluten</option><option>Enrichi</option><option>Autre</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date de début</label><input type="date" class="form-control"></div>
+        <div class="form-group"><label>Durée (jours)</label><input type="number" class="form-control" value="7"></div>
+      </div>
+      <div class="form-group"><label>Médecin prescripteur</label><input class="form-control" placeholder="Nom du médecin"></div>
+      <div class="form-group"><label>Instructions spéciales</label><textarea class="form-control" placeholder="Détails de la prescription diététique..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-add-special')">Annuler</button><button class="btn btn-primary" onclick="closeModal('modal-add-special');showSuccessToast('Régime spécial soumis')"><i class="fa-solid fa-check"></i> Soumettre</button></div>
+  </div>
+</div>
+
+<!-- Modal: Nouvelle Commande -->
+<div class="modal-overlay" id="modal-commande">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header"><h3><i class="fa-solid fa-cart-plus" style="color:var(--primary);margin-right:8px;"></i>Nouvelle commande</h3><button class="modal-close" onclick="closeModal('modal-commande')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Type de commande</label><select class="form-control"><option>Malades</option><option>Personnel</option><option>Client externe</option></select></div>
+        <div class="form-group"><label>Service</label><select class="form-control"><option>Pédiatrie</option><option>Médecine interne</option><option>Chirurgie</option><option>Gynéco-obstétrique</option><option>Urgences</option><option>Bloc opératoire</option><option>Laboratoire</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date du repas</label><input type="date" class="form-control"></div>
+        <div class="form-group"><label>Repas</label><select class="form-control"><option>Petit-déjeuner (07h00)</option><option>Déjeuner (12h00)</option><option>Dîner (19h00)</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Nombre de portions</label><input type="number" class="form-control" value="1"></div>
+        <div class="form-group"><label>Menu sélectionné</label><select class="form-control"><option>Riz gras au poulet</option><option>Tô + sauce légumes</option><option>Haricot + plantain</option><option>Bouillie de mil</option></select></div>
+      </div>
+      <div class="form-group"><label>Régimes spéciaux (optionnel)</label><select class="form-control" multiple style="height:70px;"><option>Sans sel</option><option>Diabétique</option><option>Mixé</option><option>Hyper-protéiné</option></select><small class="text-sm mt-1">Maintenez Ctrl pour sélectionner plusieurs</small></div>
+      <div class="form-group"><label>Observations</label><textarea class="form-control" placeholder="Notes ou instructions particulières..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-commande')">Annuler</button><button class="btn btn-primary" onclick="closeModal('modal-commande');showSuccessToast('Commande créée et soumise')"><i class="fa-solid fa-paper-plane"></i> Soumettre</button></div>
+  </div>
+</div>
+
+<!-- Modal: Détail Commande -->
+<div class="modal-overlay" id="modal-detail-cmd">
+  <div class="modal">
+    <div class="modal-header"><h3>Détail — Commande #2401</h3><button class="modal-close" onclick="closeModal('modal-detail-cmd')">✕</button></div>
+    <div class="modal-body">
+      <div class="grid-2 mb-4">
+        <div><div class="text-sm">Service</div><div style="font-weight:600;margin-top:2px;">Pédiatrie</div></div>
+        <div><div class="text-sm">Repas</div><div style="font-weight:600;margin-top:2px;">Déjeuner — 14/03/2025</div></div>
+        <div><div class="text-sm">Menu</div><div style="font-weight:600;margin-top:2px;">Riz gras au poulet</div></div>
+        <div><div class="text-sm">Nb. portions</div><div style="font-weight:600;margin-top:2px;">24 malades</div></div>
+        <div><div class="text-sm">Soumis par</div><div style="font-weight:600;margin-top:2px;">SUS Sawadogo F.</div></div>
+        <div><div class="text-sm">Heure livraison</div><div style="font-weight:600;margin-top:2px;">12:00</div></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-weight:600;margin-bottom:8px;">Régimes spéciaux inclus</div>
+      <table style="width:100%">
+        <thead><tr><th>Patient</th><th>Lit</th><th>Régime</th></tr></thead>
+        <tbody>
+          <tr><td>OUEDRAOGO S.</td><td>Péd-12</td><td><span class="badge badge-purple">Sans sel</span></td></tr>
+          <tr><td>SOME W.</td><td>Péd-04</td><td><span class="badge badge-info">Enrichi</span></td></tr>
+        </tbody>
+      </table>
+      <div class="divider"></div>
+      <div style="font-weight:600;margin-bottom:8px;">Suivi de livraison</div>
+      <div class="timeline">
+        <div class="timeline-item"><div class="tl-dot done"></div><div class="tl-content"><div class="tl-label">Commande créée</div><div class="tl-time">14/03 08:15 — SUS Sawadogo</div></div></div>
+        <div class="timeline-item"><div class="tl-dot done"></div><div class="tl-content"><div class="tl-label">Validée par le Gérant</div><div class="tl-time">14/03 09:00</div></div></div>
+        <div class="timeline-item"><div class="tl-dot done"></div><div class="tl-content"><div class="tl-label">En préparation</div><div class="tl-time">14/03 10:30</div></div></div>
+        <div class="timeline-item"><div class="tl-dot active"></div><div class="tl-content"><div class="tl-label">Livrée au service</div><div class="tl-time">14/03 12:05</div></div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail-cmd')">Fermer</button><button class="btn btn-primary"><i class="fa-solid fa-print"></i> Imprimer bon</button></div>
+  </div>
+</div>
+
+<!-- Modal: Rejet -->
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><h3><i class="fa-solid fa-times-circle" style="color:var(--danger);margin-right:8px;"></i>Motif de rejet</h3><button class="modal-close" onclick="closeModal('modal-reject')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Raison du rejet</label><select class="form-control"><option>Article non disponible</option><option>Délai dépassé</option><option>Informations incomplètes</option><option>Non conforme au protocole</option><option>Autre</option></select></div>
+      <div class="form-group"><label>Commentaire (optionnel)</label><textarea class="form-control" placeholder="Précisions..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-reject')">Annuler</button><button class="btn btn-danger" onclick="closeModal('modal-reject');showErrorToast('Rejeté — notification envoyée')"><i class="fa-solid fa-ban"></i> Confirmer le rejet</button></div>
+  </div>
+</div>
+
+<!-- Modal: Ajouter Utilisateur -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-header"><h3>Nouvel utilisateur</h3><button class="modal-close" onclick="closeModal('modal-add-user')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Nom</label><input class="form-control" placeholder="Nom de famille"></div>
+        <div class="form-group"><label>Prénom</label><input class="form-control" placeholder="Prénom"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Profil</label><select class="form-control"><option>Gérant</option><option>DSGL</option><option>CSAH</option><option>SUS</option><option>SUT</option></select></div>
+        <div class="form-group"><label>Service</label><select class="form-control"><option>Restauration</option><option>Direction</option><option>Hôtellerie</option><option>Pédiatrie</option><option>Médecine</option><option>Chirurgie</option></select></div>
+      </div>
+      <div class="form-group"><label>Code d'accès</label><input type="password" class="form-control" placeholder="Définir un code"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-add-user')">Annuler</button><button class="btn btn-primary" onclick="closeModal('modal-add-user');showSuccessToast('Utilisateur créé')"><i class="fa-solid fa-check"></i> Créer</button></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:500;display:none;"></div>
+
+<script>
+// ==================== DATA ====================
+const ROLES = {
+  gerant:  {name:'Gérant de la Restauration', short:'Gérant', initial:'G', color:'var(--teal)'},
+  dsgl:    {name:'DSGL — Direction Gén. & Logistique', short:'DSGL', initial:'D', color:'var(--primary)'},
+  csah:    {name:'CSAH — Accueil & Hôtellerie', short:'CSAH', initial:'C', color:'var(--success)'},
+  sus:     {name:'SUS/SUT — Soins & Technique', short:'SUS/SUT', initial:'S', color:'var(--purple)'}
+};
+
+const NAV_ITEMS = {
+  gerant: [
+    {section:'Principal'},
+    {id:'view-dashboard', icon:'fa-gauge-high', label:'Tableau de bord'},
+    {section:'Gestion Menus'},
+    {id:'view-menus-hebdo', icon:'fa-calendar-week', label:'Menus hebdomadaires'},
+    {id:'view-menus-speciaux', icon:'fa-heart-pulse', label:'Menus spéciaux'},
+    {section:'Commandes'},
+    {id:'view-commandes', icon:'fa-clipboard-list', label:'Commandes'},
+    {section:'Suivi & Rapports'},
+    {id:'view-consommations', icon:'fa-chart-line', label:'Consommations'},
+    {id:'view-etats', icon:'fa-file-invoice', label:'États & Rapports'},
+  ],
+  dsgl: [
+    {section:'Principal'},
+    {id:'view-dashboard', icon:'fa-gauge-high', label:'Tableau de bord'},
+    {section:'Validation'},
+    {id:'view-menus-hebdo', icon:'fa-calendar-check', label:'Validation menus'},
+    {id:'view-etats', icon:'fa-file-invoice', label:'Validation États/Devis'},
+    {section:'Supervision'},
+    {id:'view-consommations', icon:'fa-chart-line', label:'Consommations'},
+    {id:'view-admin', icon:'fa-users-gear', label:'Administration'},
+  ],
+  csah: [
+    {section:'Principal'},
+    {id:'view-dashboard', icon:'fa-gauge-high', label:'Tableau de bord'},
+    {section:'Gestion'},
+    {id:'view-menus-hebdo', icon:'fa-calendar-week', label:'Menus'},
+    {id:'view-commandes', icon:'fa-clipboard-list', label:'Commandes'},
+    {id:'view-menus-speciaux', icon:'fa-heart-pulse', label:'Régimes spéciaux'},
+  ],
+  sus: [
+    {section:'Principal'},
+    {id:'view-dashboard', icon:'fa-gauge-high', label:'Tableau de bord'},
+    {section:'Mon Service'},
+    {id:'view-commandes', icon:'fa-cart-plus', label:'Mes commandes'},
+    {id:'view-menus-speciaux', icon:'fa-heart-pulse', label:'Régimes patients'},
+    {id:'view-menus-hebdo', icon:'fa-calendar-week', label:'Voir les menus'},
+  ]
+};
+
+const KPI_DATA = {
+  gerant: [
+    {icon:'fa-bowl-food', color:'blue', val:'312', label:'Portions prévues (auj.)', trend:'up', trendText:'+8 vs hier'},
+    {icon:'fa-clipboard-check', color:'green', val:'18', label:'Commandes validées', trend:'up', trendText:'5 en attente'},
+    {icon:'fa-bed', color:'teal', val:'152', label:'Patients en cours', trend:'up', trendText:'+4 nouvelles admissions'},
+    {icon:'fa-sack-dollar', color:'amber', val:'118 500', label:'Budget du jour (FCFA)', trend:'down', trendText:'-2% vs prévision'},
+  ],
+  dsgl: [
+    {icon:'fa-file-circle-check', color:'green', val:'4', label:'Documents à valider', trend:'down', trendText:'2 urgents'},
+    {icon:'fa-chart-pie', color:'blue', val:'748 500', label:'Consommation sem. (FCFA)', trend:'up', trendText:'+1.2% vs S11'},
+    {icon:'fa-users', color:'teal', val:'152', label:'Patients hospitalisés', trend:'up', trendText:'Taux occup. 82%'},
+    {icon:'fa-scale-balanced', color:'amber', val:'+4 000', label:'Écart budgétaire (FCFA)', trend:'up', trendText:'Normes respectées'},
+  ],
+  csah: [
+    {icon:'fa-bowl-food', color:'blue', val:'312', label:'Repas à servir (auj.)', trend:'up', trendText:'3 services'},
+    {icon:'fa-heart-pulse', color:'red', val:'7', label:'Régimes spéciaux actifs', trend:'up', trendText:'2 nouveaux'},
+    {icon:'fa-star', color:'green', val:'4.6/5', label:'Satisfaction (sem.)', trend:'up', trendText:'+0.2 pts'},
+    {icon:'fa-clock', color:'amber', val:'98%', label:'Livraisons à l\'heure', trend:'up', trendText:'Excellent'},
+  ],
+  sus: [
+    {icon:'fa-bed', color:'teal', val:'24', label:'Patients dans mon service', trend:'up', trendText:'+2 admissions'},
+    {icon:'fa-clipboard-list', color:'blue', val:'3', label:'Commandes du jour', trend:'up', trendText:'Toutes validées'},
+    {icon:'fa-heart-pulse', color:'red', val:'2', label:'Régimes spéciaux', trend:'down', trendText:'1 en attente'},
+    {icon:'fa-circle-check', color:'green', val:'100%', label:'Repas reçus', trend:'up', trendText:'Aucun retard'},
+  ]
+};
+
+const MENUS = [
+  {day:0,meal:'P',name:'Bouillie de mil + pain'},{day:0,meal:'D',name:'Riz sauce d\'arachide'},{day:0,meal:'S',name:'Haricot + pain'},
+  {day:1,meal:'P',name:'Pain + café'},{day:1,meal:'D',name:'Tô + sauce légumes'},{day:1,meal:'S',name:'Riz + haricot'},
+  {day:2,meal:'P',name:'Bouillie + pain'},{day:2,meal:'D',name:'Riz gras au poulet'},{day:2,meal:'S',name:'Pâtes + légumes'},
+  {day:3,meal:'P',name:'Pain + omelette'},{day:3,meal:'D',name:'Haricot + plantain'},{day:3,meal:'S','name':'Riz + sauce'},
+  {day:4,meal:'P',name:'Bouillie de mil'},{day:4,meal:'D',name:'Riz + légumes sautés'},{day:4,meal:'S',name:'Tô + poisson'},
+  {day:5,meal:'P',name:'Pain + lait'},{day:5,meal:'D',name:'Riz gras + légumes'},{day:5,meal:'S',name:'Haricot + riz'},
+  {day:6,meal:'P',name:'Bouillie + pain'},{day:6,meal:'D',name:'Poulet braisé + riz'},{day:6,meal:'S',name:'Soupe + pain'},
+];
+
+// ==================== STATE ====================
+let currentRole = null;
+let currentView = 'view-dashboard';
+let weekOffset = 0;
+let charts = {};
+
+// ==================== AUTH ====================
+function selectRole(role, el) {
+  currentRole = role;
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function doLogin() {
+  if (!currentRole) { document.getElementById('login-error').style.display = 'block'; return; }
+  const r = ROLES[currentRole];
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('sidebar-role-name').textContent = r.short;
+  document.getElementById('user-display-name').textContent = getDefaultName(currentRole);
+  document.getElementById('user-display-role').textContent = r.short;
+  const av = document.getElementById('user-avatar-initial');
+  av.textContent = r.initial;
+  av.style.background = r.color;
+  buildSidebar();
+  setTopbarDate();
+  setTimeout(() => { showView('view-dashboard'); initCharts(); buildWeekGrid(); }, 50);
+}
+
+function getDefaultName(role) {
+  return {gerant:'Kaboré Serge',dsgl:'Traoré Aminata',csah:'Ouédraogo Jean',sus:'Sawadogo Fatou'}[role];
+}
+
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  currentRole = null;
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts = {};
+}
+
+// ==================== SIDEBAR ====================
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  const items = NAV_ITEMS[currentRole] || [];
+  items.forEach(item => {
+    if (item.section) {
+      const s = document.createElement('div');
+      s.className = 'nav-section';
+      s.textContent = item.section;
+      nav.appendChild(s);
+    } else {
+      const el = document.createElement('div');
+      el.className = 'nav-item';
+      el.id = 'nav-' + item.id;
+      el.innerHTML = `<i class="fa-solid ${item.icon}"></i><span>${item.label}</span>`;
+      el.onclick = () => showView(item.id);
+      nav.appendChild(el);
+    }
+  });
+}
+
+// ==================== VIEWS ====================
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const v = document.getElementById(viewId);
+  if (v) v.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const ni = document.getElementById('nav-' + viewId);
+  if (ni) ni.classList.add('active');
+  currentView = viewId;
+  const titles = {
+    'view-dashboard':'Tableau de bord',
+    'view-menus-hebdo':'Menus Hebdomadaires',
+    'view-menus-speciaux':'Menus Spéciaux',
+    'view-commandes':'Gestion des Commandes',
+    'view-consommations':'Suivi des Consommations',
+    'view-etats':'États & Rapports',
+    'view-admin':'Administration'
+  };
+  document.getElementById('topbar-title').textContent = titles[viewId] || '';
+  if (viewId === 'view-dashboard') buildKPIs();
+  if (viewId === 'view-menus-hebdo') buildWeekGrid();
+  if (viewId === 'view-consommations') setTimeout(initEcartsChart, 100);
+}
+
+// ==================== TOPBAR ====================
+function setTopbarDate() {
+  const d = new Date();
+  const opts = {weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('topbar-date').textContent = d.toLocaleDateString('fr-FR', opts);
+}
+
+function toggleNotif() {
+  const p = document.getElementById('notif-panel');
+  p.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.topbar-icon-btn') && !e.target.closest('.notif-panel')) {
+    document.getElementById('notif-panel').classList.remove('open');
+  }
+});
+
+// ==================== KPIs ====================
+function buildKPIs() {
+  const grid = document.getElementById('kpi-grid');
+  const data = KPI_DATA[currentRole] || KPI_DATA.gerant;
+  grid.innerHTML = data.map(k => `
+    <div class="kpi-card">
+      <div class="kpi-icon ${k.color}"><i class="fa-solid ${k.icon}"></i></div>
+      <div>
+        <div class="kpi-val">${k.val}</div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-trend ${k.trend}">
+          <i class="fa-solid ${k.trend==='up'?'fa-arrow-trend-up':'fa-arrow-trend-down'}"></i> ${k.trendText}
+        </div>
+      </div>
+    </div>`).join('');
+  const r = ROLES[currentRole];
+  document.getElementById('dash-welcome').textContent = 'Bonjour, ' + getDefaultName(currentRole).split(' ')[0] + ' 👋';
+  document.getElementById('dash-subtitle').textContent = 'Vue d\'ensemble — ' + r.name;
+}
+
+// ==================== CHARTS ====================
+function initCharts() {
+  setTimeout(() => {
+    initWeekChart();
+    initDonutChart();
+  }, 100);
+}
+
+function initWeekChart() {
+  const ctx = document.getElementById('chart-week');
+  if (!ctx) return;
+  if (charts.week) charts.week.destroy();
+  charts.week = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+      datasets: [
+        {label:'Malades', data:[145,149,151,148,150,62,58], backgroundColor:'#2563EB', borderRadius:4},
+        {label:'Personnel', data:[22,19,21,20,23,8,6], backgroundColor:'#0EA5E9', borderRadius:4},
+        {label:'Clients', data:[6,5,7,4,8,3,2], backgroundColor:'#10B981', borderRadius:4},
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#F1F5F9'}}}
+    }
+  });
+}
+
+function updateWeekChart(days) { initWeekChart(); }
+
+function initDonutChart() {
+  const ctx = document.getElementById('chart-donut');
+  if (!ctx) return;
+  if (charts.donut) charts.donut.destroy();
+  charts.donut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Malades','Personnel','Clients ext.'],
+      datasets: [{data:[78,15,7], backgroundColor:['#2563EB','#0EA5E9','#10B981'], borderWidth:0, hoverOffset:4}]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'70%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}
+    }
+  });
+}
+
+function initEcartsChart() {
+  const ctx = document.getElementById('chart-ecarts');
+  if (!ctx || charts.ecarts) return;
+  charts.ecarts = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Pédiatrie','Médecine','Chirurgie','Gynéco','Urgences'],
+      datasets: [
+        {label:'Prévu', data:[110,200,85,120,60], backgroundColor:'#DBEAFE', borderRadius:4},
+        {label:'Réel', data:[115,198,88,118,64], backgroundColor:'#2563EB', borderRadius:4},
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#F1F5F9'}}}
+    }
+  });
+}
+
+// ==================== WEEK GRID ====================
+const DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const MEAL_TYPES = [{code:'P',label:'Petit-déj.'},{code:'D',label:'Déjeuner'},{code:'S',label:'Dîner'}];
+
+function changeWeek(dir) { weekOffset += dir; buildWeekGrid(); }
+
+function buildWeekGrid() {
+  const grid = document.getElementById('week-grid');
+  if (!grid) return;
+  const today = new Date();
+  const base = new Date(today);
+  base.setDate(today.getDate() - today.getDay() + 1 + weekOffset * 7);
+  const end = new Date(base); end.setDate(base.getDate() + 6);
+  document.getElementById('week-label').textContent =
+    'Semaine du ' + base.toLocaleDateString('fr-FR',{day:'numeric',month:'long'}) +
+    ' au ' + end.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  grid.innerHTML = DAYS.map((day, di) => {
+    const d = new Date(base); d.setDate(base.getDate() + di);
+    const isToday = d.toDateString() === today.toDateString();
+    const meals = MEAL_TYPES.map(mt => {
+      const m = MENUS.find(x => x.day === di && x.meal === mt.code);
+      return `<div class="meal-slot" onclick="openModal('modal-add-menu')">
+        <div class="meal-type">${mt.label}</div>
+        ${m ? `<div class="meal-name">${m.name}</div>` : `<div class="meal-empty">Non défini</div>`}
+        <div class="meal-add-btn"><i class="fa-solid fa-pen-to-square" style="font-size:10px;"></i> ${m?'Modifier':'Ajouter'}</div>
+      </div>`;
+    }).join('');
+    return `<div class="day-col">
+      <div class="day-header${isToday?' today':''}">
+        <div class="day-name">${day.substring(0,3)}</div>
+        <div class="day-num">${d.getDate()}</div>
+      </div>${meals}</div>`;
+  }).join('');
+}
+
+// ==================== TABS ====================
+function switchTab(el, paneId) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const parent = el.closest('.view') || document.getElementById('app');
+  parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(paneId);
+  if (pane) pane.classList.add('active');
+}
+
+// ==================== MODALS ====================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ==================== ACTIONS ====================
+function validerMenus() {
+  document.getElementById('menu-status-badge').textContent = 'Soumis pour validation';
+  document.getElementById('menu-status-badge').className = 'badge badge-info';
+  showSuccessToast('Menu soumis au DSGL pour validation');
+}
+
+function validerDevis() {
+  document.getElementById('devis-btns').innerHTML = '<span class="badge badge-success" style="font-size:13px;padding:8px 16px;"><i class="fa-solid fa-check-circle"></i> Devis validé par DSGL</span>';
+  showSuccessToast('Devis estimatif validé avec succès');
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const bg = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--navy)';
+  const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle';
+  t.innerHTML = `<div style="background:${bg};color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-md);min-width:260px;"><i class="fa-solid ${icon}"></i>${msg}</div>`;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+function showSuccessToast(msg) { showToast(msg, 'success'); }
+function showErrorToast(msg) { showToast(msg, 'error'); }
+
+// ==================== INIT ====================
+document.getElementById('login-code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

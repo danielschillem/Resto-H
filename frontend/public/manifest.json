@@ -1,0 +1,24 @@
+{
+  "name": "Resto-H — Gestion de la Restauration Hospitalière",
+  "short_name": "Resto-H",
+  "description": "Système intégré de gestion de la restauration hospitalière — CHR Tenkodogo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0D9488",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

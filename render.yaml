@@ -1,0 +1,45 @@
+databases:
+  - name: sgrh-db
+    plan: free
+    databaseName: sgrh
+    user: sgrh
+
+services:
+  - type: web
+    name: sgrh-api
+    runtime: php
+    plan: free
+    rootDir: backend
+    buildCommand: chmod +x render-build.sh && bash render-build.sh
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_NAME
+        value: SGRH
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: sgrh-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: FRONTEND_URL
+        sync: false
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false
+      - key: BCRYPT_ROUNDS
+        value: "12"

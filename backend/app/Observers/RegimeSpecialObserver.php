@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Observers;
+
+use App\Models\Notification;
+use App\Models\RegimeSpecial;
+use App\Models\User;
+
+class RegimeSpecialObserver
+{
+    public function created(RegimeSpecial $regime): void
+    {
+        $this->notifyRoles(
+            ['gerant', 'csah'],
+            'Nouveau régime spécial',
+            "Demande de régime {$regime->type_regime} pour le patient {$regime->patient_nom}.",
+            'regime',
+            $regime->id
+        );
+    }
+
+    public function updated(RegimeSpecial $regime): void
+    {
+        if (!$regime->isDirty('statut')) {
+            return;
+        }
+
+        $submitter = $regime->soumis_par ? User::find($regime->soumis_par) : null;
+
+        match ($regime->statut) {
+            'valide' => $this->notifyUser(
+                $submitter,
+                'Régime spécial validé',
+                "Le régime {$regime->type_regime} pour {$regime->patient_nom} a été validé.",
+                'regime',
+                $regime->id
+            ),
+            'rejete' => $this->notifyUser(
+                $submitter,
+                'Régime spécial rejeté',
+                "Le régime {$regime->type_regime} pour {$regime->patient_nom} a été rejeté. Motif : {$regime->motif_rejet}",
+                'regime',
+                $regime->id
+            ),
+            'termine' => $this->notifyUser(
+                $submitter,
+                'Régime spécial terminé',
+                "Le régime {$regime->type_regime} pour {$regime->patient_nom} est terminé.",
+                'regime',
+                $regime->id
+            ),
+            default => null,
+        };
+    }
+
+    private function notifyRoles(array $roles, string $titre, string $message, string $type, int $refId): void
+    {
+        User::whereIn('role', $roles)->where('is_active', true)->each(function ($user) use ($titre, $message, $type, $refId) {
+            Notification::create([
+                'user_id' => $user->id,
+                'titre' => $titre,
+                'message' => $message,
+                'type' => $type,
+                'reference_id' => $refId,
+            ]);
+        });
+    }
+
+    private function notifyUser(?User $user, string $titre, string $message, string $type, int $refId): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        Notification::create([
+            'user_id' => $user->id,
+            'titre' => $titre,
+            'message' => $message,
+            'type' => $type,
+            'reference_id' => $refId,
+        ]);
+    }
+}
