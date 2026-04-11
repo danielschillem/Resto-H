@@ -7,7 +7,7 @@ import { User, Service, Parametre } from "@/types";
 import { isEmailValid } from "@/lib/validation";
 
 const ROLE_BADGE: Record<string, { bg: string; color: string }> = {
-  gerant: { bg: "#DBEAFE", color: "#1E40AF" },
+  prestataire: { bg: "#DBEAFE", color: "#1E40AF" },
   dsgl: { bg: "#EDE9FE", color: "#5B21B6" },
   csah: { bg: "#D1FAE5", color: "#065F46" },
   sus: { bg: "#FEF3C7", color: "#92400E" },
@@ -45,7 +45,7 @@ export default function AdminPage() {
     nom: "",
     prenom: "",
     email: "",
-    role: "gerant",
+    role: "prestataire",
     service: "",
     password: "",
   });
@@ -406,7 +406,7 @@ export default function AdminPage() {
               <thead>
                 <tr style={{ background: "#F8FAFC" }}>
                   <th style={{ ...thStyle, width: 180 }}>Permission</th>
-                  {["gerant", "dsgl", "csah", "sus", "sut"].map((r) => (
+                  {["prestataire", "dsgl", "csah", "sus", "sut"].map((r) => (
                     <th
                       key={r}
                       style={{
@@ -424,7 +424,7 @@ export default function AdminPage() {
                 {permAll.map((perm) => (
                   <tr key={perm}>
                     <td style={tdStyle}>{PERM_LABELS[perm] || perm}</td>
-                    {["gerant", "dsgl", "csah", "sus", "sut"].map((r) => (
+                    {["prestataire", "dsgl", "csah", "sus", "sut"].map((r) => (
                       <td key={r} style={{ ...tdStyle, textAlign: "center" }}>
                         {(permGrouped[r] || []).includes(perm) ? (
                           <i
@@ -477,7 +477,7 @@ export default function AdminPage() {
             }
             style={inputStyle}
           >
-            <option value="gerant">Gérant</option>
+            <option value="prestataire">Prestataire</option>
             <option value="dsgl">DSGL</option>
             <option value="csah">CSAH</option>
             <option value="sus">SUS</option>
@@ -599,7 +599,7 @@ export default function AdminPage() {
               }
               style={inputStyle}
             >
-              <option value="gerant">Gérant</option>
+              <option value="prestataire">Prestataire</option>
               <option value="dsgl">DSGL</option>
               <option value="csah">CSAH</option>
               <option value="sus">SUS</option>
@@ -812,3 +812,5 @@ const inputStyle: React.CSSProperties = {
   fontSize: 14,
   fontFamily: "inherit",
 };
+
+

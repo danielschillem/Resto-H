@@ -192,7 +192,7 @@ export default function MenusSpeciauxPage() {
       >
         <i className="fa-solid fa-circle-info" />
         Les régimes spéciaux doivent être validés 24h avant le service. Toute
-        modification tardive requiert l&apos;accord du gérant.
+        modification tardive requiert l&apos;accord du Prestataire.
       </div>
 
       {/* Tabs */}
@@ -789,3 +789,4 @@ const filterInput: React.CSSProperties = {
   background: "white",
   cursor: "pointer",
 };
+

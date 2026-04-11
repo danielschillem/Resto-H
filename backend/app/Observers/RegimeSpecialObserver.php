@@ -11,7 +11,7 @@ class RegimeSpecialObserver
     public function created(RegimeSpecial $regime): void
     {
         $this->notifyRoles(
-            ['gerant', 'csah'],
+            ['prestataire', 'csah'],
             'Nouveau régime spécial',
             "Demande de régime {$regime->type_regime} pour le patient {$regime->patient_nom}.",
             'regime',

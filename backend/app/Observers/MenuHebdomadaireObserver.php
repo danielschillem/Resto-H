@@ -18,7 +18,7 @@ class MenuHebdomadaireObserver
 
         match ($menu->statut) {
             'soumis' => $this->notifyRoles(
-                ['gerant', 'dsgl'],
+                ['prestataire', 'dsgl'],
                 'Menu hebdomadaire soumis',
                 "Un menu hebdomadaire pour la semaine du " . \Carbon\Carbon::parse($menu->semaine_debut)->format('d/m') . " a été soumis pour validation.",
                 'menu',

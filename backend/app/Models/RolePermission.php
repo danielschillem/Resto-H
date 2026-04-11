@@ -15,7 +15,7 @@ class RolePermission extends Model
 
     public static function allGrouped(): array
     {
-        $roles = ['gerant', 'dsgl', 'csah', 'sus', 'sut'];
+        $roles = ['prestataire', 'dsgl', 'csah', 'sus', 'sut'];
         $result = [];
         foreach ($roles as $role) {
             $result[$role] = static::where('role', $role)->pluck('permission')->toArray();

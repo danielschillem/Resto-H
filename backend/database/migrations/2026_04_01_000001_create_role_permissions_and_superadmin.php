@@ -55,9 +55,9 @@ return new class extends Migration {
         });
 
         $defaults = [
-            'gerant' => ['dashboard','menus','menus.valider','commandes','commandes.valider','consommations','etats','etats.valider','regimes','regimes.valider','admin','licence'],
-            'dsgl'   => ['dashboard','menus.valider','commandes.valider','consommations','etats','etats.valider','regimes.valider','admin','licence'],
-            'csah'   => ['dashboard','menus','commandes','commandes.valider','consommations','regimes','regimes.valider'],
+            'prestataire' => ['dashboard','menus','commandes','commandes.livrer','consommations','etats','regimes'],
+            'dsgl'   => ['dashboard','menus','menus.valider','commandes','commandes.valider','consommations','etats','etats.valider','regimes','regimes.valider','admin','licence'],
+            'csah'   => ['dashboard','menus','commandes','commandes.valider','consommations','etats','regimes','regimes.valider'],
             'sus'    => ['dashboard','commandes','regimes'],
             'sut'    => ['dashboard','commandes','consommations','regimes'],
         ];

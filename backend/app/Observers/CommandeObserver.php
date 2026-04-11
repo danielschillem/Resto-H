@@ -12,7 +12,7 @@ class CommandeObserver
     {
         // Notify gérant & CSAH when a new commande is submitted
         $this->notifyRoles(
-            ['gerant', 'csah'],
+            ['prestataire', 'csah'],
             'Nouvelle commande',
             "Commande {$commande->reference} soumise — {$commande->nb_portions} portion(s) pour le service.",
             'commande',

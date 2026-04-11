@@ -182,31 +182,30 @@ export default function MenusHebdoPage() {
               validation
             </button>
           )}
-          {current?.statut === "soumis" &&
-            (user?.role === "gerant" || user?.role === "dsgl") && (
-              <>
-                <button
-                  onClick={() => setRejectOpen(true)}
-                  style={{
-                    ...btnOutline,
-                    color: "var(--danger)",
-                    borderColor: "var(--danger)",
-                  }}
-                >
-                  <i className="fa-solid fa-times-circle" /> Rejeter
-                </button>
-                <button
-                  onClick={handleValider}
-                  style={{
-                    ...btn,
-                    background: "var(--success)",
-                    color: "white",
-                  }}
-                >
-                  <i className="fa-solid fa-check-circle" /> Valider
-                </button>
-              </>
-            )}
+          {current?.statut === "soumis" && user?.role === "dsgl" && (
+            <>
+              <button
+                onClick={() => setRejectOpen(true)}
+                style={{
+                  ...btnOutline,
+                  color: "var(--danger)",
+                  borderColor: "var(--danger)",
+                }}
+              >
+                <i className="fa-solid fa-times-circle" /> Rejeter
+              </button>
+              <button
+                onClick={handleValider}
+                style={{
+                  ...btn,
+                  background: "var(--success)",
+                  color: "white",
+                }}
+              >
+                <i className="fa-solid fa-check-circle" /> Valider
+              </button>
+            </>
+          )}
           <button onClick={() => setCreateWeekOpen(true)} style={btnSecondary}>
             <i className="fa-solid fa-calendar-plus" /> Nouvelle semaine
           </button>

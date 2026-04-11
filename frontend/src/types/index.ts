@@ -4,7 +4,7 @@ export interface User {
   prenom: string;
   full_name: string;
   email: string;
-  role: 'gerant' | 'dsgl' | 'csah' | 'sus' | 'sut' | 'super_admin';
+  role: "prestataire" | "dsgl" | "csah" | "sus" | "sut" | "super_admin";
   service: string | null;
   formation_id: number | null;
   is_active?: boolean;
@@ -38,7 +38,7 @@ export interface Service {
 export interface Menu {
   id: number;
   intitule: string;
-  type_repas: 'petit_dejeuner' | 'dejeuner' | 'diner';
+  type_repas: "petit_dejeuner" | "dejeuner" | "diner";
   portions_prevues: number;
   cout_unitaire: number;
   allergenes: string | null;
@@ -57,7 +57,7 @@ export interface MenuHebdomadaire {
   id: number;
   semaine_debut: string;
   semaine_fin: string;
-  statut: 'brouillon' | 'soumis' | 'valide' | 'rejete';
+  statut: "brouillon" | "soumis" | "valide" | "rejete";
   soumis_par: User | null;
   valide_par: User | null;
   date_soumission: string | null;
@@ -79,25 +79,25 @@ export interface RegimeSpecial {
   duree_jours: number;
   medecin_prescripteur: string;
   instructions: string | null;
-  statut: 'en_attente' | 'valide' | 'rejete' | 'termine';
+  statut: "en_attente" | "valide" | "rejete" | "termine";
   motif_rejet: string | null;
 }
 
 export interface Commande {
   id: number;
   reference: string;
-  type: 'malades' | 'personnel' | 'client_externe';
+  type: "malades" | "personnel" | "client_externe";
   service_id: number;
   service: Service;
   date_repas: string;
-  repas: 'petit_dejeuner' | 'dejeuner' | 'diner';
+  repas: "petit_dejeuner" | "dejeuner" | "diner";
   menu_id: number | null;
   menu: Menu | null;
   nb_portions: number;
   heure_livraison: string | null;
   montant: number;
-  statut: 'en_attente' | 'validee' | 'en_cours' | 'livree' | 'rejetee';
-  statut_paiement: 'non_applicable' | 'en_attente' | 'paye';
+  statut: "en_attente" | "validee" | "en_cours" | "livree" | "rejetee";
+  statut_paiement: "non_applicable" | "en_attente" | "paye";
   client_nom: string | null;
   observations: string | null;
   motif_rejet: string | null;
@@ -125,7 +125,7 @@ export interface KpiItem {
   color: string;
   val: string | number;
   label: string;
-  trend: 'up' | 'down';
+  trend: "up" | "down";
   trendText: string;
 }
 
@@ -149,7 +149,7 @@ export interface DevisEstimatif {
   id: number;
   semaine_debut: string;
   semaine_fin: string;
-  statut: 'brouillon' | 'soumis' | 'valide' | 'rejete';
+  statut: "brouillon" | "soumis" | "valide" | "rejete";
   total_estime: number;
   lignes: DevisLigne[];
   soumis_par: User | null;
@@ -188,7 +188,7 @@ export interface NavItem {
 }
 
 export interface Licence {
-  statut: 'essai' | 'premium' | 'expire';
+  statut: "essai" | "premium" | "expire";
   date_debut: string;
   date_fin: string;
   jours_restants: number;

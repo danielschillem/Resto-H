@@ -199,6 +199,8 @@ body {
   align-items: center;
   padding: 60px 40px;
   color: white;
+  position: relative;
+  overflow: hidden;
 }
 
 .login-right {

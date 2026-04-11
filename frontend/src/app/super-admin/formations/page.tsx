@@ -54,7 +54,7 @@ const REGION_OPTIONS = [
   "Sud-Ouest",
 ];
 const ROLE_LABELS: Record<string, string> = {
-  gerant: "Gérant",
+  prestataire: "Prestataire",
   dsgl: "DSGL",
   csah: "CSAH",
   sus: "SUS",
@@ -62,14 +62,14 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
 };
 const ROLE_COLORS: Record<string, string> = {
-  gerant: "#3B82F6",
+  prestataire: "#3B82F6",
   dsgl: "#8B5CF6",
   csah: "#10B981",
   sus: "#F59E0B",
   sut: "#F59E0B",
   super_admin: "#EF4444",
 };
-const ROLES_ACTEURS = ["gerant", "dsgl", "csah", "sus", "sut"] as const;
+const ROLES_ACTEURS = ["prestataire", "dsgl", "csah", "sus", "sut"] as const;
 
 const emptyForm = () => ({
   nom: "",
@@ -80,10 +80,10 @@ const emptyForm = () => ({
   telephone: "",
   email: "",
   directeur: "",
-  gerant_nom: "",
-  gerant_prenom: "",
-  gerant_email: "",
-  gerant_password: "",
+  prestataire_nom: "",
+  prestataire_prenom: "",
+  prestataire_email: "",
+  prestataire_password: "",
 });
 
 const emptyEdit = (f: FormationSanitaire) => ({
@@ -1039,7 +1039,7 @@ export default function FormationsPage() {
               </div>
             </div>
 
-            {/* Gérant initial */}
+            {/* Prestataire initial */}
             <div
               style={{
                 background: "#0f172a",
@@ -1063,7 +1063,7 @@ export default function FormationsPage() {
                   className="fa-solid fa-user-tie"
                   style={{ marginRight: 6, color: "#3B82F6" }}
                 />
-                Gérant initial (optionnel)
+                Prestataire initial (optionnel)
               </p>
               <div
                 style={{
@@ -1084,9 +1084,9 @@ export default function FormationsPage() {
                     Nom
                   </label>
                   <input
-                    value={form.gerant_nom}
+                    value={form.prestataire_nom}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, gerant_nom: e.target.value }))
+                      setForm((f) => ({ ...f, prestataire_nom: e.target.value }))
                     }
                     style={inputDark}
                   />
@@ -1103,9 +1103,9 @@ export default function FormationsPage() {
                     Prénom
                   </label>
                   <input
-                    value={form.gerant_prenom}
+                    value={form.prestataire_prenom}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, gerant_prenom: e.target.value }))
+                      setForm((f) => ({ ...f, prestataire_prenom: e.target.value }))
                     }
                     style={inputDark}
                   />
@@ -1123,9 +1123,9 @@ export default function FormationsPage() {
                   </label>
                   <input
                     type="email"
-                    value={form.gerant_email}
+                    value={form.prestataire_email}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, gerant_email: e.target.value }))
+                      setForm((f) => ({ ...f, prestataire_email: e.target.value }))
                     }
                     style={inputDark}
                   />
@@ -1143,11 +1143,11 @@ export default function FormationsPage() {
                   </label>
                   <input
                     type="password"
-                    value={form.gerant_password}
+                    value={form.prestataire_password}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        gerant_password: e.target.value,
+                        prestataire_password: e.target.value,
                       }))
                     }
                     style={inputDark}
@@ -1959,3 +1959,5 @@ export default function FormationsPage() {
     </div>
   );
 }
+
+

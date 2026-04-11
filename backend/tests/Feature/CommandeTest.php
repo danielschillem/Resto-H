@@ -14,7 +14,8 @@ class CommandeTest extends TestCase
     use RefreshDatabase;
 
     private FormationSanitaire $formation;
-    private User $gerant;
+    private User $prestataire;
+    private User $csah;
     private User $sus;
     private Service $service;
 
@@ -28,9 +29,15 @@ class CommandeTest extends TestCase
             'ville' => 'Ouaga', 'region' => 'Centre', 'is_active' => true,
         ]);
 
-        $this->gerant = User::create([
-            'nom' => 'Gérant', 'prenom' => 'Test', 'email' => 'gerant@test.bf',
-            'password' => bcrypt('pwd'), 'role' => 'gerant', 'is_active' => true,
+        $this->prestataire = User::create([
+            'nom' => 'Prestataire', 'prenom' => 'Test', 'email' => 'prestataire@test.bf',
+            'password' => bcrypt('pwd'), 'role' => 'prestataire', 'is_active' => true,
+            'formation_id' => $this->formation->id,
+        ]);
+
+        $this->csah = User::create([
+            'nom' => 'CSAH', 'prenom' => 'Test', 'email' => 'csah@test.bf',
+            'password' => bcrypt('pwd'), 'role' => 'csah', 'is_active' => true,
             'formation_id' => $this->formation->id,
         ]);
 
@@ -77,7 +84,7 @@ class CommandeTest extends TestCase
     {
         $cmd = $this->createCommande();
 
-        $response = $this->actingAs($this->gerant)
+        $response = $this->actingAs($this->csah)
             ->postJson("/api/commandes/{$cmd->id}/valider");
 
         $response->assertOk()
@@ -94,7 +101,7 @@ class CommandeTest extends TestCase
     {
         $cmd = $this->createCommande();
 
-        $response = $this->actingAs($this->gerant)
+        $response = $this->actingAs($this->csah)
             ->postJson("/api/commandes/{$cmd->id}/rejeter", [
                 'motif_rejet' => 'Stock insuffisant',
             ]);
@@ -114,7 +121,7 @@ class CommandeTest extends TestCase
         $cmd = $this->createCommande();
         $cmd->update(['statut' => 'validee']);
 
-        $response = $this->actingAs($this->gerant)
+        $response = $this->actingAs($this->prestataire)
             ->postJson("/api/commandes/{$cmd->id}/livrer");
 
         $response->assertOk()
@@ -125,7 +132,7 @@ class CommandeTest extends TestCase
     {
         $cmd = $this->createCommande();
 
-        $response = $this->actingAs($this->gerant)
+        $response = $this->actingAs($this->prestataire)
             ->postJson("/api/commandes/{$cmd->id}/livrer");
 
         $response->assertStatus(422);
@@ -136,7 +143,7 @@ class CommandeTest extends TestCase
         $cmd = $this->createCommande();
         $cmd->update(['type' => 'client_externe', 'statut' => 'livree']);
 
-        $response = $this->actingAs($this->gerant)
+        $response = $this->actingAs($this->csah)
             ->postJson("/api/commandes/{$cmd->id}/paiement");
 
         $response->assertOk()
@@ -169,3 +176,4 @@ class CommandeTest extends TestCase
         ]);
     }
 }
+

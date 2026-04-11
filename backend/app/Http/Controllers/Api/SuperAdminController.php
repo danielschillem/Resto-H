@@ -54,7 +54,7 @@ class SuperAdminController extends Controller
     public function formations(): JsonResponse
     {
         $formations = FormationSanitaire::withCount('users')
-            ->with(['users' => fn($q) => $q->where('role', 'gerant')->select('id', 'nom', 'prenom', 'email', 'formation_id')])
+            ->with(['users' => fn($q) => $q->where('role', 'prestataire')->select('id', 'nom', 'prenom', 'email', 'formation_id')])
             ->orderBy('nom')
             ->get();
 
@@ -72,11 +72,11 @@ class SuperAdminController extends Controller
             'telephone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
             'directeur' => 'nullable|string|max:255',
-            // Gérant initial (optionnel)
-            'gerant_nom' => 'nullable|string|max:255',
-            'gerant_prenom' => 'nullable|string|max:255',
-            'gerant_email' => 'nullable|email|unique:users,email',
-            'gerant_password' => 'nullable|string|min:4',
+            // Prestataire initial (optionnel)
+            'prestataire_nom' => 'nullable|string|max:255',
+            'prestataire_prenom' => 'nullable|string|max:255',
+            'prestataire_email' => 'nullable|email|unique:users,email',
+            'prestataire_password' => 'nullable|string|min:4',
         ]);
 
         $formation = FormationSanitaire::create([
@@ -91,15 +91,15 @@ class SuperAdminController extends Controller
             'is_active' => true,
         ]);
 
-        // Créer le gérant si fourni
-        if (!empty($data['gerant_email'])) {
+        // Créer le prestataire si fourni
+        if (!empty($data['prestataire_email'])) {
             User::create([
                 'formation_id' => $formation->id,
-                'nom' => $data['gerant_nom'] ?? 'Gérant',
-                'prenom' => $data['gerant_prenom'] ?? $formation->nom,
-                'email' => $data['gerant_email'],
-                'password' => bcrypt($data['gerant_password'] ?? '1234'),
-                'role' => 'gerant',
+                'nom' => $data['prestataire_nom'] ?? 'Prestataire',
+                'prenom' => $data['prestataire_prenom'] ?? $formation->nom,
+                'email' => $data['prestataire_email'],
+                'password' => bcrypt($data['prestataire_password'] ?? '1234'),
+                'role' => 'prestataire',
                 'is_active' => true,
             ]);
         }
@@ -152,7 +152,7 @@ class SuperAdminController extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:4',
-            'role' => 'required|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'required|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
         ]);
 
@@ -184,7 +184,7 @@ class SuperAdminController extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:4',
-            'role' => 'required|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'required|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
         ]);
 
@@ -202,7 +202,7 @@ class SuperAdminController extends Controller
             'nom' => 'sometimes|string|max:255',
             'prenom' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'role' => 'sometimes|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'sometimes|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
             'is_active' => 'sometimes|boolean',
         ]);
@@ -247,7 +247,7 @@ class SuperAdminController extends Controller
     public function updatePermissions(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'role' => 'required|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'required|in:prestataire,dsgl,csah,sus,sut',
             'permissions' => 'required|array',
             'permissions.*' => 'string|in:' . implode(',', RolePermission::allPermissions()),
         ]);

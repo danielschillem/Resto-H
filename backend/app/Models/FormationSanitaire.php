@@ -37,9 +37,9 @@ class FormationSanitaire extends Model
         return $this->hasMany(Service::class, 'formation_id');
     }
 
-    public function gerant(): ?User
+    public function prestataire(): ?User
     {
-        return $this->users()->where('role', 'gerant')->first();
+        return $this->users()->where('role', 'prestataire')->first();
     }
 
     // ── Accessors ─────────────────────────────────────────────────────────────

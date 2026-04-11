@@ -52,7 +52,7 @@ class DashboardController extends Controller
             ->selectRaw('SUM(cout_reel) - SUM(cout_prevu) as ecart')->value('ecart') ?? 0;
 
         return match ($user->role) {
-            'gerant' => [
+            'prestataire' => [
                 ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour ?: 312, 'label' => 'Portions prévues (auj.)', 'trend' => 'up', 'trendText' => '+8 vs hier'],
                 ['icon' => 'fa-clipboard-check', 'color' => 'green', 'val' => $commandesValidees ?: 18, 'label' => 'Commandes validées', 'trend' => 'up', 'trendText' => $commandesAttente . ' en attente'],
                 ['icon' => 'fa-bed', 'color' => 'teal', 'val' => $patients, 'label' => 'Patients en cours', 'trend' => 'up', 'trendText' => 'Capacité totale'],

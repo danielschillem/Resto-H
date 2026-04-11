@@ -37,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/tout-lire', [AdminController::class, 'toutMarquerLu']);
 
     // ── Menus : gérant, CSAH (gestion), DSGL (validation) ─────────────────
-    Route::middleware('role:gerant,dsgl,csah')->group(function () {
+    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
         Route::apiResource('menus', MenuController::class);
         Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
         Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
@@ -46,8 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/items', [MenuController::class, 'addItem']);
     });
 
-    // Validation menus hebdo : gérant, DSGL
-    Route::middleware('role:gerant,dsgl')->group(function () {
+    // Validation menus hebdo : DSGL
+    Route::middleware('role:dsgl')->group(function () {
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/valider', [MenuController::class, 'validerMenu']);
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/rejeter', [MenuController::class, 'rejeterMenu']);
     });
@@ -59,21 +59,25 @@ Route::middleware('auth:sanctum')->group(function () {
     // Créer une commande : tous les rôles
     Route::post('/commandes', [CommandeController::class, 'store']);
 
-    // Valider/rejeter/livrer : gérant, CSAH
-    Route::middleware('role:gerant,csah')->group(function () {
+    // Valider/rejeter : CSAH, DSGL
+    Route::middleware('role:csah,dsgl')->group(function () {
         Route::get('/commandes-a-valider', [CommandeController::class, 'aValider']);
         Route::post('/commandes/{commande}/valider', [CommandeController::class, 'valider']);
         Route::post('/commandes/{commande}/rejeter', [CommandeController::class, 'rejeter']);
-        Route::post('/commandes/{commande}/livrer', [CommandeController::class, 'livrer']);
         Route::post('/commandes/{commande}/paiement', [CommandeController::class, 'enregistrerPaiement']);
+    });
+
+    // Livrer : prestataire
+    Route::middleware('role:prestataire')->group(function () {
+        Route::post('/commandes/{commande}/livrer', [CommandeController::class, 'livrer']);
     });
 
     // ── Régimes spéciaux : tous les rôles peuvent voir et créer ────────────
     Route::apiResource('regimes-speciaux', RegimeSpecialController::class)->only(['index', 'store', 'show']);
     Route::put('/regimes-speciaux/{regime}', [RegimeSpecialController::class, 'update']);
 
-    // Valider/rejeter/terminer régimes : gérant, CSAH
-    Route::middleware('role:gerant,csah')->group(function () {
+    // Valider/rejeter/terminer régimes : CSAH, DSGL
+    Route::middleware('role:csah,dsgl')->group(function () {
         Route::post('/regimes-speciaux/{regime}/valider', [RegimeSpecialController::class, 'valider']);
         Route::post('/regimes-speciaux/{regime}/rejeter', [RegimeSpecialController::class, 'rejeter']);
         Route::post('/regimes-speciaux/{regime}/terminer', [RegimeSpecialController::class, 'terminer']);
@@ -85,27 +89,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consommations/articles', [ConsommationController::class, 'articles']);
     Route::get('/consommations/ecarts-services', [ConsommationController::class, 'ecartsParService']);
 
-    // Saisie consommations : gérant, CSAH, SUT
-    Route::middleware('role:gerant,csah,sut')->group(function () {
+    // Saisie consommations : prestataire, CSAH, SUT
+    Route::middleware('role:prestataire,csah,sut')->group(function () {
         Route::post('/consommations', [ConsommationController::class, 'store']);
     });
 
-    // ── États & Rapports : gérant, DSGL, CSAH ──────────────────────────────
-    Route::middleware('role:gerant,dsgl,csah')->group(function () {
+    // ── États & Rapports : prestataire, DSGL, CSAH ──────────────────────────
+    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
         Route::get('/etats/commandes', [EtatController::class, 'etatCommandes']);
         Route::get('/etats/devis', [EtatController::class, 'devis']);
         Route::post('/etats/devis', [EtatController::class, 'storeDevis']);
         Route::get('/etats/validations', [EtatController::class, 'validations']);
     });
 
-    // Validation devis : gérant, DSGL
-    Route::middleware('role:gerant,dsgl')->group(function () {
+    // Validation devis : DSGL
+    Route::middleware('role:dsgl')->group(function () {
         Route::post('/etats/devis/{devis}/valider', [EtatController::class, 'validerDevis']);
         Route::post('/etats/devis/{devis}/rejeter', [EtatController::class, 'rejeterDevis']);
     });
 
-    // ── Administration : gérant uniquement ─────────────────────────────────
-    Route::middleware('role:gerant')->group(function () {
+    // ── Administration : DSGL uniquement ──────────────────────────────────
+    Route::middleware('role:dsgl')->group(function () {
         Route::get('/admin/users', [AdminController::class, 'users']);
         Route::post('/admin/users', [AdminController::class, 'storeUser']);
         Route::put('/admin/users/{user}', [AdminController::class, 'updateUser']);

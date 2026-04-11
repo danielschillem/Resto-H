@@ -29,7 +29,7 @@ class AdminController extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:4',
-            'role' => 'required|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'required|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
         ]);
 
@@ -48,7 +48,7 @@ class AdminController extends Controller
             'nom' => 'sometimes|string|max:255',
             'prenom' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'role' => 'sometimes|in:gerant,dsgl,csah,sus,sut',
+            'role' => 'sometimes|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
             'is_active' => 'sometimes|boolean',
         ]);

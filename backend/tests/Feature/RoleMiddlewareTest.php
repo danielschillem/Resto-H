@@ -33,9 +33,9 @@ class RoleMiddlewareTest extends TestCase
         ]);
     }
 
-    public function test_gerant_can_access_admin(): void
+    public function test_dsgl_can_access_admin(): void
     {
-        $response = $this->actingAs($this->makeUser('gerant'))->getJson('/api/admin/users');
+        $response = $this->actingAs($this->makeUser('dsgl'))->getJson('/api/admin/users');
         $response->assertOk();
     }
 
@@ -70,7 +70,7 @@ class RoleMiddlewareTest extends TestCase
 
     public function test_non_super_admin_cannot_access_super_admin_routes(): void
     {
-        $response = $this->actingAs($this->makeUser('gerant'))->getJson('/api/super-admin/stats');
+        $response = $this->actingAs($this->makeUser('prestataire'))->getJson('/api/super-admin/stats');
         $response->assertStatus(403);
     }
 
@@ -87,7 +87,7 @@ class RoleMiddlewareTest extends TestCase
 
     public function test_dashboard_accessible_by_all_roles(): void
     {
-        foreach (['gerant', 'dsgl', 'csah', 'sus', 'sut'] as $role) {
+        foreach (['prestataire', 'dsgl', 'csah', 'sus', 'sut'] as $role) {
             $response = $this->actingAs($this->makeUser($role))->getJson('/api/dashboard');
             $response->assertOk();
         }

@@ -17,7 +17,7 @@ class AuthTest extends TestCase
         $this->seed();
     }
 
-    private function createFormationAndUser(string $role = 'gerant'): array
+    private function createFormationAndUser(string $role = 'prestataire'): array
     {
         $formation = FormationSanitaire::create([
             'nom' => 'CHR Test',
@@ -46,7 +46,7 @@ class AuthTest extends TestCase
         [$formation, $user] = $this->createFormationAndUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'password',
         ]);
 
@@ -59,7 +59,7 @@ class AuthTest extends TestCase
         $this->createFormationAndUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'wrong',
         ]);
 
@@ -73,7 +73,7 @@ class AuthTest extends TestCase
         $user->update(['is_active' => false]);
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'password',
         ]);
 
@@ -85,7 +85,7 @@ class AuthTest extends TestCase
         [$formation, $user] = $this->createFormationAndUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'password',
             'formation_code' => 'CHR-TEST',
         ]);
@@ -99,7 +99,7 @@ class AuthTest extends TestCase
         $this->createFormationAndUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'password',
             'formation_code' => 'WRONG-CODE',
         ]);
@@ -127,7 +127,7 @@ class AuthTest extends TestCase
             ->getJson('/api/me');
 
         $response->assertOk()
-            ->assertJsonPath('email', 'gerant@test.bf');
+            ->assertJsonPath('email', 'prestataire@test.bf');
     }
 
     public function test_unauthenticated_access_rejected(): void
@@ -143,16 +143,17 @@ class AuthTest extends TestCase
 
         for ($i = 0; $i < 10; $i++) {
             $this->postJson('/api/login', [
-                'email' => 'gerant@test.bf',
+                'email' => 'prestataire@test.bf',
                 'password' => 'wrong',
             ]);
         }
 
         $response = $this->postJson('/api/login', [
-            'email' => 'gerant@test.bf',
+            'email' => 'prestataire@test.bf',
             'password' => 'wrong',
         ]);
 
         $response->assertStatus(429);
     }
 }
+

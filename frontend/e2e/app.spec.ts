@@ -4,7 +4,7 @@ test.describe("Login page", () => {
   test("displays login form with role cards", async ({ page }) => {
     await page.goto("/login", { timeout: 60_000 });
     await expect(page.locator("h2")).toContainText("Connexion");
-    await expect(page.getByText("Gérant")).toBeVisible();
+    await expect(page.getByText("Prestataire")).toBeVisible();
     await expect(page.getByText("DSGL")).toBeVisible();
     await expect(page.getByText("CSAH")).toBeVisible();
     await expect(page.getByText("SUS / SUT")).toBeVisible();
@@ -24,7 +24,7 @@ test.describe("Login page", () => {
 
   test("successful login redirects to dashboard", async ({ page }) => {
     await page.goto("/login");
-    await page.getByText("Gérant", { exact: false }).first().click();
+    await page.getByText("Prestataire", { exact: false }).first().click();
     await page.fill('input[type="password"]', "1234");
     await page.getByRole("button", { name: "Se connecter" }).click();
     await page.waitForURL("**/dashboard", { timeout: 15_000 });
@@ -33,7 +33,7 @@ test.describe("Login page", () => {
 
   test("wrong password shows error", async ({ page }) => {
     await page.goto("/login");
-    await page.getByText("Gérant", { exact: false }).first().click();
+    await page.getByText("Prestataire", { exact: false }).first().click();
     await page.fill('input[type="password"]', "wrongpassword");
     await page.getByRole("button", { name: "Se connecter" }).click();
     await expect(page.getByText("Code d\u0027accès incorrect")).toBeVisible({
@@ -47,7 +47,7 @@ test.describe("Authenticated navigation", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/login", { timeout: 30_000 });
-    await page.getByText("Gérant", { exact: false }).first().click();
+    await page.getByText("Prestataire", { exact: false }).first().click();
     await page.fill('input[type="password"]', "1234");
     await page.getByRole("button", { name: "Se connecter" }).click();
     await page.waitForURL("**/dashboard", { timeout: 30_000 });
@@ -80,3 +80,4 @@ test.describe("Authenticated navigation", () => {
     await expect(page).toHaveURL(/login/);
   });
 });
+

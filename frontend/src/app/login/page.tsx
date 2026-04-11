@@ -71,84 +71,105 @@ export default function LoginPage() {
 
   return (
     <div className="login-wrap">
-      <div className="login-left" style={{ backgroundImage: 'url(/login-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div
+        className="login-left"
+        style={{
+          backgroundImage: "url(/login-bg.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <div
           style={{
-            width: 90,
-            height: 90,
-            background: "rgba(255,255,255,0.15)",
-            borderRadius: "50%",
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 24,
-            border: "3px solid rgba(255,255,255,0.3)",
           }}
         >
-          <i
-            className="fa-solid fa-hospital"
-            style={{ fontSize: 40, color: "white" }}
-          />
-        </div>
-        <h1
-          style={{
-            fontSize: 26,
-            fontWeight: 700,
-            textAlign: "center",
-            marginBottom: 8,
-          }}
-        >
-          Resto-H
-        </h1>
-        <p
-          style={{
-            opacity: 0.8,
-            textAlign: "center",
-            maxWidth: 320,
-            lineHeight: 1.6,
-          }}
-        >
-          Système intégré de gestion de la restauration hospitalière
-        </p>
-        <span
-          style={{
-            display: "inline-block",
-            background: "rgba(255,255,255,0.2)",
-            border: "1px solid rgba(255,255,255,0.3)",
-            borderRadius: 20,
-            padding: "6px 16px",
-            fontSize: 12,
-            marginTop: 20,
-            letterSpacing: 1,
-          }}
-        >
-          SGRH — v1.0
-        </span>
-        <div
-          style={{
-            marginTop: 16,
-            fontSize: 11,
-            opacity: 0.5,
-            textAlign: "center",
-          }}
-        >
-          © AIT &amp; ANABASE
-        </div>
-        <a
-          href="/super-admin/login"
-          style={{
-            display: "block",
-            marginTop: 20,
-            fontSize: 11,
-            color: "rgba(255,255,255,0.3)",
-            textAlign: "center",
-            textDecoration: "none",
-          }}
-        >
-          Administration système
-        </a>
+          <div
+            style={{
+              width: 90,
+              height: 90,
+              background: "rgba(255,255,255,0.15)",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 24,
+              border: "3px solid rgba(255,255,255,0.3)",
+            }}
+          >
+            <i
+              className="fa-solid fa-hospital"
+              style={{ fontSize: 40, color: "white" }}
+            />
+          </div>
+          <h1
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              textAlign: "center",
+              marginBottom: 8,
+            }}
+          >
+            Resto-H
+          </h1>
+          <p
+            style={{
+              opacity: 0.8,
+              textAlign: "center",
+              maxWidth: 320,
+              lineHeight: 1.6,
+            }}
+          >
+            Système intégré de gestion de la restauration hospitalière
+          </p>
+          <span
+            style={{
+              display: "inline-block",
+              background: "rgba(255,255,255,0.2)",
+              border: "1px solid rgba(255,255,255,0.3)",
+              borderRadius: 20,
+              padding: "6px 16px",
+              fontSize: 12,
+              marginTop: 20,
+              letterSpacing: 1,
+            }}
+          >
+            SGRH — v1.0
+          </span>
+          <div
+            style={{
+              marginTop: 16,
+              fontSize: 11,
+              opacity: 0.5,
+              textAlign: "center",
+            }}
+          >
+            © AIT &amp; ANABASE
+          </div>
+          <a
+            href="/super-admin/login"
+            style={{
+              display: "block",
+              marginTop: 20,
+              fontSize: 11,
+              color: "rgba(255,255,255,0.3)",
+              textAlign: "center",
+              textDecoration: "none",
+            }}
+          >
+            Administration système
+          </a>
         </div>
       </div>
       <div className="login-right">

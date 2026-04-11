@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
         $fid = $formation->id;
 
         // --- Users ---
-        $gerant = User::create(['nom' => 'Kaboré', 'prenom' => 'Serge', 'email' => 'gerant@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'gerant', 'service' => 'Restauration', 'formation_id' => $fid]);
+        $prestataire = User::create(['nom' => 'Kaboré', 'prenom' => 'Serge', 'email' => 'prestataire@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'prestataire', 'service' => 'Restauration', 'formation_id' => $fid]);
         $dsgl = User::create(['nom' => 'Traoré', 'prenom' => 'Aminata', 'email' => 'dsgl@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'dsgl', 'service' => 'Direction', 'formation_id' => $fid]);
         $csah = User::create(['nom' => 'Ouédraogo', 'prenom' => 'Jean', 'email' => 'csah@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'csah', 'service' => 'Hôtellerie', 'formation_id' => $fid]);
         $sus = User::create(['nom' => 'Sawadogo', 'prenom' => 'Fatou', 'email' => 'sus@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'sus', 'service' => 'Pédiatrie', 'formation_id' => $fid]);
@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder
             'semaine_debut' => $weekStart,
             'semaine_fin' => $weekStart->copy()->addDays(6),
             'statut' => 'soumis',
-            'soumis_par' => $gerant->id,
+            'soumis_par' => $prestataire->id,
             'date_soumission' => now()->subDays(2),
             'cout_matieres' => 685000,
             'cout_main_oeuvre' => 120000,
@@ -114,19 +114,19 @@ class DatabaseSeeder extends Seeder
         RegimeSpecial::create(['patient_nom' => 'TAPSOBA R.', 'lit' => 'Med-08', 'service_id' => $medecine->id, 'type_regime' => 'diabetique', 'date_debut' => now(), 'duree_jours' => 14, 'medecin_prescripteur' => 'Dr. Zongo', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
         RegimeSpecial::create(['patient_nom' => 'SAWADOGO M.', 'lit' => 'Chir-03', 'service_id' => $chirurgie->id, 'type_regime' => 'post_op_mixe', 'date_debut' => now(), 'duree_jours' => 3, 'medecin_prescripteur' => 'Dr. Nana', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
         RegimeSpecial::create(['patient_nom' => 'COMPAORE A.', 'lit' => 'Gyn-06', 'service_id' => $gyneco->id, 'type_regime' => 'hyper_proteine', 'date_debut' => now(), 'duree_jours' => 5, 'medecin_prescripteur' => 'Dr. Ilboudo', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
-        RegimeSpecial::create(['patient_nom' => 'BANCÉ L.', 'lit' => 'Med-11', 'service_id' => $medecine->id, 'type_regime' => 'hyposode', 'date_debut' => now()->subDays(5), 'duree_jours' => 7, 'medecin_prescripteur' => 'Dr. Zongo', 'statut' => 'valide', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id]);
-        RegimeSpecial::create(['patient_nom' => 'SOME W.', 'lit' => 'Pédiatrie-04', 'service_id' => $pediatrie->id, 'type_regime' => 'enrichi', 'date_debut' => now()->subDays(7), 'duree_jours' => 7, 'medecin_prescripteur' => 'Dr. Kaboré', 'statut' => 'valide', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id]);
-        RegimeSpecial::create(['patient_nom' => 'KABORE F.', 'lit' => 'Chir-09', 'service_id' => $chirurgie->id, 'type_regime' => 'post_op_mixe', 'date_debut' => now()->subDays(3), 'duree_jours' => 2, 'medecin_prescripteur' => 'Dr. Nana', 'statut' => 'termine', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id]);
+        RegimeSpecial::create(['patient_nom' => 'BANCÉ L.', 'lit' => 'Med-11', 'service_id' => $medecine->id, 'type_regime' => 'hyposode', 'date_debut' => now()->subDays(5), 'duree_jours' => 7, 'medecin_prescripteur' => 'Dr. Zongo', 'statut' => 'valide', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id]);
+        RegimeSpecial::create(['patient_nom' => 'SOME W.', 'lit' => 'Pédiatrie-04', 'service_id' => $pediatrie->id, 'type_regime' => 'enrichi', 'date_debut' => now()->subDays(7), 'duree_jours' => 7, 'medecin_prescripteur' => 'Dr. Kaboré', 'statut' => 'valide', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id]);
+        RegimeSpecial::create(['patient_nom' => 'KABORE F.', 'lit' => 'Chir-09', 'service_id' => $chirurgie->id, 'type_regime' => 'post_op_mixe', 'date_debut' => now()->subDays(3), 'duree_jours' => 2, 'medecin_prescripteur' => 'Dr. Nana', 'statut' => 'termine', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id]);
         RegimeSpecial::create(['patient_nom' => 'TIENDREBEOGO H.', 'lit' => 'Urg-02', 'service_id' => $urgences->id, 'type_regime' => 'sans_gluten', 'date_debut' => now()->subDays(4), 'duree_jours' => 5, 'medecin_prescripteur' => 'Dr. Barro', 'statut' => 'rejete', 'motif_rejet' => 'Non disponible en stock', 'soumis_par' => $sus->id]);
 
         // --- Commandes ---
-        Commande::create(['reference' => '#2401', 'type' => 'malades', 'service_id' => $pediatrie->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 24, 'heure_livraison' => '11:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id, 'date_validation' => now()]);
+        Commande::create(['reference' => '#2401', 'type' => 'malades', 'service_id' => $pediatrie->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 24, 'heure_livraison' => '11:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id, 'date_validation' => now()]);
         Commande::create(['reference' => '#2402', 'type' => 'personnel', 'service_id' => $medecine->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 42, 'heure_livraison' => '12:00', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
         Commande::create(['reference' => '#2403', 'type' => 'malades', 'service_id' => $chirurgie->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 18, 'heure_livraison' => '11:30', 'statut' => 'en_cours', 'soumis_par' => $sus->id]);
         Commande::create(['reference' => '#2404', 'type' => 'malades', 'service_id' => $gyneco->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 31, 'heure_livraison' => '11:30', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
-        Commande::create(['reference' => '#2405', 'type' => 'personnel', 'service_id' => $urgences->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 12, 'heure_livraison' => '12:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id, 'date_validation' => now()]);
-        Commande::create(['reference' => '#2407', 'type' => 'malades', 'service_id' => $medecine->id, 'date_repas' => now(), 'repas' => 'petit_dejeuner', 'menu_id' => $menus[0]->id, 'nb_portions' => 42, 'heure_livraison' => '07:00', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id, 'date_validation' => now()]);
-        Commande::create(['reference' => '#P-101', 'type' => 'personnel', 'service_id' => $bloc->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 8, 'heure_livraison' => '12:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $gerant->id, 'date_validation' => now()]);
+        Commande::create(['reference' => '#2405', 'type' => 'personnel', 'service_id' => $urgences->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 12, 'heure_livraison' => '12:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id, 'date_validation' => now()]);
+        Commande::create(['reference' => '#2407', 'type' => 'malades', 'service_id' => $medecine->id, 'date_repas' => now(), 'repas' => 'petit_dejeuner', 'menu_id' => $menus[0]->id, 'nb_portions' => 42, 'heure_livraison' => '07:00', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id, 'date_validation' => now()]);
+        Commande::create(['reference' => '#P-101', 'type' => 'personnel', 'service_id' => $bloc->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 8, 'heure_livraison' => '12:30', 'statut' => 'validee', 'soumis_par' => $sus->id, 'valide_par' => $prestataire->id, 'date_validation' => now()]);
         Commande::create(['reference' => '#P-102', 'type' => 'personnel', 'service_id' => $urgences->id, 'date_repas' => now(), 'repas' => 'diner', 'menu_id' => $menus[5]->id, 'nb_portions' => 12, 'heure_livraison' => '19:00', 'statut' => 'en_attente', 'soumis_par' => $sus->id]);
         Commande::create(['reference' => '#C-055', 'type' => 'client_externe', 'service_id' => $pediatrie->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[6]->id, 'nb_portions' => 2, 'montant' => 2000, 'client_nom' => 'Visiteur (Pédiatrie)', 'statut' => 'livree', 'statut_paiement' => 'paye']);
         Commande::create(['reference' => '#C-056', 'type' => 'client_externe', 'service_id' => $medecine->id, 'date_repas' => now(), 'repas' => 'dejeuner', 'menu_id' => $menus[5]->id, 'nb_portions' => 1, 'montant' => 800, 'client_nom' => 'Visiteur (Médecine)', 'statut' => 'en_cours', 'statut_paiement' => 'en_attente']);
@@ -185,7 +185,7 @@ class DatabaseSeeder extends Seeder
             'semaine_fin' => Carbon::now()->endOfWeek(),
             'statut' => 'soumis',
             'total_estime' => 826650,
-            'soumis_par' => $gerant->id,
+            'soumis_par' => $prestataire->id,
             'date_soumission' => now()->subDays(7),
         ]);
 
@@ -214,8 +214,8 @@ class DatabaseSeeder extends Seeder
         Parametre::create(['cle' => 'tarif_visiteur_couvert', 'valeur' => '1000', 'description' => 'Tarif visiteur par couvert (FCFA)']);
 
         // --- Notifications ---
-        foreach ([$gerant, $dsgl, $csah, $sus] as $user) {
-            Notification::create(['user_id' => $user->id, 'titre' => 'Nouveau menu en attente', 'message' => 'Menu semaine 12 soumis par le gérant', 'type' => 'menu', 'lu' => false]);
+        foreach ([$prestataire, $dsgl, $csah, $sus] as $user) {
+            Notification::create(['user_id' => $user->id, 'titre' => 'Nouveau menu en attente', 'message' => 'Menu semaine 12 soumis par le prestataire', 'type' => 'menu', 'lu' => false]);
             Notification::create(['user_id' => $user->id, 'titre' => 'Commande SUS/Pédiatrie', 'message' => '3 régimes spéciaux demandés', 'type' => 'commande', 'lu' => false]);
             Notification::create(['user_id' => $user->id, 'titre' => 'État de consommation validé', 'message' => 'Semaine 11 validée par DSGL', 'type' => 'etat', 'lu' => true]);
             Notification::create(['user_id' => $user->id, 'titre' => 'Alerte écart budgétaire', 'message' => 'Dépassement +12% sur les protéines', 'type' => 'devis', 'lu' => true]);
