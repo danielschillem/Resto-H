@@ -18,7 +18,10 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 # Copy application code
 COPY . .
 
-# Re-run composer scripts (post-autoload-dump)
+# Create .env from example so artisan commands work during build
+RUN cp .env.example .env
+
+# Re-run composer scripts (post-autoload-dump including package:discover)
 RUN composer dump-autoload --optimize
 
 # Create storage directories
