@@ -6,10 +6,10 @@ import { useAuth } from "@/lib/auth";
 
 const ROLES = [
   {
-    key: "gerant",
-    email: "gerant@chr-tenkodogo.bf",
+    key: "prestataire",
+    email: "prestataire@chr-tenkodogo.bf",
     icon: "fa-utensils",
-    name: "Gérant",
+    name: "Prestataire",
     desc: "Restauration",
     color: "var(--teal)",
   },
@@ -71,23 +71,25 @@ export default function LoginPage() {
 
   return (
     <div className="login-wrap">
-      <div className="login-left">
+      <div className="login-left" style={{ backgroundImage: 'url(/login-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div
           style={{
             width: 90,
             height: 90,
+            background: "rgba(255,255,255,0.15)",
             borderRadius: "50%",
-            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             marginBottom: 24,
             border: "3px solid rgba(255,255,255,0.3)",
           }}
         >
-          <img
-            src="/icons/icon-192.svg"
-            alt="Resto-H"
-            width={90}
-            height={90}
-            style={{ display: "block" }}
+          <i
+            className="fa-solid fa-hospital"
+            style={{ fontSize: 40, color: "white" }}
           />
         </div>
         <h1
@@ -147,6 +149,7 @@ export default function LoginPage() {
         >
           Administration système
         </a>
+        </div>
       </div>
       <div className="login-right">
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>

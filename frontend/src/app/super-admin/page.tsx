@@ -38,7 +38,7 @@ const inputDark: React.CSSProperties = {
   outline: "none",
 };
 const ROLE_LABELS: Record<string, string> = {
-  gerant: "Gérant",
+  prestataire: "Prestataire",
   dsgl: "DSGL",
   csah: "CSAH",
   sus: "SUS",
@@ -46,7 +46,7 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
 };
 const ROLE_COLORS: Record<string, string> = {
-  gerant: "#3B82F6",
+  prestataire: "#3B82F6",
   dsgl: "#8B5CF6",
   csah: "#10B981",
   sus: "#F59E0B",
@@ -533,7 +533,7 @@ function TabUsers() {
                   }
                   style={{ ...inputDark }}
                 >
-                  {["gerant", "dsgl", "csah", "sus", "sut"].map((r) => (
+                  {["prestataire", "dsgl", "csah", "sus", "sut"].map((r) => (
                     <option key={r} value={r}>
                       {ROLE_LABELS[r]}
                     </option>
@@ -652,7 +652,7 @@ function TabUsers() {
                   }
                   style={{ ...inputDark }}
                 >
-                  {["gerant", "dsgl", "csah", "sus", "sut"].map((r) => (
+                  {["prestataire", "dsgl", "csah", "sus", "sut"].map((r) => (
                     <option key={r} value={r}>
                       {ROLE_LABELS[r]}
                     </option>
@@ -817,7 +817,7 @@ function TabPermissions() {
     }
   };
 
-  const roles = ["gerant", "dsgl", "csah", "sus", "sut"];
+  const roles = ["prestataire", "dsgl", "csah", "sus", "sut"];
 
   return (
     <div>
@@ -1336,18 +1336,15 @@ export default function SuperAdminPage() {
             style={{
               width: 34,
               height: 34,
+              background: "#1D4ED8",
               borderRadius: 9,
-              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <img
-              src="/icons/icon-192.svg"
-              alt="Resto-H"
-              width={34}
-              height={34}
-              style={{ display: "block" }}
-            />
+            <i className="fa-solid fa-shield-halved" style={{ fontSize: 15 }} />
           </div>
           <div style={{ minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 15 }}>Resto-H</span>

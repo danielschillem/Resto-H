@@ -1,4 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#0F172A"/>
-  <text x="256" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="192" fill="#0D9488">R</text>
+  <rect width="512" height="512" rx="80" fill="#0D9488"/>
+  <!-- Hospital building -->
+  <rect x="146" y="130" width="220" height="264" rx="16" fill="white"/>
+  <!-- Cross -->
+  <rect x="220" y="158" width="72" height="72" rx="8" fill="#0D9488"/>
+  <rect x="238" y="166" width="36" height="56" rx="3" fill="white"/>
+  <rect x="228" y="182" width="56" height="24" rx="3" fill="white"/>
+  <!-- Windows row 1 -->
+  <rect x="170" y="252" width="44" height="38" rx="6" fill="#0D9488" opacity="0.6"/>
+  <rect x="234" y="252" width="44" height="38" rx="6" fill="#0D9488" opacity="0.6"/>
+  <rect x="298" y="252" width="44" height="38" rx="6" fill="#0D9488" opacity="0.6"/>
+  <!-- Windows row 2 -->
+  <rect x="170" y="310" width="44" height="38" rx="6" fill="#0D9488" opacity="0.6"/>
+  <rect x="298" y="310" width="44" height="38" rx="6" fill="#0D9488" opacity="0.6"/>
+  <!-- Door -->
+  <rect x="228" y="316" width="56" height="78" rx="28 28 0 0" fill="#0D9488"/>
 </svg>

@@ -8,7 +8,7 @@ import DarkModeToggle from "@/components/DarkModeToggle";
 import { NavItem } from "@/types";
 
 const NAV_ITEMS: Record<string, NavItem[]> = {
-  gerant: [
+  prestataire: [
     { section: "Principal" },
     { id: "dashboard", icon: "fa-gauge-high", label: "Tableau de bord" },
     { section: "Gestion Menus" },
@@ -25,8 +25,6 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { id: "etats", icon: "fa-file-invoice", label: "États & Rapports" },
     { section: "Système" },
     { id: "notifications", icon: "fa-bell", label: "Notifications" },
-    { id: "admin", icon: "fa-users-gear", label: "Administration" },
-    { id: "licence", icon: "fa-key", label: "Licence" },
   ],
   dsgl: [
     { section: "Principal" },
@@ -73,7 +71,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  gerant: "Gérant de la Restauration",
+  prestataire: "Prestataire de Restauration",
   dsgl: "DSGL — Direction Gén. & Logistique",
   csah: "CSAH — Accueil & Hôtellerie",
   sus: "SUS — Soins",
@@ -81,7 +79,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  gerant: "var(--teal)",
+  prestataire: "var(--teal)",
   dsgl: "var(--primary)",
   csah: "var(--success)",
   sus: "var(--purple)",
@@ -142,18 +140,15 @@ export default function Sidebar({
               style={{
                 width: 40,
                 height: 40,
+                background: "var(--primary)",
                 borderRadius: 10,
-                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              <img
-                src="/icons/icon-192.svg"
-                alt="Resto-H"
-                width={40}
-                height={40}
-                style={{ display: "block" }}
-              />
+              <i className="fa-solid fa-hospital" style={{ fontSize: 18 }} />
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700 }}>Resto-H</div>
