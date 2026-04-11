@@ -22,6 +22,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Skip if already seeded
+        if (FormationSanitaire::count() > 0) {
+            return;
+        }
+
         // --- Formation Sanitaire ---
         $formation = FormationSanitaire::create([
             'nom' => 'CHR Tenkodogo',

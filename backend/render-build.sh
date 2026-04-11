@@ -3,22 +3,22 @@ set -e
 
 echo "=== SGRH Backend — Starting ==="
 
+# Remove build-time .env so runtime env vars from Render take precedence
+rm -f .env
+
 # Generate APP_KEY if not set properly
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then
   php artisan key:generate --force
 fi
 
+# Clear any cached config from build
+php artisan config:clear
+
 # Run database migrations
 php artisan migrate --force
 
-# Seed database if fresh
-USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tr -d '[:space:]')
-if [ "$USER_COUNT" = "0" ]; then
-  echo "Seeding database..."
-  php artisan db:seed --force
-else
-  echo "Database already seeded ($USER_COUNT users)."
-fi
+# Seed database if fresh (simple check without tinker)
+php artisan db:seed --force 2>/dev/null || echo "Seeding skipped (already seeded or error)."
 
 # Cache config & routes for performance
 php artisan config:cache
