@@ -2,12 +2,16 @@ FROM php:8.4-cli
 
 # Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl zip unzip libpq-dev libonig-dev libxml2-dev dos2unix \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring xml bcmath \
+        git curl zip unzip libpq-dev libonig-dev libxml2-dev libcurl4-openssl-dev dos2unix \
+    && docker-php-ext-install \
+        pdo pdo_pgsql pgsql mbstring xml dom simplexml xmlwriter \
+        bcmath ctype fileinfo filter iconv session tokenizer curl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /var/www
 
