@@ -1,11 +1,11 @@
 FROM php:8.4-cli
 
 # Install system dependencies + PHP extensions
+# ctype, curl, dom, fileinfo, filter, iconv, mbstring, session,
+# simplexml, tokenizer, xml, xmlwriter are already built-in to php:8.4-cli
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl zip unzip libpq-dev libonig-dev libxml2-dev libcurl4-openssl-dev dos2unix \
-    && docker-php-ext-install \
-        pdo pdo_pgsql pgsql mbstring xml dom simplexml xmlwriter \
-        bcmath ctype fileinfo filter iconv session tokenizer curl \
+        git curl zip unzip libpq-dev libonig-dev libxml2-dev dos2unix \
+    && docker-php-ext-install pdo pdo_pgsql pgsql bcmath \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
