@@ -142,15 +142,18 @@ export default function Sidebar({
               style={{
                 width: 40,
                 height: 40,
-                background: "var(--primary)",
                 borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                overflow: "hidden",
                 flexShrink: 0,
               }}
             >
-              <i className="fa-solid fa-hospital" style={{ fontSize: 18 }} />
+              <img
+                src="/icons/icon-192.svg"
+                alt="Resto-H"
+                width={40}
+                height={40}
+                style={{ display: "block" }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700 }}>Resto-H</div>

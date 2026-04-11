@@ -1336,15 +1336,18 @@ export default function SuperAdminPage() {
             style={{
               width: 34,
               height: 34,
-              background: "#1D4ED8",
               borderRadius: 9,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              overflow: "hidden",
               flexShrink: 0,
             }}
           >
-            <i className="fa-solid fa-shield-halved" style={{ fontSize: 15 }} />
+            <img
+              src="/icons/icon-192.svg"
+              alt="Resto-H"
+              width={34}
+              height={34}
+              style={{ display: "block" }}
+            />
           </div>
           <div style={{ minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 15 }}>Resto-H</span>
