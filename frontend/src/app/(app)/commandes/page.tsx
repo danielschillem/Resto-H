@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { downloadCsv, exportPdf } from "@/lib/export";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
-import { Commande, Service, Menu } from "@/types";
+import { Commande, Service, Menu, RegimeSpecial } from "@/types";
 import { isEmailValid, todayISO } from "@/lib/validation";
 import { useAuth } from "@/lib/auth";
 
@@ -43,6 +43,7 @@ export default function CommandesPage() {
   const [aValider, setAValider] = useState<Commande[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
+  const [regimesSpeciaux, setRegimesSpeciaux] = useState<RegimeSpecial[]>([]);
   const [tab, setTab] = useState<Tab>("malades");
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState<Commande | null>(null);
@@ -100,6 +101,12 @@ export default function CommandesPage() {
       api
         .menus()
         .then(setMenus)
+        .catch(() => {});
+    }
+    if (user?.role === "prestataire") {
+      api
+        .regimesSpeciaux()
+        .then(setRegimesSpeciaux)
         .catch(() => {});
     }
   };
@@ -199,6 +206,319 @@ export default function CommandesPage() {
     });
   };
 
+  // ── Export agrégé « Bon de livraison » (prestataire) ─────────────────
+  const REGIME_LABELS: Record<string, string> = {
+    sans_sel: "Sans sel",
+    diabetique: "Diabétique",
+    hyposode: "Hyposodé",
+    post_op_mixe: "Post-op mixé",
+    hyper_proteine: "Hyper-protéiné",
+    sans_gluten: "Sans gluten",
+    enrichi: "Enrichi",
+    autre: "Autre",
+  };
+
+  const exportBonLivraisonPdf = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
+    const doc = new jsPDF({ orientation: "landscape" });
+    const pw = doc.internal.pageSize.getWidth();
+    const dateStr = new Date().toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    // Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, pw, 38, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Resto-H — BON DE LIVRAISON AGRÉGÉ", 14, 16);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Généré le ${dateStr}`, 14, 24);
+    doc.text("Document de conformité — Prestataire de restauration", 14, 31);
+
+    // Section 1: Commandes à livrer
+    const cmdALivrer = commandes.filter(
+      (c) => c.statut === "validee" || c.statut === "en_cours",
+    );
+    const allCmd = commandes;
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("1. COMMANDES À LIVRER", 14, 48);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${cmdALivrer.length} commande(s) validée(s) en attente de livraison — ${allCmd.length} commande(s) au total`,
+      14,
+      54,
+    );
+
+    const cmdHeaders = [
+      "Réf.",
+      "Service",
+      "Type",
+      "Repas",
+      "Date",
+      "Portions",
+      "Menu",
+      "Statut",
+      "Observations",
+    ];
+    const cmdBody = allCmd.map((c) => [
+      c.reference,
+      c.service?.nom ?? "",
+      c.type === "malades"
+        ? "Malades"
+        : c.type === "personnel"
+          ? "Personnel"
+          : "Client ext.",
+      REPAS_LABELS[c.repas] ?? c.repas,
+      c.date_repas,
+      String(c.nb_portions),
+      c.menu?.intitule ?? "—",
+      STATUT_BADGE[c.statut]?.label ?? c.statut,
+      c.observations ?? "",
+    ]);
+    const totalPortions = allCmd.reduce((s, c) => s + c.nb_portions, 0);
+    cmdBody.push(["TOTAL", "", "", "", "", String(totalPortions), "", "", ""]);
+
+    autoTable(doc, {
+      startY: 58,
+      head: [cmdHeaders],
+      body: cmdBody,
+      styles: { fontSize: 8, cellPadding: 3, font: "helvetica" },
+      headStyles: {
+        fillColor: [241, 245, 249],
+        textColor: [51, 65, 85],
+        fontStyle: "bold",
+        fontSize: 7,
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      didParseCell: (data) => {
+        if (data.row.index === cmdBody.length - 1 && data.section === "body") {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [226, 232, 240];
+        }
+      },
+    });
+
+    // Section 2: Régimes spéciaux actifs
+    const regimesActifs = regimesSpeciaux.filter(
+      (r) => r.statut === "valide" || r.statut === "en_attente",
+    );
+    const lastTable = (doc as any).lastAutoTable;
+    let y2 = (lastTable?.finalY ?? 120) + 14;
+    if (y2 > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      y2 = 20;
+    }
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("2. RÉGIMES SPÉCIAUX (menus thérapeutiques)", 14, y2);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${regimesActifs.length} régime(s) actif(s) ou en attente`,
+      14,
+      y2 + 6,
+    );
+
+    const regHeaders = [
+      "Patient",
+      "Lit",
+      "Service",
+      "Type de régime",
+      "Date début",
+      "Durée (j)",
+      "Prescripteur",
+      "Instructions",
+      "Statut",
+    ];
+    const regBody = regimesActifs.map((r) => [
+      r.patient_nom,
+      r.lit,
+      r.service?.nom ?? "",
+      REGIME_LABELS[r.type_regime] ?? r.type_regime,
+      r.date_debut,
+      String(r.duree_jours),
+      r.medecin_prescripteur,
+      r.instructions ?? "—",
+      r.statut === "valide" ? "Actif" : "En attente",
+    ]);
+
+    autoTable(doc, {
+      startY: y2 + 10,
+      head: [regHeaders],
+      body:
+        regBody.length > 0
+          ? regBody
+          : [["Aucun régime spécial actif", "", "", "", "", "", "", "", ""]],
+      styles: { fontSize: 8, cellPadding: 3, font: "helvetica" },
+      headStyles: {
+        fillColor: [254, 243, 199],
+        textColor: [146, 64, 14],
+        fontStyle: "bold",
+        fontSize: 7,
+      },
+      alternateRowStyles: { fillColor: [255, 251, 235] },
+    });
+
+    // Section 3: Résumé
+    const lastTable2 = (doc as any).lastAutoTable;
+    let y3 = (lastTable2?.finalY ?? 180) + 14;
+    if (y3 > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      y3 = 20;
+    }
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("3. RÉSUMÉ", 14, y3);
+    const summaryHeaders = ["Indicateur", "Valeur"];
+    const summaryBody = [
+      ["Total commandes", String(allCmd.length)],
+      ["Commandes validées (à livrer)", String(cmdALivrer.length)],
+      [
+        "Commandes déjà livrées",
+        String(commandes.filter((c) => c.statut === "livree").length),
+      ],
+      [
+        "Total portions à livrer",
+        String(cmdALivrer.reduce((s, c) => s + c.nb_portions, 0)),
+      ],
+      [
+        "Régimes spéciaux actifs",
+        String(regimesActifs.filter((r) => r.statut === "valide").length),
+      ],
+      [
+        "Régimes en attente validation",
+        String(regimesActifs.filter((r) => r.statut === "en_attente").length),
+      ],
+    ];
+    autoTable(doc, {
+      startY: y3 + 4,
+      head: [summaryHeaders],
+      body: summaryBody,
+      styles: { fontSize: 9, cellPadding: 4, font: "helvetica" },
+      headStyles: {
+        fillColor: [209, 250, 229],
+        textColor: [6, 95, 70],
+        fontStyle: "bold",
+      },
+      columnStyles: { 0: { fontStyle: "bold" } },
+      tableWidth: 200,
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const ph = doc.internal.pageSize.getHeight();
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        "© AIT & ANABASE — Resto-H | Document de conformité prestataire",
+        14,
+        ph - 8,
+      );
+      doc.text(`Page ${i}/${pageCount}`, pw - 14, ph - 8, { align: "right" });
+    }
+
+    doc.save(
+      `bon_livraison_agrege_${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  };
+
+  const exportBonLivraisonCsv = () => {
+    const cmdALivrer = commandes.filter(
+      (c) => c.statut === "validee" || c.statut === "en_cours",
+    );
+    const allCmd = commandes;
+    const regimesActifs = regimesSpeciaux.filter(
+      (r) => r.statut === "valide" || r.statut === "en_attente",
+    );
+
+    const rows: (string | number)[][] = [];
+    rows.push(["=== COMMANDES (" + allCmd.length + ") ==="]);
+    rows.push([
+      "Réf.",
+      "Service",
+      "Type",
+      "Repas",
+      "Date",
+      "Portions",
+      "Menu",
+      "Statut",
+      "Observations",
+    ]);
+    allCmd.forEach((c) =>
+      rows.push([
+        c.reference,
+        c.service?.nom ?? "",
+        c.type,
+        REPAS_LABELS[c.repas] ?? c.repas,
+        c.date_repas,
+        c.nb_portions,
+        c.menu?.intitule ?? "",
+        STATUT_BADGE[c.statut]?.label ?? c.statut,
+        c.observations ?? "",
+      ]),
+    );
+    rows.push([]);
+    rows.push(["=== RÉGIMES SPÉCIAUX (" + regimesActifs.length + ") ==="]);
+    rows.push([
+      "Patient",
+      "Lit",
+      "Service",
+      "Type",
+      "Date début",
+      "Durée (j)",
+      "Prescripteur",
+      "Instructions",
+      "Statut",
+    ]);
+    regimesActifs.forEach((r) =>
+      rows.push([
+        r.patient_nom,
+        r.lit,
+        r.service?.nom ?? "",
+        REGIME_LABELS[r.type_regime] ?? r.type_regime,
+        r.date_debut,
+        r.duree_jours,
+        r.medecin_prescripteur,
+        r.instructions ?? "",
+        r.statut === "valide" ? "Actif" : "En attente",
+      ]),
+    );
+    rows.push([]);
+    rows.push(["=== RÉSUMÉ ==="]);
+    rows.push(["Total commandes", allCmd.length]);
+    rows.push(["À livrer", cmdALivrer.length]);
+    rows.push([
+      "Portions à livrer",
+      cmdALivrer.reduce((s, c) => s + c.nb_portions, 0),
+    ]);
+    rows.push([
+      "Régimes actifs",
+      regimesActifs.filter((r) => r.statut === "valide").length,
+    ]);
+
+    downloadCsv(
+      rows,
+      `bon_livraison_agrege_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+  };
+
   return (
     <>
       <div
@@ -211,13 +531,33 @@ export default function CommandesPage() {
       >
         <div>
           <h3 style={{ fontSize: 18, fontWeight: 700 }}>
-            Gestion des Commandes
+            {user?.role === "prestataire"
+              ? "Commandes & Livraisons"
+              : "Gestion des Commandes"}
           </h3>
           <p style={{ fontSize: 13, color: "var(--text-sm)", marginTop: 2 }}>
-            Commandes des services, du personnel et des clients externes
+            {user?.role === "prestataire"
+              ? "Vue agrégée de toutes les commandes et régimes spéciaux à livrer"
+              : "Commandes des services, du personnel et des clients externes"}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {user?.role === "prestataire" && (
+            <>
+              <button
+                onClick={exportBonLivraisonPdf}
+                style={{ ...btn, fontSize: 12, background: "var(--navy)" }}
+              >
+                <i className="fa-solid fa-file-pdf" /> Bon de livraison (PDF)
+              </button>
+              <button
+                onClick={exportBonLivraisonCsv}
+                style={{ ...btnSecondary, fontSize: 12 }}
+              >
+                <i className="fa-solid fa-file-csv" /> Bon de livraison (CSV)
+              </button>
+            </>
+          )}
           <button
             onClick={exportCommandesPdf}
             style={{ ...btnSecondary, fontSize: 12 }}
