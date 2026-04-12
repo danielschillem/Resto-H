@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             'code' => 'CHR-TENK',
             'type' => 'CHR',
             'ville' => 'Tenkodogo',
-            'region' => 'Centre-Est',
+            'region' => 'Nakambé',
             'telephone' => '+226 40 71 06 06',
             'email' => 'direction@chr-tenkodogo.bf',
             'directeur' => 'Dr. Ouédraogo Blaise',

@@ -106,19 +106,23 @@ const ACTION_LABELS: Record<string, string> = {
 };
 const TYPE_OPTIONS = ["CHR", "CHU", "CMA", "CSPS", "CM", "Clinique", "Autre"];
 const REGION_OPTIONS = [
-  "Boucle du Mouhoun",
-  "Cascades",
-  "Centre",
-  "Centre-Est",
-  "Centre-Nord",
-  "Centre-Ouest",
-  "Centre-Sud",
-  "Est",
-  "Hauts-Bassins",
-  "Nord",
-  "Plateau-Central",
-  "Sahel",
-  "Sud-Ouest",
+  "Bankui",
+  "Djôrô",
+  "Goulmou",
+  "Guiriko",
+  "Kadiogo",
+  "Kuilsé",
+  "Liptako",
+  "Nakambé",
+  "Nando",
+  "Nazinon",
+  "Oubri",
+  "Sirba",
+  "Soum",
+  "Sourou",
+  "Tannounyan",
+  "Tapoa",
+  "Yaadga",
 ];
 const ROLES_ACTEURS = ["prestataire", "dsgl", "csah", "sus", "sut"] as const;
 
