@@ -18,7 +18,7 @@ class TenantScope
     {
         $user = $request->user();
 
-        // Super admin n'a pas de formation_id — voit tout
+        // Super admin n'a pas de formation_id - voit tout
         if ($user && $user->role !== 'super_admin') {
             self::$formationId = $user->formation_id;
         } else {

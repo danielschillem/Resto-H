@@ -376,7 +376,7 @@ function StatsBar({ stats }: { stats: StatsData | null }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 1 — Création Formation Sanitaire
+   SECTION 1 - Création Formation Sanitaire
    ════════════════════════════════════════════════════════════════════════════ */
 function SectionCreation({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState(emptyForm());
@@ -618,7 +618,7 @@ function SectionCreation({ onCreated }: { onCreated: () => void }) {
               }
               style={inputStyle}
             >
-              <option value="">— Sélectionner —</option>
+              <option value="">- Sélectionner -</option>
               {REGION_OPTIONS.map((r) => (
                 <option key={r} value={r}>
                   {r}
@@ -772,7 +772,7 @@ function SectionCreation({ onCreated }: { onCreated: () => void }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 2 — Gestion de Formation Sanitaire
+   SECTION 2 - Gestion de Formation Sanitaire
    ════════════════════════════════════════════════════════════════════════════ */
 type GestionSubTab =
   | "users"
@@ -945,7 +945,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                 {activeFormation.code}
               </code>
               <span style={{ color: C.textSm, fontSize: 12 }}>
-                {activeFormation.type} · {activeFormation.ville ?? "—"}
+                {activeFormation.type} · {activeFormation.ville ?? "-"}
               </span>
               <CopyLinkRow code={activeFormation.code} />
             </div>
@@ -1133,7 +1133,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                   }
                   style={inputStyle}
                 >
-                  <option value="">— Sélectionner —</option>
+                  <option value="">- Sélectionner -</option>
                   {REGION_OPTIONS.map((r) => (
                     <option key={r} value={r}>
                       {r}
@@ -1485,7 +1485,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                   </td>
                   <td style={{ ...tdStyle, color: C.textSm }}>{f.type}</td>
                   <td style={{ ...tdStyle, color: C.textSm }}>
-                    {f.ville ?? "—"}
+                    {f.ville ?? "-"}
                   </td>
                   <td style={tdStyle} onClick={(e) => e.stopPropagation()}>
                     <CopyLinkRow code={f.code} />
@@ -1499,7 +1499,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                       if (!li)
                         return (
                           <span style={{ color: C.textXs, fontSize: 12 }}>
-                            —
+                            -
                           </span>
                         );
                       const color =
@@ -1740,7 +1740,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                 }
                 style={inputStyle}
               >
-                <option value="">— Sélectionner —</option>
+                <option value="">- Sélectionner -</option>
                 {REGION_OPTIONS.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -2130,7 +2130,7 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
               opacity: 0.4,
             }}
           />
-          Aucun acteur — utilisez &quot;Affecter un acteur&quot; pour en ajouter
+          Aucun acteur - utilisez &quot;Affecter un acteur&quot; pour en ajouter
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -2373,7 +2373,7 @@ function SubTabServices() {
                 </td>
                 <td style={{ ...tdStyle, color: C.text }}>{s.lits_actifs}</td>
                 <td style={{ ...tdStyle, color: C.textSm }}>
-                  {s.responsable || "—"}
+                  {s.responsable || "-"}
                 </td>
                 <td style={tdStyle}>
                   <span
@@ -3148,7 +3148,7 @@ function SubTabLicence({
               Date début
             </div>
             <div style={{ fontWeight: 600, fontSize: 14, color: C.text }}>
-              {li?.date_debut ?? "—"}
+              {li?.date_debut ?? "-"}
             </div>
           </div>
           <div>
@@ -3156,7 +3156,7 @@ function SubTabLicence({
               Expire le
             </div>
             <div style={{ fontWeight: 600, fontSize: 14, color: C.text }}>
-              {li?.date_fin ?? "—"}
+              {li?.date_fin ?? "-"}
             </div>
           </div>
           <div>
@@ -3317,7 +3317,7 @@ function SubTabLicence({
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 3 — Vue d'ensemble des Licences (par formation)
+   SECTION 3 - Vue d'ensemble des Licences (par formation)
    ════════════════════════════════════════════════════════════════════════════ */
 function SectionLicences() {
   const [formations, setFormations] = useState<
@@ -3489,7 +3489,7 @@ function SectionLicences() {
                           month: "short",
                           year: "numeric",
                         })
-                      : "—"}
+                      : "-"}
                   </td>
                   <td
                     style={{
@@ -3528,7 +3528,7 @@ function SectionLicences() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   SECTION 4 — Journaux et Analytique
+   SECTION 4 - Journaux et Analytique
    ════════════════════════════════════════════════════════════════════════════ */
 function SectionJournaux() {
   const [sub, setSub] = useState<"audit" | "analytics">("audit");
@@ -3727,7 +3727,7 @@ function TabAudit() {
                 </td>
                 <td style={{ ...tdStyle, color: C.textSm }}>{l.entity_type}</td>
                 <td style={{ ...tdStyle, color: C.text }}>
-                  {l.entity_label || "—"}
+                  {l.entity_label || "-"}
                 </td>
                 <td
                   style={{
@@ -3739,10 +3739,10 @@ function TabAudit() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {l.details || "—"}
+                  {l.details || "-"}
                 </td>
                 <td style={{ ...tdStyle, color: C.textXs, fontSize: 11 }}>
-                  {l.ip_address || "—"}
+                  {l.ip_address || "-"}
                 </td>
               </tr>
             ))}
@@ -4383,7 +4383,7 @@ export default function SuperAdminPage() {
           fontSize: 11,
         }}
       >
-        © AIT &amp; ANABASE — Resto-H v1.0 — Super Admin
+        © AIT &amp; ANABASE - Resto-H v1.0 - Super Admin
       </div>
     </div>
   );

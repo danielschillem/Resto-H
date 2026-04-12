@@ -71,7 +71,7 @@ export default function FormationLoginPage({ params }: { params: Promise<{ code:
         setError('');
         setLoading(true);
         try {
-            // Passe le code de formation au backend — il vérifiera que l'utilisateur
+            // Passe le code de formation au backend - il vérifiera que l'utilisateur
             // appartient bien à cette formation (validation côté serveur)
             await login(email.trim(), password, formation.code);
             router.replace('/dashboard');
@@ -142,7 +142,7 @@ export default function FormationLoginPage({ params }: { params: Promise<{ code:
                 )}
 
                 <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 20, padding: '6px 16px', fontSize: 11, marginTop: 12, letterSpacing: 1 }}>
-                    SGRH — Resto-H v1.0
+                    SGRH - Resto-H v1.0
                 </span>
                 <div style={{ marginTop: 10, fontSize: 11, opacity: 0.4, textAlign: 'center' }}>© AIT &amp; ANABASE</div>
             </div>

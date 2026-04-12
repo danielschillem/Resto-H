@@ -648,7 +648,7 @@ export default function AdminPage() {
                             {rb.label}
                           </Badge>
                         </td>
-                        <td style={tdStyle}>{u.service || "—"}</td>
+                        <td style={tdStyle}>{u.service || "-"}</td>
                         <td style={tdStyle}>
                           <Badge
                             bg={u.is_active !== false ? "#D1FAE5" : "#F1F5F9"}
@@ -845,7 +845,7 @@ export default function AdminPage() {
                           {s.lits_actifs}
                         </span>
                       </td>
-                      <td style={tdStyle}>{s.responsable || "—"}</td>
+                      <td style={tdStyle}>{s.responsable || "-"}</td>
                       <td style={tdStyle}>
                         <Badge
                           bg={s.is_active ? "#D1FAE5" : "#F1F5F9"}
@@ -990,7 +990,7 @@ export default function AdminPage() {
           <p
             style={{ fontSize: 12, color: "var(--text-sm)", marginBottom: 20 }}
           >
-            Aperçu des accès par rôle — modifiable par le super-administrateur.
+            Aperçu des accès par rôle - modifiable par le super-administrateur.
           </p>
 
           <div style={{ overflowX: "auto" }}>
@@ -1203,7 +1203,7 @@ export default function AdminPage() {
                             {log.entity_type}
                           </span>
                         </td>
-                        <td style={tdStyle}>{log.entity_label || "—"}</td>
+                        <td style={tdStyle}>{log.entity_label || "-"}</td>
                         <td
                           style={{
                             ...tdStyle,
@@ -1213,7 +1213,7 @@ export default function AdminPage() {
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {log.details || "—"}
+                          {log.details || "-"}
                         </td>
                       </tr>
                     ))}

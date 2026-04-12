@@ -14,7 +14,7 @@ class CommandeObserver
         $this->notifyRoles(
             ['prestataire', 'csah'],
             'Nouvelle commande',
-            "Commande {$commande->reference} soumise — {$commande->nb_portions} portion(s) pour le service.",
+            "Commande {$commande->reference} soumise - {$commande->nb_portions} portion(s) pour le service.",
             'commande',
             $commande->id
         );

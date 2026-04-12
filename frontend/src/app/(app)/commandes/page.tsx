@@ -198,7 +198,7 @@ export default function CommandesPage() {
 
   const exportCommandesPdf = () => {
     exportPdf({
-      title: `Commandes — ${tab}`,
+      title: `Commandes - ${tab}`,
       headers: HEADERS_CMD,
       rows: cmdRows(),
       filename: `commandes_${tab}_${new Date().toISOString().slice(0, 10)}.pdf`,
@@ -235,11 +235,11 @@ export default function CommandesPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Resto-H — BON DE LIVRAISON AGRÉGÉ", 14, 16);
+    doc.text("Resto-H - BON DE LIVRAISON AGRÉGÉ", 14, 16);
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text(`Généré le ${dateStr}`, 14, 24);
-    doc.text("Document de conformité — Prestataire de restauration", 14, 31);
+    doc.text("Document de conformité - Prestataire de restauration", 14, 31);
 
     // Section 1: Commandes à livrer
     const cmdALivrer = commandes.filter((c) => c.statut === "validee");
@@ -252,7 +252,7 @@ export default function CommandesPage() {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 116, 139);
     doc.text(
-      `${cmdALivrer.length} commande(s) validée(s) en attente de livraison — ${allCmd.length} commande(s) au total`,
+      `${cmdALivrer.length} commande(s) validée(s) en attente de livraison - ${allCmd.length} commande(s) au total`,
       14,
       54,
     );
@@ -279,7 +279,7 @@ export default function CommandesPage() {
       REPAS_LABELS[c.repas] ?? c.repas,
       c.date_repas,
       String(c.nb_portions),
-      c.menu?.intitule ?? "—",
+      c.menu?.intitule ?? "-",
       STATUT_BADGE[c.statut]?.label ?? c.statut,
       c.observations ?? "",
     ]);
@@ -349,7 +349,7 @@ export default function CommandesPage() {
       r.date_debut,
       String(r.duree_jours),
       r.medecin_prescripteur,
-      r.instructions ?? "—",
+      r.instructions ?? "-",
       r.statut === "valide" ? "Actif" : "En attente",
     ]);
 
@@ -425,7 +425,7 @@ export default function CommandesPage() {
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
       doc.text(
-        "© AIT & ANABASE — Resto-H | Document de conformité prestataire",
+        "© AIT & ANABASE - Resto-H | Document de conformité prestataire",
         14,
         ph - 8,
       );
@@ -539,7 +539,7 @@ export default function CommandesPage() {
             className={`fa-solid ${isAfterDeadline ? "fa-lock" : "fa-clock"}`}
           />
           {isAfterDeadline
-            ? "Heure limite dépassée (09h00) — Les nouvelles commandes ne sont plus acceptées pour aujourd'hui."
+            ? "Heure limite dépassée (09h00) - Les nouvelles commandes ne sont plus acceptées pour aujourd'hui."
             : "Les commandes doivent être saisies avant 09h00 chaque jour."}
         </div>
       )}
@@ -783,7 +783,7 @@ export default function CommandesPage() {
                         : c.nb_portions}
                     </td>
                     <td style={tdStyle}>{REPAS_LABELS[c.repas] || c.repas}</td>
-                    <td style={tdStyle}>{c.menu?.intitule || "—"}</td>
+                    <td style={tdStyle}>{c.menu?.intitule || "-"}</td>
                     {tab === "clients" && (
                       <td style={tdStyle}>
                         {c.montant?.toLocaleString("fr-FR")} FCFA
@@ -929,7 +929,7 @@ export default function CommandesPage() {
             }}
           >
             <span style={{ fontSize: 13, color: "var(--text-sm)" }}>
-              {total} commande{total !== 1 ? "s" : ""} — Page {page}/{lastPage}
+              {total} commande{total !== 1 ? "s" : ""} - Page {page}/{lastPage}
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button
@@ -1067,7 +1067,7 @@ export default function CommandesPage() {
       <Modal
         open={detailModal !== null}
         onClose={() => setDetailModal(null)}
-        title={`Détail — Commande ${detailModal?.reference || ""}`}
+        title={`Détail - Commande ${detailModal?.reference || ""}`}
         footer={
           <button onClick={() => setDetailModal(null)} style={btnSecondary}>
             Fermer
@@ -1090,7 +1090,7 @@ export default function CommandesPage() {
                   Repas
                 </div>
                 <div style={{ fontWeight: 600, marginTop: 2 }}>
-                  {REPAS_LABELS[detailModal.repas]} — {detailModal.date_repas}
+                  {REPAS_LABELS[detailModal.repas]} - {detailModal.date_repas}
                 </div>
               </div>
               <div>
@@ -1098,7 +1098,7 @@ export default function CommandesPage() {
                   Menu
                 </div>
                 <div style={{ fontWeight: 600, marginTop: 2 }}>
-                  {detailModal.menu?.intitule || "—"}
+                  {detailModal.menu?.intitule || "-"}
                 </div>
               </div>
               <div>
@@ -1114,7 +1114,7 @@ export default function CommandesPage() {
                   Soumis par
                 </div>
                 <div style={{ fontWeight: 600, marginTop: 2 }}>
-                  {detailModal.soumis_par?.full_name || "—"}
+                  {detailModal.soumis_par?.full_name || "-"}
                 </div>
               </div>
               <div>
@@ -1122,7 +1122,7 @@ export default function CommandesPage() {
                   Heure livraison
                 </div>
                 <div style={{ fontWeight: 600, marginTop: 2 }}>
-                  {detailModal.heure_livraison || "—"}
+                  {detailModal.heure_livraison || "-"}
                 </div>
               </div>
             </div>
@@ -1231,7 +1231,7 @@ export default function CommandesPage() {
                 <b>Service :</b> {livraisonModal.service?.nom}
               </div>
               <div>
-                <b>Repas :</b> {REPAS_LABELS[livraisonModal.repas]} —{" "}
+                <b>Repas :</b> {REPAS_LABELS[livraisonModal.repas]} -{" "}
                 {livraisonModal.date_repas}
               </div>
               <div>
@@ -1259,7 +1259,7 @@ export default function CommandesPage() {
                 if (!paiementModal) return;
                 await api.enregistrerPaiement(paiementModal.id);
                 showToast(
-                  `Paiement enregistré — ${paiementModal.reference}`,
+                  `Paiement enregistré - ${paiementModal.reference}`,
                   "success",
                 );
                 setPaiementModal(null);
@@ -1287,7 +1287,7 @@ export default function CommandesPage() {
                 <b>Réf. :</b> {paiementModal.reference}
               </div>
               <div>
-                <b>Client :</b> {paiementModal.client_nom || "—"}
+                <b>Client :</b> {paiementModal.client_nom || "-"}
               </div>
               <div>
                 <b>Montant :</b>{" "}

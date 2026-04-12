@@ -328,7 +328,7 @@ export default function ServicesPage() {
                         {s.lits_actifs}
                       </span>
                     </td>
-                    <td style={tdStyle}>{s.responsable || "—"}</td>
+                    <td style={tdStyle}>{s.responsable || "-"}</td>
                     <td style={tdStyle}>
                       <span
                         style={{

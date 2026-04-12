@@ -30,7 +30,7 @@ return new class extends Migration {
             'updated_at' => now(),
         ]);
 
-        // DSGL validates everything — add missing permissions
+        // DSGL validates everything - add missing permissions
         $dsglExisting = DB::table('role_permissions')->where('role', 'dsgl')->pluck('permission')->toArray();
         $dsglNeeded = ['dashboard', 'menus', 'menus.valider', 'commandes', 'commandes.valider', 'consommations', 'etats', 'etats.valider', 'regimes', 'regimes.valider', 'admin', 'licence'];
         $now = now();

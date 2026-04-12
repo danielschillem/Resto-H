@@ -233,7 +233,7 @@ export default function EtatsPage() {
       "Coût réel",
     ];
     exportPdf({
-      title: "État des consommations — Articles",
+      title: "État des consommations - Articles",
       subtitle:
         articlesPeriode === "semaine"
           ? "Semaine en cours"
@@ -366,7 +366,7 @@ export default function EtatsPage() {
           >
             <div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>
-                État récapitulatif des commandes — Semaine en cours
+                État récapitulatif des commandes - Semaine en cours
               </div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
@@ -449,7 +449,7 @@ export default function EtatsPage() {
             }}
           >
             <div style={{ fontSize: 15, fontWeight: 700 }}>
-              État des consommations — Articles
+              État des consommations - Articles
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               {(["semaine", "semaine_precedente", "mois"] as const).map((p) => (
@@ -565,7 +565,7 @@ export default function EtatsPage() {
           >
             <div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>
-                Devis estimatif — Semaine du{" "}
+                Devis estimatif - Semaine du{" "}
                 {fmtDate(currentDevis.semaine_debut)} au{" "}
                 {fmtDate(currentDevis.semaine_fin)}
               </div>
@@ -752,8 +752,8 @@ export default function EtatsPage() {
                     <td style={tdStyle}>{v.periode}</td>
                     <td style={tdStyle}>{v.soumis_par}</td>
                     <td style={tdStyle}>{v.date_soumission}</td>
-                    <td style={tdStyle}>{v.valide_par || "—"}</td>
-                    <td style={tdStyle}>{v.date_validation || "—"}</td>
+                    <td style={tdStyle}>{v.valide_par || "-"}</td>
+                    <td style={tdStyle}>{v.date_validation || "-"}</td>
                     <td style={tdStyle}>
                       <span
                         style={{

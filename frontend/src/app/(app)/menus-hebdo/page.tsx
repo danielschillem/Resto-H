@@ -457,7 +457,7 @@ export default function MenusHebdoPage() {
               <span style={{ fontWeight: 700 }}>
                 {current?.cout_matieres != null
                   ? current.cout_matieres.toLocaleString("fr-FR") + " FCFA"
-                  : "—"}
+                  : "-"}
               </span>
             </div>
             <div
@@ -475,7 +475,7 @@ export default function MenusHebdoPage() {
               <span style={{ fontWeight: 700 }}>
                 {current?.cout_main_oeuvre != null
                   ? current.cout_main_oeuvre.toLocaleString("fr-FR") + " FCFA"
-                  : "—"}
+                  : "-"}
               </span>
             </div>
             <div
@@ -495,7 +495,7 @@ export default function MenusHebdoPage() {
                       (current.cout_matieres || 0) +
                       (current.cout_main_oeuvre || 0)
                     ).toLocaleString("fr-FR") + " FCFA"
-                  : "—"}
+                  : "-"}
               </span>
             </div>
           </div>

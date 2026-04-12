@@ -25,17 +25,17 @@ Route::get('/formations/public/{code}', [SuperAdminController::class, 'formation
 
 // Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth — tous les rôles
+    // Auth - tous les rôles
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me/profile', [AuthController::class, 'updateProfile']);
     Route::post('/me/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    // Licence — activation (gérant/dsgl uniquement par convention)
+    // Licence - activation (gérant/dsgl uniquement par convention)
     Route::post('/licence/activer', [LicenceController::class, 'activer']);
 
-    // Notifications — tous les rôles
+    // Notifications - tous les rôles
     Route::get('/notifications', [AdminController::class, 'notifications']);
     Route::post('/notifications/{notification}/lu', [AdminController::class, 'marquerLu']);
     Route::post('/notifications/tout-lire', [AdminController::class, 'toutMarquerLu']);
@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
     Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
 
-    // Menus : gestion (création, soumission) — prestataire, DSGL, CSAH
+    // Menus : gestion (création, soumission) - prestataire, DSGL, CSAH
     Route::middleware('role:prestataire,dsgl,csah')->group(function () {
         Route::post('/menus', [MenuController::class, 'store']);
         Route::put('/menus/{menu}', [MenuController::class, 'update']);

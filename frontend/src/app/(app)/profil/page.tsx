@@ -7,10 +7,10 @@ import Modal from "@/components/Modal";
 
 const ROLE_LABELS: Record<string, string> = {
   prestataire: "Prestataire de Restauration",
-  dsgl: "DSGL — Direction Gén. & Logistique",
-  csah: "CSAH — Accueil & Hôtellerie",
-  sus: "SUS — Soins",
-  sut: "SUT — Technique",
+  dsgl: "DSGL - Direction Gén. & Logistique",
+  csah: "CSAH - Accueil & Hôtellerie",
+  sus: "SUS - Soins",
+  sut: "SUT - Technique",
   super_admin: "Super Administrateur",
 };
 
@@ -167,7 +167,7 @@ export default function ProfilPage() {
             </div>
             <div style={fieldRow}>
               <span style={fieldLabel}>Service</span>
-              <span style={fieldValue}>{user.service || "—"}</span>
+              <span style={fieldValue}>{user.service || "-"}</span>
             </div>
           </div>
 

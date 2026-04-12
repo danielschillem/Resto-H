@@ -20,7 +20,7 @@ export function useNotificationSSE() {
       const data = await api.notifications();
       setUnreadCount(data.unread_count);
     } catch {
-      // Ignore errors silently — will retry on next tick
+      // Ignore errors silently - will retry on next tick
     }
   }, []);
 

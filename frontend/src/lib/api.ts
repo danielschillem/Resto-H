@@ -23,7 +23,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch {
-    emitToast("Erreur réseau — vérifiez votre connexion", "error");
+    emitToast("Erreur réseau - vérifiez votre connexion", "error");
     throw new Error("Erreur réseau");
   }
 
@@ -37,7 +37,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (res.status === 204) return null as T;
 
   if (res.status === 429) {
-    emitToast("Trop de requêtes — veuillez patienter", "warning");
+    emitToast("Trop de requêtes - veuillez patienter", "warning");
     throw new Error("Trop de requêtes");
   }
 
@@ -287,10 +287,10 @@ export const api = {
   validations: () => request("/etats/validations"),
 
   // Admin
-  // Services — accessible à tous les rôles authentifiés (formulaires, filtres)
+  // Services - accessible à tous les rôles authentifiés (formulaires, filtres)
   myServices: () => request<import("@/types").Service[]>("/services"),
 
-  // Admin — DSGL uniquement
+  // Admin - DSGL uniquement
   users: () => request<import("@/types").User[]>("/admin/users"),
   createUser: (data: Record<string, unknown>) =>
     request("/admin/users", { method: "POST", body: JSON.stringify(data) }),
@@ -459,7 +459,7 @@ export const api = {
       { method: "POST", body: JSON.stringify(data) },
     ),
 
-  // Super Admin — Audit & Exports
+  // Super Admin - Audit & Exports
   saAuditLogs: (params?: string) =>
     request<import("@/types").PaginatedResponse<import("@/types").AuditLog>>(
       `/super-admin/audit-logs${params ? `?${params}` : ""}`,
@@ -474,7 +474,7 @@ export const api = {
       "journal-audit.csv",
     ),
 
-  // Super Admin — Analytics
+  // Super Admin - Analytics
   saAnalytics: (days?: number) =>
     request<{
       users_over_time: { date: string; total: number }[];
@@ -491,7 +491,7 @@ export const api = {
       total_portions: number;
     }>(`/super-admin/analytics${days ? `?days=${days}` : ""}`),
 
-  // Super Admin — Services
+  // Super Admin - Services
   saServices: () =>
     request<(import("@/types").Service & { commandes_count: number })[]>(
       "/super-admin/services",
@@ -509,7 +509,7 @@ export const api = {
   saDeleteService: (id: number) =>
     request(`/super-admin/services/${id}`, { method: "DELETE" }),
 
-  // Super Admin — Bulk operations
+  // Super Admin - Bulk operations
   saBulkActivateUsers: (ids: number[]) =>
     request("/super-admin/users/bulk-activate", {
       method: "POST",
@@ -531,7 +531,7 @@ export const api = {
       body: JSON.stringify({ ids }),
     }),
 
-  // Super Admin — System config
+  // Super Admin - System config
   saConfig: () => request<import("@/types").Parametre[]>("/super-admin/config"),
   saUpdateConfig: (configs: { cle: string; valeur: string }[]) =>
     request("/super-admin/config", {

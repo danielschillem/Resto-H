@@ -143,10 +143,10 @@ class EtatController extends Controller
             $validations->push([
                 'document' => 'Menus hebdo S' . \Carbon\Carbon::parse($m->semaine_debut)->weekOfYear,
                 'periode' => \Carbon\Carbon::parse($m->semaine_debut)->format('d/m') . ' - ' . \Carbon\Carbon::parse($m->semaine_fin)->format('d/m'),
-                'soumis_par' => $m->soumisPar?->full_name ?? '—',
-                'date_soumission' => $m->date_soumission?->format('d/m H:i') ?? '—',
-                'valide_par' => $m->validePar?->full_name ?? '—',
-                'date_validation' => $m->date_validation?->format('d/m H:i') ?? '—',
+                'soumis_par' => $m->soumisPar?->full_name ?? '-',
+                'date_soumission' => $m->date_soumission?->format('d/m H:i') ?? '-',
+                'valide_par' => $m->validePar?->full_name ?? '-',
+                'date_validation' => $m->date_validation?->format('d/m H:i') ?? '-',
                 'statut' => $m->statut,
             ]);
         });
@@ -156,10 +156,10 @@ class EtatController extends Controller
             $validations->push([
                 'document' => 'Devis estimatif S' . $d->semaine_debut->weekOfYear,
                 'periode' => $d->semaine_debut->format('d/m') . ' - ' . $d->semaine_fin->format('d/m'),
-                'soumis_par' => $d->soumisPar?->full_name ?? '—',
-                'date_soumission' => $d->date_soumission?->format('d/m H:i') ?? '—',
-                'valide_par' => $d->validePar?->full_name ?? '—',
-                'date_validation' => $d->date_validation?->format('d/m H:i') ?? '—',
+                'soumis_par' => $d->soumisPar?->full_name ?? '-',
+                'date_soumission' => $d->date_soumission?->format('d/m H:i') ?? '-',
+                'valide_par' => $d->validePar?->full_name ?? '-',
+                'date_validation' => $d->date_validation?->format('d/m H:i') ?? '-',
                 'statut' => $d->statut,
             ]);
         });

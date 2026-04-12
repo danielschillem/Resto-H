@@ -74,7 +74,7 @@ export default function SuperAdminLoginPage() {
             Administration Système
           </h1>
           <p style={{ color: "#64748b", fontSize: 13 }}>
-            Resto-H — Accès restreint
+            Resto-H - Accès restreint
           </p>
         </div>
 
@@ -209,7 +209,7 @@ export default function SuperAdminLoginPage() {
             color: "#cbd5e1",
           }}
         >
-          © AIT &amp; ANABASE — Resto-H v1.0
+          © AIT &amp; ANABASE - Resto-H v1.0
         </div>
       </div>
     </div>

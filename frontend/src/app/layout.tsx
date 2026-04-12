@@ -7,9 +7,9 @@ import { ToastProvider } from "@/components/Toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Resto-H — Gestion de la Restauration Hospitalière",
+  title: "Resto-H - Gestion de la Restauration Hospitalière",
   description:
-    "Système intégré de gestion de la restauration hospitalière — AIT & ANABASE",
+    "Système intégré de gestion de la restauration hospitalière - AIT & ANABASE",
 };
 
 export default function RootLayout({

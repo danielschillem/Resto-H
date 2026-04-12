@@ -186,7 +186,7 @@ export default function LicencePage() {
                 Titulaire
               </div>
               <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {licence.titulaire || "—"}
+                {licence.titulaire || "-"}
               </div>
             </div>
           )}
@@ -218,7 +218,7 @@ export default function LicencePage() {
               Date de début
             </div>
             <div style={{ fontSize: 14, fontWeight: 600 }}>
-              {licence ? fmtDate(licence.date_debut) : "—"}
+              {licence ? fmtDate(licence.date_debut) : "-"}
             </div>
           </div>
           <div
@@ -240,7 +240,7 @@ export default function LicencePage() {
               Expire le
             </div>
             <div style={{ fontSize: 14, fontWeight: 600 }}>
-              {licence ? fmtDate(licence.date_fin) : "—"}
+              {licence ? fmtDate(licence.date_fin) : "-"}
             </div>
           </div>
           <div
@@ -506,7 +506,7 @@ export default function LicencePage() {
           ))}
         </div>
         <div style={{ marginTop: 16, fontSize: 12, opacity: 0.5 }}>
-          © AIT &amp; ANABASE — Resto-H v1.0
+          © AIT &amp; ANABASE - Resto-H v1.0
         </div>
       </div>
     </div>

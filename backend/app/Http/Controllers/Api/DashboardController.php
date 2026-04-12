@@ -67,8 +67,8 @@ class DashboardController extends Controller
             'csah' => [
                 ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour, 'label' => 'Repas à servir (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
                 ['icon' => 'fa-heart-pulse', 'color' => 'red', 'val' => $regimesActifs, 'label' => 'Régimes spéciaux actifs', 'trend' => 'up', 'trendText' => 'Validés'],
-                ['icon' => 'fa-star', 'color' => 'green', 'val' => '—', 'label' => 'Satisfaction (sem.)', 'trend' => 'up', 'trendText' => 'Non mesuré'],
-                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => '—', 'label' => "Livraisons à l'heure", 'trend' => 'up', 'trendText' => 'Non mesuré'],
+                ['icon' => 'fa-star', 'color' => 'green', 'val' => '-', 'label' => 'Satisfaction (sem.)', 'trend' => 'up', 'trendText' => 'Non mesuré'],
+                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => '-', 'label' => "Livraisons à l'heure", 'trend' => 'up', 'trendText' => 'Non mesuré'],
             ],
             default => [
                 [

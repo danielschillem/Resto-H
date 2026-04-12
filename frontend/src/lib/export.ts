@@ -29,7 +29,7 @@ export function exportPdf({
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("Resto-H — SGRH", 14, 16);
+  doc.text("Resto-H - SGRH", 14, 16);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(
@@ -90,7 +90,7 @@ export function exportPdf({
     const pageHeight = doc.internal.pageSize.getHeight();
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
-    doc.text(`© AIT & ANABASE — Resto-H`, 14, pageHeight - 8);
+    doc.text(`© AIT & ANABASE - Resto-H`, 14, pageHeight - 8);
     doc.text(`Page ${i}/${pageCount}`, pageWidth - 14, pageHeight - 8, {
       align: "right",
     });

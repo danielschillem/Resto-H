@@ -192,7 +192,7 @@ export default function ConsommationsPage() {
     {
       icon: "fa-bowl-food",
       color: "blue",
-      val: kpis.portions_servies || totaux.total_portions || "—",
+      val: kpis.portions_servies || totaux.total_portions || "-",
       label: "Portions servies (sem.)",
       trend: "up",
       text: "+3.2% vs sem. préc.",
@@ -524,7 +524,7 @@ export default function ConsommationsPage() {
                   <div
                     style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}
                   >
-                    Surplus — {c.menu_servi}
+                    Surplus - {c.menu_servi}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-sm)" }}>
                     {c.date} · Écart coût : +{c.ecart?.toLocaleString("fr-FR")}{" "}
@@ -548,7 +548,7 @@ export default function ConsommationsPage() {
                   <div
                     style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}
                   >
-                    Économie — {c.menu_servi}
+                    Économie - {c.menu_servi}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-sm)" }}>
                     {c.date} · Économie : {c.ecart?.toLocaleString("fr-FR")}{" "}

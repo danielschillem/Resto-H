@@ -176,7 +176,7 @@ export default function LoginPage() {
               letterSpacing: 1,
             }}
           >
-            RESTO-H — v2.0
+            RESTO-H - v2.0
           </span>
           <div
             style={{
@@ -265,11 +265,11 @@ export default function LoginPage() {
                 color: selectedFormation ? "inherit" : "var(--text-sm)",
               }}
             >
-              <option value="">— Choisir une structure —</option>
+              <option value="">- Choisir une structure -</option>
               {formations.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.nom}
-                  {f.ville ? ` — ${f.ville}` : ""}
+                  {f.ville ? ` - ${f.ville}` : ""}
                   {f.type ? ` (${f.type})` : ""}
                 </option>
               ))}

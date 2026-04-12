@@ -196,7 +196,7 @@ class AdminController extends Controller
 
         return $this->streamCsv('utilisateurs.csv', ['Nom', 'Prénom', 'Email', 'Profil', 'Service', 'Actif', 'Dernière connexion', 'Créé le'], $users->map(fn($u) => [
             $u->nom, $u->prenom, $u->email, $u->role, $u->service ?? '', $u->is_active ? 'Oui' : 'Non',
-            $u->last_login_at?->format('d/m/Y H:i') ?? '—', $u->created_at->format('d/m/Y'),
+            $u->last_login_at?->format('d/m/Y H:i') ?? '-', $u->created_at->format('d/m/Y'),
         ])->toArray());
     }
 
@@ -207,7 +207,7 @@ class AdminController extends Controller
         $services = $query->get();
 
         return $this->streamCsv('services.csv', ['Service', 'Lits actifs', 'Responsable', 'Actif'], $services->map(fn($s) => [
-            $s->nom, $s->lits_actifs, $s->responsable ?? '—', $s->is_active ? 'Oui' : 'Non',
+            $s->nom, $s->lits_actifs, $s->responsable ?? '-', $s->is_active ? 'Oui' : 'Non',
         ])->toArray());
     }
 

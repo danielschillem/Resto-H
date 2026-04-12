@@ -80,10 +80,10 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
 
 const ROLE_LABELS: Record<string, string> = {
   prestataire: "Prestataire de Restauration",
-  dsgl: "DSGL — Direction Gén. & Logistique",
-  csah: "CSAH — Accueil & Hôtellerie",
-  sus: "SUS — Soins",
-  sut: "SUT — Technique",
+  dsgl: "DSGL - Direction Gén. & Logistique",
+  csah: "CSAH - Accueil & Hôtellerie",
+  sus: "SUS - Soins",
+  sut: "SUT - Technique",
 };
 
 const ROLE_COLORS: Record<string, string> = {
