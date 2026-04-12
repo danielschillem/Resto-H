@@ -147,14 +147,19 @@ class DashboardController extends Controller
 
     private function getRepartition(): array
     {
-        $total = TenantScope::apply(Commande::query())->count() ?: 1;
-        $malades = TenantScope::apply(Commande::query())->where('type', 'malades')->count();
-        $personnel = TenantScope::apply(Commande::query())->where('type', 'personnel')->count();
-        $clients = TenantScope::apply(Commande::query())->where('type', 'client_externe')->count();
+        $counts = TenantScope::apply(Commande::query())
+            ->selectRaw("COUNT(CASE WHEN type = 'malades' THEN 1 END) as malades")
+            ->selectRaw("COUNT(CASE WHEN type = 'personnel' THEN 1 END) as personnel")
+            ->selectRaw("COUNT(CASE WHEN type = 'client_externe' THEN 1 END) as clients")
+            ->first();
 
         return [
             'labels' => ['Malades', 'Personnel', 'Clients ext.'],
-            'data' => [$malades, $personnel, $clients],
+            'data' => [
+                (int) $counts->malades,
+                (int) $counts->personnel,
+                (int) $counts->clients,
+            ],
         ];
     }
 }

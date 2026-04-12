@@ -14,6 +14,7 @@ class MenuHebdomadaire extends Model
         'semaine_debut', 'semaine_fin', 'statut', 'soumis_par',
         'valide_par', 'date_soumission', 'date_validation',
         'cout_matieres', 'cout_main_oeuvre', 'commentaire',
+        'formation_id',
     ];
 
     protected function casts(): array

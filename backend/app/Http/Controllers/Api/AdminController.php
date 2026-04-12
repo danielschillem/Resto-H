@@ -30,7 +30,7 @@ class AdminController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:4',
+            'password' => 'required|string|min:8',
             'role' => 'required|in:prestataire,dsgl,csah,sus,sut',
             'service' => 'nullable|string|max:255',
         ]);

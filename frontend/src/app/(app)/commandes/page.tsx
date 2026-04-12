@@ -95,7 +95,7 @@ export default function CommandesPage() {
     }
     if (user?.role !== "prestataire") {
       api
-        .services()
+        .myServices()
         .then(setServices)
         .catch(() => {});
       api

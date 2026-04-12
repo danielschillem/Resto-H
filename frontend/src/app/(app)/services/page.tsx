@@ -32,7 +32,7 @@ export default function ServicesPage() {
   const load = () => {
     setLoading(true);
     api
-      .services()
+      .myServices()
       .then(setServices)
       .catch(() => {})
       .finally(() => setLoading(false));

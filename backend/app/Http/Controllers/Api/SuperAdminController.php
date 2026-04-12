@@ -114,7 +114,7 @@ class SuperAdminController extends Controller
             'prestataire_nom' => 'nullable|string|max:255',
             'prestataire_prenom' => 'nullable|string|max:255',
             'prestataire_email' => 'nullable|email|unique:users,email',
-            'prestataire_password' => 'nullable|string|min:4',
+            'prestataire_password' => 'nullable|string|min:8',
         ]);
 
         $formation = FormationSanitaire::create([
@@ -136,7 +136,7 @@ class SuperAdminController extends Controller
                 'nom' => $data['prestataire_nom'] ?? 'Prestataire',
                 'prenom' => $data['prestataire_prenom'] ?? $formation->nom,
                 'email' => $data['prestataire_email'],
-                'password' => bcrypt($data['prestataire_password'] ?? '1234'),
+                'password' => bcrypt($data['prestataire_password'] ?? \Illuminate\Support\Str::random(12)),
                 'role' => 'prestataire',
                 'is_active' => true,
             ]);

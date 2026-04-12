@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me/profile', [AuthController::class, 'updateProfile']);
-    Route::post('/me/password', [AuthController::class, 'changePassword']);
+    Route::post('/me/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Licence — activation (gérant/dsgl uniquement par convention)
@@ -39,6 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [AdminController::class, 'notifications']);
     Route::post('/notifications/{notification}/lu', [AdminController::class, 'marquerLu']);
     Route::post('/notifications/tout-lire', [AdminController::class, 'toutMarquerLu']);
+
+    // ── Services : liste pour tous les rôles (formulaires, filtres) ────
+    Route::get('/services', [AdminController::class, 'services']);
 
     // ── Menus : consultation pour tous les rôles ─────────────────────────
     Route::get('/menus', [MenuController::class, 'index']);

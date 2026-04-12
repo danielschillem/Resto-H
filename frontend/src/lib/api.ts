@@ -287,6 +287,10 @@ export const api = {
   validations: () => request("/etats/validations"),
 
   // Admin
+  // Services — accessible à tous les rôles authentifiés (formulaires, filtres)
+  myServices: () => request<import("@/types").Service[]>("/services"),
+
+  // Admin — DSGL uniquement
   users: () => request<import("@/types").User[]>("/admin/users"),
   createUser: (data: Record<string, unknown>) =>
     request("/admin/users", { method: "POST", body: JSON.stringify(data) }),

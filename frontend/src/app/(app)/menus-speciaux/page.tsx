@@ -80,7 +80,7 @@ export default function MenusSpeciauxPage() {
       .then(setRegimes)
       .catch(() => {});
     api
-      .services()
+      .myServices()
       .then(setServices)
       .catch(() => {});
   };

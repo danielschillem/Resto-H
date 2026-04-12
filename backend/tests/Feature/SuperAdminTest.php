@@ -84,7 +84,7 @@ class SuperAdminTest extends TestCase
         $response = $this->actingAs($this->superAdmin)->postJson('/api/super-admin/formations', [
             'nom' => 'CHR Bobo', 'code' => 'CHR-BOBO', 'type' => 'CHR',
             'prestataire_nom' => 'Test', 'prestataire_prenom' => 'Prest',
-            'prestataire_email' => 'prest@bobo.bf', 'prestataire_password' => 'abcd',
+            'prestataire_email' => 'prest@bobo.bf', 'prestataire_password' => 'Secret12',
         ]);
 
         $response->assertStatus(201);

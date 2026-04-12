@@ -13,6 +13,7 @@ class Commande extends Model
         'menu_id', 'nb_portions', 'heure_livraison', 'montant',
         'statut', 'statut_paiement', 'client_nom', 'observations',
         'motif_rejet', 'soumis_par', 'valide_par', 'date_validation',
+        'formation_id',
     ];
 
     protected function casts(): array
