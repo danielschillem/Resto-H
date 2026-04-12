@@ -19,6 +19,11 @@ interface AuthContextType {
     password: string,
     formation_code?: string,
   ) => Promise<void>;
+  loginByCode: (
+    formation_id: number,
+    role: string,
+    code: string,
+  ) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
 }
@@ -27,6 +32,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   login: async () => {},
+  loginByCode: async () => {},
   logout: () => {},
   refresh: async () => {},
 });
@@ -54,6 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const loginByCode = useCallback(
+    async (formation_id: number, role: string, code: string) => {
+      const res = await api.loginByCode(formation_id, role, code);
+      localStorage.setItem("sgrh_token", res.token);
+      localStorage.setItem("sgrh_user", JSON.stringify(res.user));
+      setUser(res.user);
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     api.logout().catch(() => {});
     localStorage.removeItem("sgrh_token");
@@ -72,7 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginByCode, logout, refresh }}
+    >
       {children}
     </AuthContext.Provider>
   );

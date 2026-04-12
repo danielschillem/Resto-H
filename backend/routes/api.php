@@ -14,11 +14,13 @@ use Illuminate\Support\Facades\Route;
 
 // Auth publiques
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/login-code', [AuthController::class, 'loginByCode'])->middleware('throttle:10,1');
 
 // Licence (publique pour la lecture)
 Route::get('/licence', [LicenceController::class, 'index']);
 
-// Info publique d'une formation sanitaire (pour page de connexion dédiée)
+// Formations sanitaires publiques (liste active pour page de connexion)
+Route::get('/formations/active', [SuperAdminController::class, 'formationsActive']);
 Route::get('/formations/public/{code}', [SuperAdminController::class, 'formationPublicInfo']);
 
 // Routes protégées

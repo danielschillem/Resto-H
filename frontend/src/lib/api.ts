@@ -103,6 +103,24 @@ export const api = {
       }),
     }),
 
+  loginByCode: (formation_id: number, role: string, code: string) =>
+    request<{ user: import("@/types").User; token: string }>("/login-code", {
+      method: "POST",
+      body: JSON.stringify({ formation_id, role, code }),
+    }),
+
+  formationsActive: () =>
+    request<
+      {
+        id: number;
+        nom: string;
+        code: string;
+        type: string;
+        ville: string | null;
+        region: string | null;
+      }[]
+    >("/formations/active"),
+
   logout: () => request("/logout", { method: "POST" }),
 
   me: () => request<import("@/types").User>("/me"),

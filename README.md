@@ -13,7 +13,7 @@ Fonctionnalités principales : menus hebdomadaires, régimes spéciaux, commande
 ## Architecture
 
 | Couche          | Technologie                        | Répertoire  |
-|-----------------|------------------------------------|-------------|
+| --------------- | ---------------------------------- | ----------- |
 | Backend         | Laravel 12 + Sanctum 4 (API REST)  | `backend/`  |
 | Frontend        | Next.js 16 + React 19 + TypeScript | `frontend/` |
 | Base de données | SQLite (dev) / PostgreSQL (prod)   | —           |
@@ -79,11 +79,11 @@ Ouvrir **http://localhost:3000** dans le navigateur.
 
 ## Déploiement production
 
-| Service  | Hébergeur | URL |
-|----------|-----------|-----|
-| Frontend | Netlify   | https://sgrh-app.netlify.app |
-| Backend  | Render (Docker) | https://sgrh-api.onrender.com |
-| Base de données | Render PostgreSQL | interne |
+| Service         | Hébergeur         | URL                           |
+| --------------- | ----------------- | ----------------------------- |
+| Frontend        | Netlify           | https://sgrh-app.netlify.app  |
+| Backend         | Render (Docker)   | https://sgrh-api.onrender.com |
+| Base de données | Render PostgreSQL | interne                       |
 
 Le déploiement est déclenché automatiquement à chaque push sur la branche `main`.
 
@@ -91,46 +91,46 @@ Le déploiement est déclenché automatiquement à chaque push sur la branche `m
 
 ## Comptes de test (seed)
 
-| Rôle | Email | Mot de passe |
-|------|-------|--------------|
-| Prestataire | prestataire@sgrh.bf | 1234 |
-| DSGL | dsgl@sgrh.bf | 1234 |
-| CSAH | csah@sgrh.bf | 1234 |
-| SUS | sus@sgrh.bf | 1234 |
-| SUT | sut@sgrh.bf | 1234 |
-| Super Admin | superadmin@sgrh.bf | 1234 |
+| Rôle        | Email               | Mot de passe |
+| ----------- | ------------------- | ------------ |
+| Prestataire | prestataire@sgrh.bf | 1234         |
+| DSGL        | dsgl@sgrh.bf        | 1234         |
+| CSAH        | csah@sgrh.bf        | 1234         |
+| SUS         | sus@sgrh.bf         | 1234         |
+| SUT         | sut@sgrh.bf         | 1234         |
+| Super Admin | superadmin@sgrh.bf  | 1234         |
 
 ---
 
 ## Rôles et permissions
 
-| Rôle | Description |
-|------|-------------|
+| Rôle            | Description                                                                      |
+| --------------- | -------------------------------------------------------------------------------- |
 | **super_admin** | Administration globale : formations sanitaires, licences, utilisateurs, journaux |
-| **prestataire** | Gestion opérationnelle : menus, commandes, consommations, paramètres |
-| **dsgl** | Direction des Services Généraux et de la Logistique |
-| **csah** | Chef de Service Administration et Hygiène |
-| **sus** | Service des Urgences et Soins — consultation des menus et commandes |
-| **sut** | Service des Urgences Techniques — consultation des menus et commandes |
+| **prestataire** | Gestion opérationnelle : menus, commandes, consommations, paramètres             |
+| **dsgl**        | Direction des Services Généraux et de la Logistique                              |
+| **csah**        | Chef de Service Administration et Hygiène                                        |
+| **sus**         | Service des Urgences et Soins — consultation des menus et commandes              |
+| **sut**         | Service des Urgences Techniques — consultation des menus et commandes            |
 
 ---
 
 ## Pages de l'application
 
-| Page | Route | Description |
-|------|-------|-------------|
-| Connexion | `/login` | Authentification par rôle |
-| Tableau de bord | `/dashboard` | KPIs, graphiques, commandes récentes |
-| Menus Hebdomadaires | `/menus-hebdo` | Planning semaine (petit-déjeuner, déjeuner, dîner) |
-| Menus Spéciaux | `/menus-speciaux` | Régimes spéciaux (demandes, validation, rejet) |
-| Commandes | `/commandes` | Commandes malades / personnel / clients externes |
-| Consommations | `/consommations` | Suivi consommation, écarts, alertes gaspillage |
-| États & Rapports | `/etats` | Rapports commandes, consommations, devis estimatifs |
-| Services | `/services` | Liste des services de la formation |
-| Licence | `/licence` | Statut de la licence de la formation |
-| Profil | `/profil` | Profil utilisateur |
-| Notifications | `/notifications` | Centre de notifications |
-| Super Admin | `/super-admin` | Gestion formations, licences, journaux, analytique |
+| Page                | Route             | Description                                         |
+| ------------------- | ----------------- | --------------------------------------------------- |
+| Connexion           | `/login`          | Authentification par rôle                           |
+| Tableau de bord     | `/dashboard`      | KPIs, graphiques, commandes récentes                |
+| Menus Hebdomadaires | `/menus-hebdo`    | Planning semaine (petit-déjeuner, déjeuner, dîner)  |
+| Menus Spéciaux      | `/menus-speciaux` | Régimes spéciaux (demandes, validation, rejet)      |
+| Commandes           | `/commandes`      | Commandes malades / personnel / clients externes    |
+| Consommations       | `/consommations`  | Suivi consommation, écarts, alertes gaspillage      |
+| États & Rapports    | `/etats`          | Rapports commandes, consommations, devis estimatifs |
+| Services            | `/services`       | Liste des services de la formation                  |
+| Licence             | `/licence`        | Statut de la licence de la formation                |
+| Profil              | `/profil`         | Profil utilisateur                                  |
+| Notifications       | `/notifications`  | Centre de notifications                             |
+| Super Admin         | `/super-admin`    | Gestion formations, licences, journaux, analytique  |
 
 ---
 

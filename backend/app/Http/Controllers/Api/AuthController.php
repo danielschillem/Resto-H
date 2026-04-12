@@ -81,6 +81,69 @@ class AuthController extends Controller
         return response()->json(['message' => 'Déconnexion réussie.']);
     }
 
+    /**
+     * Login par sélection de formation + rôle + code d'accès.
+     * Utilisé par la page de connexion générique (non super_admin).
+     */
+    public function loginByCode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'formation_id' => 'required|integer|exists:formations_sanitaires,id',
+            'role' => 'required|string|in:prestataire,dsgl,csah,sus,sut',
+            'code' => 'required|string',
+        ]);
+
+        $formation = FormationSanitaire::where('id', $request->formation_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$formation) {
+            throw ValidationException::withMessages([
+                'formation_id' => ['Cette formation sanitaire est inactive ou introuvable.'],
+            ]);
+        }
+
+        // Trouver l'utilisateur par formation + rôle
+        $user = User::where('formation_id', $formation->id)
+            ->where('role', $request->role)
+            ->first();
+
+        if (!$user || !Hash::check($request->code, $user->password)) {
+            throw ValidationException::withMessages([
+                'code' => ['Code d\'accès incorrect pour ce profil.'],
+            ]);
+        }
+
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'code' => ['Ce compte est désactivé. Contactez l\'administrateur.'],
+            ]);
+        }
+
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ]);
+
+        $token = $user->createToken('sgrh-token')->plainTextToken;
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'service' => $user->service,
+                'formation_id' => $user->formation_id,
+                'permissions' => $user->permissions,
+                'must_change_password' => (bool) $user->must_change_password,
+            ],
+            'token' => $token,
+        ]);
+    }
+
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();

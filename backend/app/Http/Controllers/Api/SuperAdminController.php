@@ -23,6 +23,15 @@ class SuperAdminController extends Controller
 {
     // ── Info publique (pas d'authentification requise) ──────────────────────
 
+    public function formationsActive(): JsonResponse
+    {
+        $formations = FormationSanitaire::where('is_active', true)
+            ->orderBy('nom')
+            ->get(['id', 'nom', 'code', 'type', 'ville', 'region']);
+
+        return response()->json($formations);
+    }
+
     public function formationPublicInfo(string $code): JsonResponse
     {
         $formation = FormationSanitaire::where('code', strtoupper($code))
