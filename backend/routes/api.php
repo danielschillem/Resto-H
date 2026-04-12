@@ -163,6 +163,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Licence
         Route::get('/licence', [SuperAdminController::class, 'licence']);
+        Route::get('/formations/{formation}/licence', [SuperAdminController::class, 'formationLicence']);
         Route::post('/licence/activer', [SuperAdminController::class, 'activerLicence']);
         Route::post('/licence/reset', [SuperAdminController::class, 'resetEssai']);
         Route::get('/licence/generer-cle', [SuperAdminController::class, 'genererCle']);

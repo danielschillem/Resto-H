@@ -63,8 +63,29 @@ class SuperAdminController extends Controller
     {
         $formations = FormationSanitaire::withCount('users')
             ->with(['users' => fn($q) => $q->where('role', 'prestataire')->select('id', 'nom', 'prenom', 'email', 'formation_id')])
+            ->with('licence')
             ->orderBy('nom')
-            ->get();
+            ->get()
+            ->map(function ($f) {
+                $licence = $f->licence;
+                // Auto-create licence if missing
+                if (!$licence) {
+                    $licence = Licence::courant($f->id);
+                }
+                // Auto-expire
+                if (in_array($licence->statut, ['essai', 'premium']) && $licence->date_fin->isPast()) {
+                    $licence->update(['statut' => 'expire']);
+                    $licence->refresh();
+                }
+                $f->setAttribute('licence_info', [
+                    'statut' => $licence->statut,
+                    'date_fin' => $licence->date_fin->format('Y-m-d'),
+                    'jours_restants' => $licence->joursRestants(),
+                    'valide' => $licence->isValide(),
+                ]);
+                unset($f->licence); // remove raw relation from output
+                return $f;
+            });
 
         return response()->json($formations);
     }
@@ -111,6 +132,9 @@ class SuperAdminController extends Controller
                 'is_active' => true,
             ]);
         }
+
+        // Créer une licence d'essai pour la nouvelle formation
+        Licence::courant($formation->id);
 
         return response()->json($formation->load('users'), 201);
     }
@@ -285,12 +309,28 @@ class SuperAdminController extends Controller
         ]);
     }
 
+    public function formationLicence(FormationSanitaire $formation): JsonResponse
+    {
+        $licence = Licence::courant($formation->id);
+
+        return response()->json([
+            'statut' => $licence->statut,
+            'date_debut' => $licence->date_debut->format('Y-m-d'),
+            'date_fin' => $licence->date_fin->format('Y-m-d'),
+            'jours_restants' => $licence->joursRestants(),
+            'titulaire' => $licence->titulaire,
+            'cle_licence' => $licence->cle_licence,
+            'valide' => $licence->isValide(),
+        ]);
+    }
+
     public function activerLicence(Request $request): JsonResponse
     {
         $data = $request->validate([
             'cle' => 'required|string|max:100',
             'titulaire' => 'nullable|string|max:150',
             'duree_ans' => 'nullable|integer|min:1|max:5',
+            'formation_id' => 'required|exists:formations_sanitaires,id',
         ]);
 
         $cle = strtoupper(trim($data['cle']));
@@ -300,7 +340,7 @@ class SuperAdminController extends Controller
         }
 
         $duree = $data['duree_ans'] ?? 1;
-        $licence = Licence::courant();
+        $licence = Licence::courant($data['formation_id']);
         $licence->update([
             'statut' => 'premium',
             'date_debut' => now(),
@@ -315,9 +355,13 @@ class SuperAdminController extends Controller
         ]);
     }
 
-    public function resetEssai(): JsonResponse
+    public function resetEssai(Request $request): JsonResponse
     {
-        $licence = Licence::courant();
+        $data = $request->validate([
+            'formation_id' => 'required|exists:formations_sanitaires,id',
+        ]);
+
+        $licence = Licence::courant($data['formation_id']);
         $licence->update([
             'statut' => 'essai',
             'date_debut' => now(),

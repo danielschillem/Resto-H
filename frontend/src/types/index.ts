@@ -28,6 +28,12 @@ export interface FormationSanitaire {
   nb_users: number;
   nb_services: number;
   users?: User[];
+  licence_info?: {
+    statut: "essai" | "premium" | "expire";
+    date_fin: string;
+    jours_restants: number;
+    valide: boolean;
+  };
 }
 
 export interface Service {

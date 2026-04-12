@@ -13,9 +13,10 @@ class LicenceController extends Controller
      * Retourne le statut courant de la licence.
      * Route publique (pas d'auth requise).
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $licence = Licence::courant();
+        $formationId = $request->query('formation_id');
+        $licence = Licence::courant($formationId ? (int) $formationId : null);
 
         return response()->json([
             'statut' => $licence->statut,
@@ -47,7 +48,8 @@ class LicenceController extends Controller
             ], 422);
         }
 
-        $licence = Licence::courant();
+        $formationId = auth()->user()?->formation_id;
+        $licence = Licence::courant($formationId);
 
         $licence->update([
             'statut' => 'premium',

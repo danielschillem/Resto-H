@@ -774,7 +774,12 @@ function SectionCreation({ onCreated }: { onCreated: () => void }) {
 /* ════════════════════════════════════════════════════════════════════════════
    SECTION 2 — Gestion de Formation Sanitaire
    ════════════════════════════════════════════════════════════════════════════ */
-type GestionSubTab = "users" | "services" | "permissions" | "config";
+type GestionSubTab =
+  | "users"
+  | "services"
+  | "permissions"
+  | "config"
+  | "licence";
 
 function SectionGestion({ refreshKey }: { refreshKey: number }) {
   const [formations, setFormations] = useState<FormationSanitaire[]>([]);
@@ -883,6 +888,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
       { key: "services", label: "Services", icon: "fa-building" },
       { key: "permissions", label: "Permissions", icon: "fa-shield-halved" },
       { key: "config", label: "Configuration & Tarifs", icon: "fa-gear" },
+      { key: "licence", label: "Licence", icon: "fa-key" },
     ];
     return (
       <div>
@@ -1029,6 +1035,13 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
         {subTab === "services" && <SubTabServices />}
         {subTab === "permissions" && <SubTabPermissions />}
         {subTab === "config" && <SubTabConfig />}
+        {subTab === "licence" && (
+          <SubTabLicence
+            formationId={activeFormation.id}
+            formationNom={activeFormation.nom}
+            onUpdate={load}
+          />
+        )}
 
         {/* Edit formation modal */}
         {editFormation && editForm && (
@@ -1409,6 +1422,7 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                   "Ville",
                   "Lien",
                   "Acteurs",
+                  "Licence",
                   "Statut",
                   "Actions",
                 ].map((h) => (
@@ -1478,6 +1492,78 @@ function SectionGestion({ refreshKey }: { refreshKey: number }) {
                   </td>
                   <td style={{ ...tdStyle, color: C.textSm }}>
                     {f.nb_users ?? 0}
+                  </td>
+                  <td style={tdStyle}>
+                    {(() => {
+                      const li = f.licence_info;
+                      if (!li)
+                        return (
+                          <span style={{ color: C.textXs, fontSize: 12 }}>
+                            —
+                          </span>
+                        );
+                      const color =
+                        li.statut === "premium"
+                          ? C.success
+                          : li.statut === "essai"
+                            ? C.warning
+                            : C.danger;
+                      const label =
+                        li.statut === "premium"
+                          ? "Premium"
+                          : li.statut === "essai"
+                            ? "Essai"
+                            : "Expirée";
+                      const urgent =
+                        li.jours_restants <= 7 && li.statut !== "expire";
+                      return (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <span
+                            style={{ color, fontSize: 12, fontWeight: 600 }}
+                          >
+                            <i
+                              className={`fa-solid ${li.statut === "premium" ? "fa-crown" : li.statut === "essai" ? "fa-clock" : "fa-ban"}`}
+                              style={{ marginRight: 3 }}
+                            />
+                            {label}
+                          </span>
+                          {urgent && (
+                            <span
+                              style={{
+                                background: "#fef2f2",
+                                color: C.danger,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                padding: "1px 6px",
+                                borderRadius: 8,
+                              }}
+                            >
+                              {li.jours_restants}j
+                            </span>
+                          )}
+                          {li.statut === "expire" && (
+                            <span
+                              style={{
+                                background: "#fef2f2",
+                                color: C.danger,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                padding: "1px 6px",
+                                borderRadius: 8,
+                              }}
+                            >
+                              Expiré
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td style={tdStyle}>
                     <span
@@ -2853,346 +2939,589 @@ function SubTabConfig() {
   );
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 3 — Gestion des Licences
-   ════════════════════════════════════════════════════════════════════════════ */
-function SectionLicences() {
+/* ── Sub-tab: Licence d'une formation ─────────────────────────────────────── */
+function SubTabLicence({
+  formationId,
+  formationNom,
+  onUpdate,
+}: {
+  formationId: number;
+  formationNom: string;
+  onUpdate: () => void;
+}) {
   const [licence, setLicence] = useState<
     (Licence & { cle_licence?: string }) | null
   >(null);
+  const [loading, setLoading] = useState(true);
   const [cle, setCle] = useState("");
   const [titulaire, setTitulaire] = useState("");
   const [duree, setDuree] = useState(1);
-  const [generatedKey, setGeneratedKey] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const load = () => {
-    api
-      .saLicence()
-      .then(setLicence)
-      .catch(() => {});
-  };
-  useEffect(load, []);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.saFormationLicence(formationId);
+      setLicence(data);
+    } catch {
+      setErr("Impossible de charger la licence");
+    } finally {
+      setLoading(false);
+    }
+  }, [formationId]);
 
-  const fmtDate = (d: string) =>
-    new Date(d).toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const STATUS_CFG: Record<
-    string,
-    { bg: string; border: string; color: string; label: string }
-  > = {
-    essai: {
-      bg: "#fffbeb",
-      border: "#fde68a",
-      color: "#92400e",
-      label: "Période d'essai",
-    },
-    premium: {
-      bg: "#ecfdf5",
-      border: "#6ee7b7",
-      color: "#065f46",
-      label: "Premium actif",
-    },
-    expire: {
-      bg: "#fef2f2",
-      border: "#fca5a5",
-      color: "#991b1b",
-      label: "Expirée",
-    },
-  };
-  const sc = licence ? STATUS_CFG[licence.statut] || STATUS_CFG.expire : null;
-
-  const handleActiver = async () => {
+  const handleActivate = async () => {
+    if (!cle.trim()) return;
+    setSaving(true);
     setErr("");
     setMsg("");
     try {
       await api.saActiverLicence({
-        cle: cle.trim().toUpperCase(),
+        cle,
         titulaire: titulaire || undefined,
         duree_ans: duree,
+        formation_id: formationId,
       });
-      setMsg("Licence activée avec succès !");
+      setMsg("Licence premium activée avec succès.");
       setCle("");
+      setTitulaire("");
       load();
+      onUpdate();
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "Erreur");
+      setErr(e instanceof Error ? e.message : "Erreur d'activation");
+    } finally {
+      setSaving(false);
     }
   };
+
   const handleReset = async () => {
-    if (!confirm("Réinitialiser en mode essai 14 jours ?")) return;
-    await api.saResetEssai();
-    load();
+    if (
+      !confirm(
+        "Réinitialiser la licence en mode essai (14 jours) ? Cette action est irréversible.",
+      )
+    )
+      return;
+    try {
+      await api.saResetEssai(formationId);
+      setMsg("Licence réinitialisée en mode essai.");
+      load();
+      onUpdate();
+    } catch {
+      setErr("Erreur lors de la réinitialisation");
+    }
   };
-  const handleGenerer = async () => {
-    const r = await api.saGenererCle();
-    setGeneratedKey(r.cle);
-    setCle(r.cle);
+
+  const handleGenererCle = async () => {
+    try {
+      const { cle: k } = await api.saGenererCle();
+      setCle(k);
+    } catch {
+      setErr("Impossible de générer une clé");
+    }
   };
+
+  if (loading)
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: C.textSm }}>
+        Chargement...
+      </div>
+    );
+
+  const li = licence;
+  const statutColor =
+    li?.statut === "premium"
+      ? C.success
+      : li?.statut === "essai"
+        ? C.warning
+        : C.danger;
+  const statutBg =
+    li?.statut === "premium"
+      ? "#ecfdf5"
+      : li?.statut === "essai"
+        ? "#fffbeb"
+        : "#fef2f2";
+  const statutLabel =
+    li?.statut === "premium"
+      ? "Premium"
+      : li?.statut === "essai"
+        ? "Essai"
+        : "Expirée";
+  const statutIcon =
+    li?.statut === "premium"
+      ? "fa-crown"
+      : li?.statut === "essai"
+        ? "fa-clock"
+        : "fa-ban";
 
   return (
-    <div style={{ maxWidth: 640 }}>
-      {licence && sc && (
+    <div>
+      {msg && (
         <div
           style={{
-            ...card,
-            background: sc.bg,
-            border: `1px solid ${sc.border}`,
-            marginBottom: 16,
+            background: "#ecfdf5",
+            border: "1px solid #bbf7d0",
+            borderRadius: 8,
+            padding: "10px 14px",
+            marginBottom: 12,
+            color: C.success,
+            fontSize: 13,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 16,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  color: C.textSm,
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                Statut
-              </div>
-              <span
-                style={{
-                  background: sc.color + "14",
-                  color: sc.color,
-                  padding: "4px 14px",
-                  borderRadius: 12,
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                {sc.label}
-              </span>
-            </div>
-            {licence.titulaire && (
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: C.textSm, fontSize: 11 }}>Titulaire</div>
-                <div style={{ color: C.text, fontWeight: 600 }}>
-                  {licence.titulaire}
-                </div>
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3,1fr)",
-              gap: 12,
-            }}
-          >
-            {[
-              ["Date début", fmtDate(licence.date_debut)],
-              ["Expire le", fmtDate(licence.date_fin)],
-              ["Jours restants", String(licence.jours_restants)],
-            ].map(([l, v]) => (
-              <div
-                key={l}
-                style={{
-                  background: C.card,
-                  borderRadius: 8,
-                  padding: "12px 14px",
-                  border: `1px solid ${C.cardBorder}`,
-                }}
-              >
-                <div style={{ color: C.textSm, fontSize: 11, marginBottom: 4 }}>
-                  {l}
-                </div>
-                <div style={{ color: C.text, fontWeight: 700, fontSize: 16 }}>
-                  {v}
-                </div>
-              </div>
-            ))}
-          </div>
-          {licence.cle_licence && (
-            <div
-              style={{
-                marginTop: 12,
-                background: C.input,
-                borderRadius: 8,
-                padding: "10px 14px",
-              }}
-            >
-              <div style={{ color: C.textSm, fontSize: 11, marginBottom: 4 }}>
-                Clé active
-              </div>
-              <code
-                style={{ color: C.success, fontSize: 13, letterSpacing: 1 }}
-              >
-                {licence.cle_licence}
-              </code>
-            </div>
-          )}
+          <i className="fa-solid fa-circle-check" style={{ marginRight: 8 }} />
+          {msg}
         </div>
       )}
-
-      <div style={card}>
-        <h4
+      {err && (
+        <div
           style={{
-            color: C.text,
-            fontSize: 14,
-            fontWeight: 700,
-            marginBottom: 16,
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            padding: "10px 14px",
+            marginBottom: 12,
+            color: C.danger,
+            fontSize: 13,
           }}
         >
           <i
-            className="fa-solid fa-crown"
-            style={{ marginRight: 8, color: C.warning }}
-          />{" "}
-          Activer une licence premium
-        </h4>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              value={cle}
-              onChange={(e) => setCle(e.target.value.toUpperCase())}
-              placeholder="RESTO-XXXX-XXXX-XXXX-XXXX"
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            <button
-              onClick={handleGenerer}
-              style={{
-                ...btn,
-                background: C.input,
-                color: C.textSm,
-                whiteSpace: "nowrap",
-              }}
-            >
-              <i className="fa-solid fa-wand-magic-sparkles" /> Générer
-            </button>
-          </div>
-          {generatedKey && (
-            <div
-              style={{
-                background: "#ecfdf5",
-                borderRadius: 8,
-                padding: "10px 14px",
-                color: C.success,
-                fontSize: 13,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <code style={{ letterSpacing: 1 }}>{generatedKey}</code>
-              <button
-                onClick={() => navigator.clipboard.writeText(generatedKey)}
-                style={{
-                  ...btn,
-                  padding: "4px 10px",
-                  background: C.input,
-                  color: C.textSm,
-                }}
-              >
-                <i className="fa-solid fa-copy" />
-              </button>
-            </div>
-          )}
-          <div>
-            <label style={labelSm}>Titulaire</label>
-            <input
-              value={titulaire}
-              onChange={(e) => setTitulaire(e.target.value)}
-              placeholder="Nom de l'établissement"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={labelSm}>Durée (années)</label>
-            <select
-              value={duree}
-              onChange={(e) => setDuree(Number(e.target.value))}
-              style={{ ...inputStyle, width: 120 }}
-            >
-              {[1, 2, 3, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n} an{n > 1 ? "s" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-          {err && (
-            <div
-              style={{
-                background: "#fef2f2",
-                borderRadius: 8,
-                padding: "10px 14px",
-                color: C.danger,
-                fontSize: 13,
-              }}
-            >
-              {err}
-            </div>
-          )}
-          {msg && (
-            <div
-              style={{
-                background: "#ecfdf5",
-                borderRadius: 8,
-                padding: "10px 14px",
-                color: C.success,
-                fontSize: 13,
-              }}
-            >
-              {msg}
-            </div>
-          )}
-          <button
-            onClick={handleActiver}
+            className="fa-solid fa-circle-exclamation"
+            style={{ marginRight: 8 }}
+          />
+          {err}
+        </div>
+      )}
+
+      {/* Statut actuel */}
+      <div
+        style={{
+          ...card,
+          background: statutBg,
+          borderColor: statutColor + "33",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          <div
             style={{
-              ...btn,
-              background: C.warning,
-              color: "#111",
-              alignSelf: "flex-start",
+              width: 42,
+              height: 42,
+              borderRadius: 10,
+              background: statutColor + "22",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <i className="fa-solid fa-crown" /> Activer
-          </button>
+            <i
+              className={`fa-solid ${statutIcon}`}
+              style={{ color: statutColor, fontSize: 18 }}
+            />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.text }}>
+              Licence {statutLabel}
+            </div>
+            <div style={{ color: C.textSm, fontSize: 12 }}>{formationNom}</div>
+          </div>
         </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 16,
+          }}
+        >
+          <div>
+            <div style={{ color: C.textSm, fontSize: 11, marginBottom: 4 }}>
+              Date début
+            </div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: C.text }}>
+              {li?.date_debut ?? "—"}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: C.textSm, fontSize: 11, marginBottom: 4 }}>
+              Expire le
+            </div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: C.text }}>
+              {li?.date_fin ?? "—"}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: C.textSm, fontSize: 11, marginBottom: 4 }}>
+              Jours restants
+            </div>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 20,
+                color: statutColor,
+              }}
+            >
+              {li?.jours_restants ?? 0}
+            </div>
+          </div>
+        </div>
+        {li?.cle_licence && (
+          <div style={{ marginTop: 12, fontSize: 12, color: C.textSm }}>
+            <i className="fa-solid fa-key" style={{ marginRight: 6 }} />
+            Clé active :{" "}
+            <code
+              style={{
+                background: "#f1f5f9",
+                padding: "2px 8px",
+                borderRadius: 4,
+              }}
+            >
+              {li.cle_licence}
+            </code>
+          </div>
+        )}
+        {li?.titulaire && (
+          <div style={{ marginTop: 6, fontSize: 12, color: C.textSm }}>
+            <i className="fa-solid fa-user" style={{ marginRight: 6 }} />
+            Titulaire : {li.titulaire}
+          </div>
+        )}
       </div>
 
-      <div style={{ ...card, borderColor: "#fca5a5" }}>
-        <h4
+      {/* Activation */}
+      <div style={card}>
+        <div
           style={{
-            color: C.danger,
-            fontSize: 14,
             fontWeight: 700,
+            fontSize: 14,
+            marginBottom: 16,
+            color: C.text,
+          }}
+        >
+          <i
+            className="fa-solid fa-key"
+            style={{ marginRight: 8, color: C.primary }}
+          />
+          Activer une licence
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
+          <input
+            value={cle}
+            onChange={(e) => setCle(e.target.value.toUpperCase())}
+            placeholder="RESTO-XXXX-XXXX-XXXX-XXXX"
+            style={inputStyle}
+          />
+          <button
+            onClick={handleGenererCle}
+            style={{
+              ...btn,
+              background: C.tagBg(C.primary),
+              color: C.primary,
+              fontSize: 12,
+            }}
+          >
+            <i className="fa-solid fa-wand-magic-sparkles" /> Générer
+          </button>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
+          <input
+            value={titulaire}
+            onChange={(e) => setTitulaire(e.target.value)}
+            placeholder="Titulaire (optionnel)"
+            style={inputStyle}
+          />
+          <select
+            value={duree}
+            onChange={(e) => setDuree(Number(e.target.value))}
+            style={inputStyle}
+          >
+            {[1, 2, 3, 5].map((d) => (
+              <option key={d} value={d}>
+                {d} an{d > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          onClick={handleActivate}
+          disabled={!cle.trim() || saving}
+          style={{
+            ...btn,
+            background: C.primary,
+            color: "#fff",
+            opacity: !cle.trim() || saving ? 0.5 : 1,
+          }}
+        >
+          <i className="fa-solid fa-check" />{" "}
+          {saving ? "Activation..." : "Activer la licence"}
+        </button>
+      </div>
+
+      {/* Zone dangereuse */}
+      <div
+        style={{
+          ...card,
+          borderColor: C.danger + "33",
+          background: "#fef2f2",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 14,
             marginBottom: 8,
+            color: C.danger,
           }}
         >
           <i
             className="fa-solid fa-triangle-exclamation"
             style={{ marginRight: 8 }}
-          />{" "}
+          />
           Zone dangereuse
-        </h4>
-        <p style={{ color: C.textSm, fontSize: 13, marginBottom: 12 }}>
-          Réinitialise la licence en période d&apos;essai de 14 jours.
-          Irréversible.
+        </div>
+        <p style={{ fontSize: 12, color: C.textSm, marginBottom: 12 }}>
+          Réinitialiser la licence en mode essai (14 jours). Irréversible.
         </p>
         <button
           onClick={handleReset}
-          style={{
-            ...btn,
-            background: "#fef2f2",
-            color: C.danger,
-            border: "1px solid #fca5a5",
-          }}
+          style={{ ...btn, background: C.danger, color: "#fff", fontSize: 12 }}
         >
           <i className="fa-solid fa-rotate-left" /> Réinitialiser en essai
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SECTION 3 — Vue d'ensemble des Licences (par formation)
+   ════════════════════════════════════════════════════════════════════════════ */
+function SectionLicences() {
+  const [formations, setFormations] = useState<
+    import("@/types").FormationSanitaire[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .saFormations()
+      .then(setFormations)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const STATUS_CFG: Record<
+    string,
+    { bg: string; color: string; icon: string; label: string }
+  > = {
+    essai: {
+      bg: "#fffbeb",
+      color: "#92400e",
+      icon: "fa-clock",
+      label: "Essai",
+    },
+    premium: {
+      bg: "#ecfdf5",
+      color: "#065f46",
+      icon: "fa-crown",
+      label: "Premium",
+    },
+    expire: {
+      bg: "#fef2f2",
+      color: "#991b1b",
+      icon: "fa-ban",
+      label: "Expirée",
+    },
+  };
+
+  const counts = formations.reduce(
+    (acc, f) => {
+      const s = f.licence_info?.statut || "essai";
+      acc[s] = (acc[s] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  if (loading)
+    return (
+      <p style={{ color: C.textSm }}>
+        <i className="fa-solid fa-spinner fa-spin" /> Chargement…
+      </p>
+    );
+
+  return (
+    <div>
+      {/* Résumé */}
+      <div
+        style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}
+      >
+        {(["premium", "essai", "expire"] as const).map((s) => {
+          const cfg = STATUS_CFG[s];
+          return (
+            <div
+              key={s}
+              style={{
+                ...card,
+                background: cfg.bg,
+                flex: "1 1 140px",
+                textAlign: "center",
+              }}
+            >
+              <i
+                className={`fa-solid ${cfg.icon}`}
+                style={{ color: cfg.color, fontSize: 20, marginBottom: 8 }}
+              />
+              <div style={{ fontSize: 28, fontWeight: 800, color: cfg.color }}>
+                {counts[s] || 0}
+              </div>
+              <div style={{ fontSize: 12, color: cfg.color, fontWeight: 600 }}>
+                {cfg.label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p style={{ color: C.textSm, fontSize: 13, marginBottom: 16 }}>
+        <i className="fa-solid fa-info-circle" style={{ marginRight: 6 }} />
+        Pour gérer la licence d&apos;une formation, allez dans{" "}
+        <strong>Gestion des formations</strong> → sélectionnez la formation →
+        onglet <strong>Licence</strong>.
+      </p>
+
+      {/* Tableau récapitulatif */}
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: `2px solid ${C.cardBorder}` }}>
+              {["Formation", "Statut", "Expire le", "Jours restants"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: "left",
+                      padding: "10px 12px",
+                      color: C.textSm,
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {formations.map((f) => {
+              const li = f.licence_info;
+              const s = li?.statut || "essai";
+              const cfg = STATUS_CFG[s];
+              const jours = li?.jours_restants ?? 0;
+              const urgent = jours <= 7 && s !== "expire";
+              return (
+                <tr
+                  key={f.id}
+                  style={{ borderBottom: `1px solid ${C.cardBorder}` }}
+                >
+                  <td
+                    style={{
+                      padding: "10px 12px",
+                      color: C.text,
+                      fontWeight: 600,
+                      fontSize: 13,
+                    }}
+                  >
+                    {f.nom}
+                  </td>
+                  <td style={{ padding: "10px 12px" }}>
+                    <span
+                      style={{
+                        background: cfg.color + "18",
+                        color: cfg.color,
+                        padding: "3px 10px",
+                        borderRadius: 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                      }}
+                    >
+                      <i
+                        className={`fa-solid ${cfg.icon}`}
+                        style={{ marginRight: 4 }}
+                      />
+                      {cfg.label}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      padding: "10px 12px",
+                      color: C.textSm,
+                      fontSize: 13,
+                    }}
+                  >
+                    {li?.date_fin
+                      ? new Date(li.date_fin).toLocaleDateString("fr-FR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "—"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      fontWeight: urgent ? 700 : 400,
+                      color: urgent ? C.danger : C.textSm,
+                    }}
+                  >
+                    {s === "expire" ? "0" : jours}
+                    {urgent && (
+                      <i
+                        className="fa-solid fa-triangle-exclamation"
+                        style={{ marginLeft: 6, color: C.danger }}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {formations.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  style={{ padding: 20, textAlign: "center", color: C.textSm }}
+                >
+                  Aucune formation enregistrée
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

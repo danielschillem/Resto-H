@@ -87,12 +87,13 @@ export default function LicencePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const fid = user?.formation_id;
     api
-      .licence()
+      .licence(fid ?? undefined)
       .then(setLicence)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.formation_id]);
 
   const canActivate = user?.role === "dsgl";
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FormationSanitaire extends Model
 {
@@ -35,6 +36,11 @@ class FormationSanitaire extends Model
     public function services(): HasMany
     {
         return $this->hasMany(Service::class, 'formation_id');
+    }
+
+    public function licence(): HasOne
+    {
+        return $this->hasOne(Licence::class, 'formation_id');
     }
 
     public function prestataire(): ?User

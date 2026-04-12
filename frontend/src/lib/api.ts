@@ -337,7 +337,10 @@ export const api = {
   toutMarquerLu: () => request("/notifications/tout-lire", { method: "POST" }),
 
   // Licence
-  licence: () => request<import("@/types").Licence>("/licence"),
+  licence: (formationId?: number) =>
+    request<import("@/types").Licence>(
+      `/licence${formationId ? `?formation_id=${formationId}` : ""}`,
+    ),
   activerLicence: (cle: string, titulaire?: string) =>
     request<{ message: string; date_fin: string; titulaire: string | null }>(
       "/licence/activer",
@@ -390,16 +393,25 @@ export const api = {
     request<import("@/types").Licence & { cle_licence?: string }>(
       "/super-admin/licence",
     ),
+  saFormationLicence: (formationId: number) =>
+    request<import("@/types").Licence & { cle_licence?: string }>(
+      `/super-admin/formations/${formationId}/licence`,
+    ),
   saActiverLicence: (data: {
     cle: string;
     titulaire?: string;
     duree_ans?: number;
+    formation_id: number;
   }) =>
     request("/super-admin/licence/activer", {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  saResetEssai: () => request("/super-admin/licence/reset", { method: "POST" }),
+  saResetEssai: (formationId: number) =>
+    request("/super-admin/licence/reset", {
+      method: "POST",
+      body: JSON.stringify({ formation_id: formationId }),
+    }),
   saGenererCle: () =>
     request<{ cle: string }>("/super-admin/licence/generer-cle"),
   // Formations sanitaires
