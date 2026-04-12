@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 
@@ -13,6 +13,18 @@ export default function SuperAdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === "/super-admin/login";
+  const wasDark = useRef(false);
+
+  // Force light mode on super-admin pages, restore on unmount
+  useEffect(() => {
+    wasDark.current = document.documentElement.classList.contains("dark");
+    document.documentElement.classList.remove("dark");
+    return () => {
+      if (wasDark.current) {
+        document.documentElement.classList.add("dark");
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isLoginPage) return;
