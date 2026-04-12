@@ -178,6 +178,7 @@ class SuperAdminTest extends TestCase
         $response = $this->actingAs($this->superAdmin)->postJson('/api/super-admin/licence/activer', [
             'cle' => 'RESTO-ABCD-1234-EFGH-5678',
             'titulaire' => 'CHR Test',
+            'formation_id' => $this->formation->id,
         ]);
 
         $response->assertOk();
