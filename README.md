@@ -1,22 +1,22 @@
-# SGRH — Système de Gestion de la Restauration Hospitalière
+# RESTO-H — Plateforme de Gestion de la Restauration Hospitalière
 
-**Centre Hospitalier Régional (CHR) de Tenkodogo**
+Plateforme web multi-établissements de gestion de la restauration hospitalière, déployable dans tout type de formation sanitaire (CHR, CHU, CMA, CSPS, cliniques privées, etc.).
 
-Application web de gestion complète de la restauration hospitalière : menus hebdomadaires, régimes spéciaux, commandes de repas, suivi des consommations, états et rapports.
+Fonctionnalités principales : menus hebdomadaires, régimes spéciaux, commandes de repas, suivi des consommations, états et rapports, gestion des licences par formation, tableau de bord analytique.
 
-**Version** : 1.0.0 — 2025-07-19  
-**Développeur** : DEVBACKEND  
+**Version** : 2.0.0 — 2026-04-12  
+**Développeur** : Daniel SCHILLEM  
 **Licence** : MIT
 
 ---
 
 ## Architecture
 
-| Couche    | Technologie                  | Répertoire  |
-|-----------|------------------------------|-------------|
-| Backend   | Laravel 12 + Sanctum (API)   | `backend/`  |
-| Frontend  | Next.js 16 + React 19 + TypeScript | `frontend/` |
-| Base de données | SQLite (dev) / MySQL (prod) | `backend/database/database.sqlite` |
+| Couche          | Technologie                        | Répertoire  |
+|-----------------|------------------------------------|-------------|
+| Backend         | Laravel 12 + Sanctum 4 (API REST)  | `backend/`  |
+| Frontend        | Next.js 16 + React 19 + TypeScript | `frontend/` |
+| Base de données | SQLite (dev) / PostgreSQL (prod)   | —           |
 
 ---
 
@@ -29,7 +29,7 @@ Application web de gestion complète de la restauration hospitalière : menus he
 
 ---
 
-## Installation
+## Installation locale
 
 ### 1. Backend (Laravel)
 
@@ -57,7 +57,7 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
 
 ---
 
-## Lancement
+## Lancement (développement)
 
 ### Backend (port 8000)
 
@@ -73,9 +73,19 @@ cd frontend
 npm run dev
 ```
 
-> **Note** : Les scripts utilisent le flag `--webpack` car Turbopack ne supporte pas les caractères non-ASCII dans les chemins de fichiers.
-
 Ouvrir **http://localhost:3000** dans le navigateur.
+
+---
+
+## Déploiement production
+
+| Service  | Hébergeur | URL |
+|----------|-----------|-----|
+| Frontend | Netlify   | https://sgrh-app.netlify.app |
+| Backend  | Render (Docker) | https://sgrh-api.onrender.com |
+| Base de données | Render PostgreSQL | interne |
+
+Le déploiement est déclenché automatiquement à chaque push sur la branche `main`.
 
 ---
 
@@ -83,11 +93,25 @@ Ouvrir **http://localhost:3000** dans le navigateur.
 
 | Rôle | Email | Mot de passe |
 |------|-------|--------------|
-| Gérant | gerant@chr-tenkodogo.bf | 1234 |
-| DSGL | dsgl@chr-tenkodogo.bf | 1234 |
-| CSAH | csah@chr-tenkodogo.bf | 1234 |
-| SUS | sus@chr-tenkodogo.bf | 1234 |
-| SUT | sut@chr-tenkodogo.bf | 1234 |
+| Prestataire | prestataire@sgrh.bf | 1234 |
+| DSGL | dsgl@sgrh.bf | 1234 |
+| CSAH | csah@sgrh.bf | 1234 |
+| SUS | sus@sgrh.bf | 1234 |
+| SUT | sut@sgrh.bf | 1234 |
+| Super Admin | superadmin@sgrh.bf | 1234 |
+
+---
+
+## Rôles et permissions
+
+| Rôle | Description |
+|------|-------------|
+| **super_admin** | Administration globale : formations sanitaires, licences, utilisateurs, journaux |
+| **prestataire** | Gestion opérationnelle : menus, commandes, consommations, paramètres |
+| **dsgl** | Direction des Services Généraux et de la Logistique |
+| **csah** | Chef de Service Administration et Hygiène |
+| **sus** | Service des Urgences et Soins — consultation des menus et commandes |
+| **sut** | Service des Urgences Techniques — consultation des menus et commandes |
 
 ---
 
@@ -95,72 +119,43 @@ Ouvrir **http://localhost:3000** dans le navigateur.
 
 | Page | Route | Description |
 |------|-------|-------------|
-| Connexion | `/login` | Sélection du rôle et authentification |
+| Connexion | `/login` | Authentification par rôle |
 | Tableau de bord | `/dashboard` | KPIs, graphiques, commandes récentes |
-| Menus Hebdomadaires | `/menus-hebdo` | Planning semaine avec 3 repas/jour |
-| Menus Spéciaux | `/menus-speciaux` | Régimes spéciaux (demandes, validés, rejetés) |
-| Commandes | `/commandes` | Commandes malades/personnel/clients/validation |
+| Menus Hebdomadaires | `/menus-hebdo` | Planning semaine (petit-déjeuner, déjeuner, dîner) |
+| Menus Spéciaux | `/menus-speciaux` | Régimes spéciaux (demandes, validation, rejet) |
+| Commandes | `/commandes` | Commandes malades / personnel / clients externes |
 | Consommations | `/consommations` | Suivi consommation, écarts, alertes gaspillage |
-| États & Rapports | `/etats` | Rapports commandes, conso, devis estimatifs |
-| Administration | `/admin` | Gestion utilisateurs, services, paramètres |
+| États & Rapports | `/etats` | Rapports commandes, consommations, devis estimatifs |
+| Services | `/services` | Liste des services de la formation |
+| Licence | `/licence` | Statut de la licence de la formation |
+| Profil | `/profil` | Profil utilisateur |
+| Notifications | `/notifications` | Centre de notifications |
+| Super Admin | `/super-admin` | Gestion formations, licences, journaux, analytique |
 
 ---
 
-## API Endpoints
+## Fonctionnalités clés
 
-### Authentification
-- `POST /api/login` — Connexion (email + password)
-- `POST /api/logout` — Déconnexion
-- `GET  /api/user` — Utilisateur connecté
-
-### Dashboard
-- `GET /api/dashboard/kpis` — Indicateurs clés
-- `GET /api/dashboard/recent-orders` — Commandes récentes
-- `GET /api/dashboard/weekly-consumption` — Consommation hebdomadaire
-
-### Menus
-- `GET|POST /api/menus` — Liste / création
-- `GET|PUT|DELETE /api/menus/{id}` — Détail / modification / suppression
-- `GET|POST /api/menus-hebdomadaires` — Menus hebdomadaires
-
-### Régimes Spéciaux
-- `GET|POST /api/regimes-speciaux` — Liste / création
-- `PUT /api/regimes-speciaux/{id}/validate` — Validation
-- `PUT /api/regimes-speciaux/{id}/reject` — Rejet
-
-### Commandes
-- `GET|POST /api/commandes` — Liste / création
-- `GET /api/commandes/{id}` — Détail
-- `PUT /api/commandes/{id}/validate` — Validation
-- `PUT /api/commandes/{id}/reject` — Rejet
-
-### Consommations
-- `GET|POST /api/consommations` — Liste / création
-- `GET /api/consommations/kpis` — KPIs consommation
-
-### États & Rapports
-- `GET /api/etats/commandes` — Rapport commandes
-- `GET /api/etats/consommations` — Rapport consommations
-- `GET /api/etats/devis` — Devis estimatifs
-- `PUT /api/etats/devis/{id}/validate` — Validation devis
-- `PUT /api/etats/devis/{id}/reject` — Rejet devis
-
-### Administration
-- `GET|POST /api/admin/users` — Utilisateurs
-- `GET|POST /api/admin/services` — Services
-- `GET|PUT /api/admin/parametres` — Paramètres
+- **Multi-établissements** : chaque formation sanitaire est indépendante avec ses propres utilisateurs, données et licence
+- **Système de licences par formation** : essai (14 jours), premium (1-5 ans), expiration avec alertes
+- **PWA** : installation sur mobile, mode hors-ligne basique
+- **Notifications temps réel** : alertes sur commandes, régimes, expirations
+- **17 régions du Burkina Faso** (découpage de juillet 2025)
+- **Export** : rapports PDF / impression
+- **Thème sombre** : interface adaptée
 
 ---
 
 ## Stack technique
 
-- **Laravel 12** — API REST avec Laravel Sanctum (authentification par token)
+- **Laravel 12** — API REST avec Laravel Sanctum (authentification par token Bearer)
 - **Next.js 16** — App Router, React Server Components
 - **React 19** — Hooks, Context API (AuthProvider)
-- **TypeScript 5.9** — Typage strict
+- **TypeScript 5** — Typage strict
 - **Tailwind CSS 4** — Styles utilitaires
-- **Chart.js + react-chartjs-2** — Graphiques (barres, donuts)
+- **Chart.js + react-chartjs-2** — Graphiques (barres, donuts, lignes)
 - **Font Awesome 6** — Icônes (CDN)
+- **PostgreSQL** — Base de données de production
 - **SQLite** — Base de données de développement
 
 ---
@@ -179,18 +174,20 @@ npm start
 
 ```
 backend/
-├── app/Http/Controllers/Api/   # 6 contrôleurs API
-├── app/Models/                  # 12 modèles Eloquent
-├── database/migrations/         # 10 migrations
+├── app/Http/Controllers/Api/   # Contrôleurs API
+├── app/Models/                  # Modèles Eloquent
+├── app/Observers/               # Observers (commandes, menus, régimes)
+├── database/migrations/         # Migrations
 ├── database/seeders/            # Seeder complet
-├── routes/api.php               # ~40 routes API
+├── routes/api.php               # Routes API
 └── config/cors.php              # Configuration CORS
 
 frontend/
 ├── src/app/
-│   ├── layout.tsx               # Layout racine
+│   ├── layout.tsx               # Layout racine + PWA
 │   ├── page.tsx                 # Redirection accueil
 │   ├── login/page.tsx           # Page connexion
+│   ├── super-admin/page.tsx     # Dashboard super-admin
 │   └── (app)/                   # Routes authentifiées
 │       ├── layout.tsx           # Layout avec Sidebar + Topbar
 │       ├── dashboard/page.tsx
@@ -199,9 +196,12 @@ frontend/
 │       ├── commandes/page.tsx
 │       ├── consommations/page.tsx
 │       ├── etats/page.tsx
-│       └── admin/page.tsx
+│       ├── services/page.tsx
+│       ├── licence/page.tsx
+│       ├── profil/page.tsx
+│       └── notifications/page.tsx
 ├── src/components/              # Sidebar, Topbar, Modal
 ├── src/lib/                     # API service, AuthProvider
 ├── src/types/                   # Interfaces TypeScript
-└── package.json
+└── public/                      # PWA manifest, service worker, icônes
 ```
