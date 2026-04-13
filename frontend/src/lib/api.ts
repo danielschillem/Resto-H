@@ -308,11 +308,22 @@ export const api = {
       body: JSON.stringify(data),
     }),
   parametres: () => request<import("@/types").Parametre[]>("/admin/parametres"),
+  createParametre: (data: {
+    cle: string;
+    valeur: string;
+    description?: string;
+  }) =>
+    request<import("@/types").Parametre>("/admin/parametres", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   updateParametre: (id: number, valeur: string) =>
     request(`/admin/parametres/${id}`, {
       method: "PUT",
       body: JSON.stringify({ valeur }),
     }),
+  deleteParametre: (id: number) =>
+    request(`/admin/parametres/${id}`, { method: "DELETE" }),
   adminPermissions: () =>
     request<{ all: string[]; grouped: Record<string, string[]> }>(
       "/admin/permissions",

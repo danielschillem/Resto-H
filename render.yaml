@@ -1,13 +1,13 @@
 services:
   - type: web
-    name: sgrh-api
+    name: resto-h-api
     runtime: docker
     plan: free
     rootDir: backend
     dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_NAME
-        value: SGRH
+        value: Resto-H
       - key: APP_ENV
         value: production
       - key: APP_DEBUG

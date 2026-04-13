@@ -97,6 +97,12 @@ export default function AdminPage() {
     cle: string;
     valeur: string;
   } | null>(null);
+  const [paramModal, setParamModal] = useState(false);
+  const [paramForm, setParamForm] = useState({
+    cle: "",
+    valeur: "",
+    description: "",
+  });
 
   // Audit logs
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -250,8 +256,28 @@ export default function AdminPage() {
 
   // ── Handler paramètres ─────────────────────────────────────────────────────
 
+  const handleCreateParam = async () => {
+    if (!paramForm.cle.trim())
+      return alert("Veuillez saisir la clé du paramètre.");
+    if (!paramForm.valeur.trim()) return alert("Veuillez saisir la valeur.");
+    await api.createParametre({
+      cle: paramForm.cle,
+      valeur: paramForm.valeur,
+      description: paramForm.description || undefined,
+    });
+    setParamModal(false);
+    setParamForm({ cle: "", valeur: "", description: "" });
+    load();
+  };
+
   const handleUpdateParam = async (id: number, valeur: string) => {
     await api.updateParametre(id, valeur);
+    load();
+  };
+
+  const handleDeleteParam = async (id: number) => {
+    if (!confirm("Supprimer ce paramètre tarifaire ?")) return;
+    await api.deleteParametre(id);
     load();
   };
 
@@ -904,18 +930,31 @@ export default function AdminPage() {
       {/* ── Onglet Paramètres ──────────────────────────────────────────────── */}
       {tab === "params" && (
         <div style={card}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
-            <i
-              className="fa-solid fa-sliders"
-              style={{ marginRight: 8, color: "#5B21B6" }}
-            />
-            Paramètres tarifaires
-          </div>
-          <p
-            style={{ fontSize: 12, color: "var(--text-sm)", marginBottom: 20 }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 20,
+            }}
           >
-            Tarifs unitaires utilisés pour le calcul des coûts de restauration.
-          </p>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+                <i
+                  className="fa-solid fa-sliders"
+                  style={{ marginRight: 8, color: "#5B21B6" }}
+                />
+                Paramètres tarifaires
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-sm)" }}>
+                Tarifs unitaires utilisés pour le calcul des coûts de
+                restauration.
+              </p>
+            </div>
+            <button onClick={() => setParamModal(true)} style={btn}>
+              <i className="fa-solid fa-plus" /> Ajouter un tarif
+            </button>
+          </div>
 
           {parametres.length === 0 ? (
             <EmptyState icon="fa-sliders" text="Aucun paramètre configuré" />
@@ -955,21 +994,36 @@ export default function AdminPage() {
                       FCFA
                     </span>
                   </div>
-                  <button
-                    onClick={() =>
-                      setEditParam({ id: p.id, cle: p.cle, valeur: p.valeur })
-                    }
-                    style={{
-                      ...btn,
-                      background: "transparent",
-                      color: "var(--primary)",
-                      border: "1.5px solid var(--primary)",
-                      padding: "5px 10px",
-                      fontSize: 11,
-                    }}
-                  >
-                    <i className="fa-solid fa-pencil" /> Modifier
-                  </button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() =>
+                        setEditParam({ id: p.id, cle: p.cle, valeur: p.valeur })
+                      }
+                      style={{
+                        ...btn,
+                        background: "transparent",
+                        color: "var(--primary)",
+                        border: "1.5px solid var(--primary)",
+                        padding: "5px 10px",
+                        fontSize: 11,
+                      }}
+                    >
+                      <i className="fa-solid fa-pencil" /> Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDeleteParam(p.id)}
+                      style={{
+                        ...btn,
+                        background: "transparent",
+                        color: "#DC2626",
+                        border: "1.5px solid #DC2626",
+                        padding: "5px 10px",
+                        fontSize: 11,
+                      }}
+                    >
+                      <i className="fa-solid fa-trash" /> Supprimer
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1450,6 +1504,62 @@ export default function AdminPage() {
             placeholder="Ex: Restauration"
             style={inputStyle}
           />
+        </div>
+      </Modal>
+
+      {/* ── Créer paramètre ───────────────────────────────────────────────── */}
+      <Modal
+        open={paramModal}
+        onClose={() => setParamModal(false)}
+        title="Nouveau paramètre tarifaire"
+        icon="fa-sliders"
+        maxWidth={440}
+        footer={
+          <>
+            <button onClick={() => setParamModal(false)} style={btnSecondary}>
+              Annuler
+            </button>
+            <button onClick={handleCreateParam} style={btn}>
+              <i className="fa-solid fa-check" /> Créer
+            </button>
+          </>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label style={labelStyle}>Clé (identifiant unique)</label>
+            <input
+              value={paramForm.cle}
+              onChange={(e) =>
+                setParamForm({ ...paramForm, cle: e.target.value })
+              }
+              placeholder="Ex: cout_repas_midi"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Description</label>
+            <input
+              value={paramForm.description}
+              onChange={(e) =>
+                setParamForm({ ...paramForm, description: e.target.value })
+              }
+              placeholder="Ex: Coût unitaire repas du midi"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Valeur (FCFA)</label>
+            <input
+              type="number"
+              value={paramForm.valeur}
+              onChange={(e) =>
+                setParamForm({ ...paramForm, valeur: e.target.value })
+              }
+              placeholder="Ex: 1500"
+              style={inputStyle}
+            />
+          </div>
         </div>
       </Modal>
 

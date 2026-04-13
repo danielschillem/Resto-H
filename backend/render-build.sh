@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "=== SGRH Backend — Starting ==="
+echo "=== Resto-H Backend — Starting ==="
 echo "PORT=${PORT:-not set} | DB_CONNECTION=$DB_CONNECTION | APP_ENV=$APP_ENV"
 echo "DB_URL starts with: ${DB_URL:0:30}..."
 

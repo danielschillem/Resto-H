@@ -106,6 +106,33 @@ class AdminController extends Controller
         return response()->json($query->get());
     }
 
+    public function storeParametre(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'cle' => 'required|string|max:255',
+            'valeur' => 'required|string',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $formationId = TenantScope::$formationId;
+
+        // Vérifier unicité cle+formation_id
+        $exists = Parametre::where('cle', $data['cle'])
+            ->where('formation_id', $formationId)
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'Un paramètre avec cette clé existe déjà.'], 422);
+        }
+
+        $parametre = Parametre::create([
+            ...$data,
+            'formation_id' => $formationId,
+        ]);
+
+        return response()->json($parametre, 201);
+    }
+
     public function updateParametre(Request $request, Parametre $parametre): JsonResponse
     {
         $request->validate(['valeur' => 'required|string']);
@@ -113,6 +140,13 @@ class AdminController extends Controller
         $parametre->update(['valeur' => $request->valeur]);
 
         return response()->json($parametre);
+    }
+
+    public function deleteParametre(Parametre $parametre): JsonResponse
+    {
+        $parametre->delete();
+
+        return response()->json(['message' => 'Paramètre supprimé.']);
     }
 
     // --- Permissions (lecture seule pour le gérant) ---

@@ -6,7 +6,7 @@
 [build.environment]
   NODE_VERSION = "20"
   NEXT_WEBPACK = "true"
-  NEXT_PUBLIC_API_URL = "https://sgrh-api.onrender.com/api"
+  NEXT_PUBLIC_API_URL = "https://resto-h-api.onrender.com/api"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

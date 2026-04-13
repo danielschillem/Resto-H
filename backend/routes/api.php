@@ -130,7 +130,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/services', [AdminController::class, 'storeService']);
         Route::put('/admin/services/{service}', [AdminController::class, 'updateService']);
         Route::get('/admin/parametres', [AdminController::class, 'parametres']);
+        Route::post('/admin/parametres', [AdminController::class, 'storeParametre']);
         Route::put('/admin/parametres/{parametre}', [AdminController::class, 'updateParametre']);
+        Route::delete('/admin/parametres/{parametre}', [AdminController::class, 'deleteParametre']);
         Route::get('/admin/permissions', [AdminController::class, 'permissions']);
         // Journal d'audit
         Route::get('/admin/audit-logs', [AdminController::class, 'auditLogs']);
