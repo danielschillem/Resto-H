@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Idempotent: skip entirely if column already exists
+        if (Schema::hasColumn('parametres', 'formation_id')) {
+            return;
+        }
+
         Schema::table('parametres', function (Blueprint $table) {
             $table->dropUnique(['cle']);
             $table->unsignedBigInteger('formation_id')->nullable()->after('description');
