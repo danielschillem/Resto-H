@@ -3,8 +3,11 @@
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
-    'allowed_origins_patterns' => [],
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL', 'http://localhost:3000'),
+        'https://sgrh-app.netlify.app',
+    ]),
+    'allowed_origins_patterns' => ['/^https:\/\/.*--sgrh-app\.netlify\.app$/'],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
     'max_age' => 0,

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: resto-h-api
+    name: sgrh-api
     runtime: docker
     plan: free
     rootDir: backend
