@@ -265,3 +265,25 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Print styles ───────────────────────────────────────────────────────── */
+@media print {
+  .sidebar-drawer,
+  .sidebar-backdrop,
+  .licence-banner {
+    display: none !important;
+  }
+
+  .app-shell {
+    margin-left: 0 !important;
+  }
+
+  .page-pad {
+    padding: 0 !important;
+  }
+
+  button,
+  .no-print {
+    display: none !important;
+  }
+}

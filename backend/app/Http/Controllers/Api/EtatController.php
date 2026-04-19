@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\TenantScope;
 use App\Models\AuditLog;
 use App\Models\Commande;
+use App\Models\Consommation;
 use App\Models\DevisEstimatif;
+use App\Models\Marche;
 use App\Models\MenuHebdomadaire;
+use App\Models\RegimeSpecial;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -165,5 +168,96 @@ class EtatController extends Controller
         });
 
         return response()->json($validations->values());
+    }
+
+    public function syntheseMensuelle(Request $request): JsonResponse
+    {
+        $mois = $request->input('mois', Carbon::now()->format('Y-m'));
+        $debut = Carbon::parse($mois . '-01')->startOfMonth();
+        $fin = $debut->copy()->endOfMonth();
+
+        $debutPrec = $debut->copy()->subMonth()->startOfMonth();
+        $finPrec = $debutPrec->copy()->endOfMonth();
+
+        // Commandes du mois
+        $cmdQuery = Commande::whereBetween('date_repas', [$debut, $fin]);
+        TenantScope::apply($cmdQuery);
+        $commandes = $cmdQuery->get();
+
+        $cmdPrecQuery = Commande::whereBetween('date_repas', [$debutPrec, $finPrec]);
+        TenantScope::apply($cmdPrecQuery);
+        $commandesPrec = $cmdPrecQuery->get();
+
+        $totalPortions = $commandes->sum('nb_portions');
+        $totalPortionsPrec = $commandesPrec->sum('nb_portions');
+        $totalMontant = $commandes->sum('montant');
+        $totalMontantPrec = $commandesPrec->sum('montant');
+        $nbCommandes = $commandes->count();
+        $nbCommandesPrec = $commandesPrec->count();
+        $nbRejetees = $commandes->where('statut', 'rejetee')->count();
+        $nbRejeteesPrec = $commandesPrec->where('statut', 'rejetee')->count();
+        $nbLivrees = $commandes->where('statut', 'livree')->count();
+
+        // Marchés
+        $marchesQuery = Marche::query();
+        TenantScope::apply($marchesQuery);
+        $marchesAll = $marchesQuery->get();
+        $marchesActifs = $marchesAll->where('statut', 'actif')->count();
+        $marchesConsomme = $marchesAll->sum('montant_consomme');
+        $marchesTotal = $marchesAll->sum('montant_initial');
+
+        // Régimes
+        $regQuery = RegimeSpecial::whereBetween('date_debut', [$debut, $fin]);
+        TenantScope::apply($regQuery);
+        $nbRegimes = $regQuery->count();
+
+        // Par service
+        $parService = $commandes->groupBy('service_id')->map(function ($group) {
+            return [
+                'portions' => $group->sum('nb_portions'),
+                'montant' => $group->sum('montant'),
+                'count' => $group->count(),
+            ];
+        });
+
+        $serviceIds = $parService->keys()->toArray();
+        $serviceNames = Service::whereIn('id', $serviceIds)->pluck('nom', 'id');
+        $servicesData = $parService->map(function ($data, $id) use ($serviceNames) {
+            return [
+                'service' => $serviceNames[$id] ?? 'Inconnu',
+                ...$data,
+            ];
+        })->values()->sortByDesc('portions')->values();
+
+        // Par type repas
+        $parRepas = $commandes->groupBy('repas')->map(fn($g) => [
+            'portions' => $g->sum('nb_portions'),
+            'montant' => $g->sum('montant'),
+        ]);
+
+        return response()->json([
+            'mois' => $mois,
+            'mois_label' => $debut->translatedFormat('F Y'),
+            'kpis' => [
+                'total_portions' => $totalPortions,
+                'total_portions_prec' => $totalPortionsPrec,
+                'total_montant' => $totalMontant,
+                'total_montant_prec' => $totalMontantPrec,
+                'nb_commandes' => $nbCommandes,
+                'nb_commandes_prec' => $nbCommandesPrec,
+                'nb_rejetees' => $nbRejetees,
+                'nb_rejetees_prec' => $nbRejeteesPrec,
+                'nb_livrees' => $nbLivrees,
+                'taux_rejet' => $nbCommandes > 0 ? round(($nbRejetees / $nbCommandes) * 100, 1) : 0,
+                'taux_rejet_prec' => $nbCommandesPrec > 0 ? round(($nbRejeteesPrec / $nbCommandesPrec) * 100, 1) : 0,
+                'cout_moyen_portion' => $totalPortions > 0 ? round($totalMontant / $totalPortions) : 0,
+                'nb_regimes' => $nbRegimes,
+                'marches_actifs' => $marchesActifs,
+                'marches_consomme' => $marchesConsomme,
+                'marches_total' => $marchesTotal,
+            ],
+            'par_service' => $servicesData,
+            'par_repas' => $parRepas,
+        ]);
     }
 }

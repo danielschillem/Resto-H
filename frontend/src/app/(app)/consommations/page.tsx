@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import { downloadCsv, exportPdf } from "@/lib/export";
 import { Consommation } from "@/types";
 import Modal from "@/components/Modal";
@@ -10,6 +11,7 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 export default function ConsommationsPage() {
+  const { showToast } = useToast();
   const [consommations, setConsommations] = useState<Consommation[]>([]);
   const [totaux, setTotaux] = useState<Record<string, number>>({});
   const [kpis, setKpis] = useState<{
@@ -115,24 +117,27 @@ export default function ConsommationsPage() {
   };
 
   const handleSaisie = async () => {
-    if (!saisieForm.date) return alert("Veuillez saisir la date.");
+    if (!saisieForm.date) return showToast("Veuillez saisir la date.", "error");
     if (!saisieForm.menu_servi.trim())
-      return alert("Veuillez saisir le menu servi.");
+      return showToast("Veuillez saisir le menu servi.", "error");
     if (
       Number(saisieForm.nb_malades) < 0 ||
       Number(saisieForm.nb_personnel) < 0 ||
       Number(saisieForm.nb_clients) < 0
     )
-      return alert("Les nombres ne peuvent pas être négatifs.");
+      return showToast("Les nombres ne peuvent pas être négatifs.", "error");
     if (
       Number(saisieForm.nb_malades) +
         Number(saisieForm.nb_personnel) +
         Number(saisieForm.nb_clients) ===
       0
     )
-      return alert("Au moins un nombre de portions doit être supérieur à 0.");
+      return showToast(
+        "Au moins un nombre de portions doit être supérieur à 0.",
+        "error",
+      );
     if (Number(saisieForm.cout_prevu) < 0 || Number(saisieForm.cout_reel) < 0)
-      return alert("Les coûts ne peuvent pas être négatifs.");
+      return showToast("Les coûts ne peuvent pas être négatifs.", "error");
     await api.createConsommation({
       ...saisieForm,
       nb_malades: Number(saisieForm.nb_malades),

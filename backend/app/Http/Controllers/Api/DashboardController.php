@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\TenantScope;
 use App\Models\Commande;
 use App\Models\Consommation;
+use App\Models\DevisEstimatif;
+use App\Models\Marche;
+use App\Models\MenuHebdomadaire;
+use App\Models\Notification;
 use App\Models\RegimeSpecial;
 use App\Models\Service;
 use Carbon\Carbon;
@@ -32,12 +36,120 @@ class DashboardController extends Controller
         $chartData = $this->getWeekChartData($weekStart, $weekEnd);
         $repartition = $this->getRepartition();
 
-        return response()->json([
+        $response = [
             'kpis' => $kpis,
             'commandes_recentes' => $commandesRecentes,
             'chart_semaine' => $chartData,
             'repartition' => $repartition,
-        ]);
+            'actions_urgentes' => $this->getActionsUrgentes($user),
+        ];
+
+        // Ajouter indicateurs marché pour DSGL / DAF
+        if (in_array($user->role, ['dsgl', 'daf', 'super_admin'])) {
+            $marchesActifs = TenantScope::apply(Marche::query())->where('statut', 'actif');
+            $enAlerte = (clone $marchesActifs)->get()->filter(fn($m) => $m->en_alerte)->count();
+            $budgetRestant = (clone $marchesActifs)->sum('montant_restant');
+            $budgetTotal = (clone $marchesActifs)->sum('montant_initial');
+            $response['marche_resume'] = [
+                'marches_actifs' => (clone $marchesActifs)->count(),
+                'en_alerte' => $enAlerte,
+                'budget_restant' => $budgetRestant,
+                'budget_total' => $budgetTotal,
+                'taux_consommation' => $budgetTotal > 0 ? round((($budgetTotal - $budgetRestant) / $budgetTotal) * 100, 1) : 0,
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    private function getActionsUrgentes($user): array
+    {
+        $actions = [];
+
+        // Commandes en attente de validation
+        $cmdAttente = TenantScope::apply(Commande::query())->where('statut', 'en_attente')->count();
+        if ($cmdAttente > 0 && in_array($user->role, ['dsgl', 'csah', 'sus', 'super_admin'])) {
+            $actions[] = [
+                'icon' => 'fa-clipboard-list',
+                'color' => 'amber',
+                'label' => $cmdAttente . ' commande(s) à valider',
+                'link' => '/commandes',
+            ];
+        }
+
+        // Marchés en alerte
+        if (in_array($user->role, ['dsgl', 'daf', 'super_admin'])) {
+            $enAlerte = TenantScope::apply(Marche::query())->where('statut', 'actif')
+                ->get()->filter(fn($m) => $m->en_alerte)->count();
+            if ($enAlerte > 0) {
+                $actions[] = [
+                    'icon' => 'fa-triangle-exclamation',
+                    'color' => 'red',
+                    'label' => $enAlerte . ' marché(s) en alerte budget',
+                    'link' => '/marches',
+                ];
+            }
+        }
+
+        // Régimes spéciaux en attente
+        $regimesAttente = TenantScope::apply(RegimeSpecial::query())->where('statut', 'en_attente')->count();
+        if ($regimesAttente > 0 && in_array($user->role, ['nutritionniste', 'dsgl', 'super_admin'])) {
+            $actions[] = [
+                'icon' => 'fa-heart-pulse',
+                'color' => 'purple',
+                'label' => $regimesAttente . ' régime(s) spécial(aux) à valider',
+                'link' => '/menus-speciaux',
+            ];
+        }
+
+        // Menus hebdomadaires soumis (en attente de validation)
+        $menusSoumis = TenantScope::apply(MenuHebdomadaire::query())->where('statut', 'soumis')->count();
+        if ($menusSoumis > 0 && in_array($user->role, ['dsgl', 'nutritionniste', 'super_admin'])) {
+            $actions[] = [
+                'icon' => 'fa-calendar-week',
+                'color' => 'blue',
+                'label' => $menusSoumis . ' menu(s) hebdo à valider',
+                'link' => '/menus-hebdo',
+            ];
+        }
+
+        // Devis en attente (DAF)
+        $devisAttente = TenantScope::apply(DevisEstimatif::query())->where('statut', 'soumis')->count();
+        if ($devisAttente > 0 && in_array($user->role, ['daf', 'dsgl', 'super_admin'])) {
+            $actions[] = [
+                'icon' => 'fa-file-invoice-dollar',
+                'color' => 'green',
+                'label' => $devisAttente . ' devis en attente de validation',
+                'link' => '/validation-financiere',
+            ];
+        }
+
+        // Commandes validées à livrer (prestataire)
+        if ($user->role === 'prestataire') {
+            $aLivrer = TenantScope::apply(Commande::query())->where('statut', 'validee')
+                ->whereDate('date_repas', Carbon::today())->count();
+            if ($aLivrer > 0) {
+                $actions[] = [
+                    'icon' => 'fa-truck',
+                    'color' => 'teal',
+                    'label' => $aLivrer . ' commande(s) à livrer aujourd\'hui',
+                    'link' => '/commandes',
+                ];
+            }
+        }
+
+        // Notifications non lues
+        $notifs = Notification::where('user_id', $user->id)->where('lu', false)->count();
+        if ($notifs > 0) {
+            $actions[] = [
+                'icon' => 'fa-bell',
+                'color' => 'amber',
+                'label' => $notifs . ' notification(s) non lue(s)',
+                'link' => '/notifications',
+            ];
+        }
+
+        return $actions;
     }
 
     private function getKpis($user, $today, $weekStart, $weekEnd): array
@@ -62,13 +174,25 @@ class DashboardController extends Controller
                 ['icon' => 'fa-file-circle-check', 'color' => 'green', 'val' => $commandesAttente, 'label' => 'Documents à valider', 'trend' => 'down', 'trendText' => 'En attente'],
                 ['icon' => 'fa-chart-pie', 'color' => 'blue', 'val' => number_format($consoSemaine, 0, ',', ' '), 'label' => 'Consommation sem. (FCFA)', 'trend' => 'up', 'trendText' => 'Semaine en cours'],
                 ['icon' => 'fa-users', 'color' => 'teal', 'val' => $patients, 'label' => 'Patients hospitalisés', 'trend' => 'up', 'trendText' => 'Lits actifs'],
-                ['icon' => 'fa-scale-balanced', 'color' => 'amber', 'val' => number_format($ecartBudget, 0, ',', ' '), 'label' => 'Écart budgétaire (FCFA)', 'trend' => 'up', 'trendText' => 'Semaine en cours'],
+                ['icon' => 'fa-file-contract', 'color' => 'amber', 'val' => TenantScope::apply(Marche::query())->where('statut', 'actif')->count(), 'label' => 'Marchés actifs', 'trend' => 'up', 'trendText' => 'Budget en cours'],
             ],
             'csah' => [
                 ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour, 'label' => 'Repas à servir (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
                 ['icon' => 'fa-heart-pulse', 'color' => 'red', 'val' => $regimesActifs, 'label' => 'Régimes spéciaux actifs', 'trend' => 'up', 'trendText' => 'Validés'],
-                ['icon' => 'fa-star', 'color' => 'green', 'val' => '-', 'label' => 'Satisfaction (sem.)', 'trend' => 'up', 'trendText' => 'Non mesuré'],
-                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => '-', 'label' => "Livraisons à l'heure", 'trend' => 'up', 'trendText' => 'Non mesuré'],
+                ['icon' => 'fa-truck', 'color' => 'green', 'val' => TenantScope::apply(Commande::query())->where('statut', 'livree')->whereDate('date_repas', $today)->count(), 'label' => 'Livraisons du jour', 'trend' => 'up', 'trendText' => 'Livrées aujourd\'hui'],
+                ['icon' => 'fa-clock', 'color' => 'amber', 'val' => $commandesAttente, 'label' => 'En attente validation', 'trend' => 'down', 'trendText' => $commandesAttente . ' commande(s)'],
+            ],
+            'nutritionniste' => [
+                ['icon' => 'fa-hospital-user', 'color' => 'purple', 'val' => $patients, 'label' => 'Patients hospitalisés', 'trend' => 'up', 'trendText' => 'Total en cours'],
+                ['icon' => 'fa-heart-pulse', 'color' => 'red', 'val' => $regimesActifs, 'label' => 'Régimes spéciaux actifs', 'trend' => 'up', 'trendText' => 'Validés'],
+                ['icon' => 'fa-bowl-food', 'color' => 'blue', 'val' => $portionsJour, 'label' => 'Portions prévues (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
+                ['icon' => 'fa-microscope', 'color' => 'amber', 'val' => number_format($consoSemaine, 0, ',', ' '), 'label' => 'Coût semaine (FCFA)', 'trend' => 'down', 'trendText' => 'Consommation réelle'],
+            ],
+            'daf' => [
+                ['icon' => 'fa-file-invoice-dollar', 'color' => 'blue', 'val' => $commandesAttente, 'label' => 'Documents en attente', 'trend' => 'down', 'trendText' => 'À valider'],
+                ['icon' => 'fa-sack-dollar', 'color' => 'green', 'val' => number_format($consoSemaine, 0, ',', ' '), 'label' => 'Consommation sem. (FCFA)', 'trend' => 'up', 'trendText' => 'Semaine en cours'],
+                ['icon' => 'fa-file-contract', 'color' => 'amber', 'val' => TenantScope::apply(Marche::query())->where('statut', 'actif')->count(), 'label' => 'Marchés actifs', 'trend' => 'up', 'trendText' => 'Budget en cours'],
+                ['icon' => 'fa-chart-pie', 'color' => 'teal', 'val' => $portionsJour, 'label' => 'Portions prévues (auj.)', 'trend' => 'up', 'trendText' => 'Aujourd\'hui'],
             ],
             default => [
                 [

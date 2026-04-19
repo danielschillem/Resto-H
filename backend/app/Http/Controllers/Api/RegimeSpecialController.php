@@ -49,6 +49,8 @@ class RegimeSpecialController extends Controller
             'formation_id' => TenantScope::$formationId,
         ]);
 
+        AuditLog::record('creer', 'regime_special', $regime->id, $regime->patient_nom, null, $request);
+
         return response()->json($regime->load('service'), 201);
     }
 

@@ -9,6 +9,10 @@ use App\Http\Controllers\Api\EtatController;
 use App\Http\Controllers\Api\LicenceController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\RegimeSpecialController;
+use App\Http\Controllers\Api\HospitalisationController;
+use App\Http\Controllers\Api\NutritionnisteController;
+use App\Http\Controllers\Api\MarcheController;
+use App\Http\Controllers\Api\ListeNominativeController;
 use App\Http\Controllers\Api\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -72,11 +76,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Créer une commande : tous les rôles
     Route::post('/commandes', [CommandeController::class, 'store']);
 
-    // Valider/rejeter : CSAH, DSGL
-    Route::middleware('role:csah,dsgl')->group(function () {
+    // Valider/rejeter : SUS, CSAH, DSGL
+    Route::middleware('role:sus,csah,dsgl')->group(function () {
         Route::get('/commandes-a-valider', [CommandeController::class, 'aValider']);
         Route::post('/commandes/{commande}/valider', [CommandeController::class, 'valider']);
         Route::post('/commandes/{commande}/rejeter', [CommandeController::class, 'rejeter']);
+    });
+
+    // Paiement : CSAH, DSGL
+    Route::middleware('role:csah,dsgl')->group(function () {
         Route::post('/commandes/{commande}/paiement', [CommandeController::class, 'enregistrerPaiement']);
     });
 
@@ -107,18 +115,89 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/consommations', [ConsommationController::class, 'store']);
     });
 
-    // ── États & Rapports : DSGL, CSAH ──────────────────────────────────────
-    Route::middleware('role:dsgl,csah')->group(function () {
+    // ── États & Rapports : DSGL, CSAH, DAF ───────────────────────────────
+    Route::middleware('role:dsgl,csah,daf')->group(function () {
         Route::get('/etats/commandes', [EtatController::class, 'etatCommandes']);
         Route::get('/etats/devis', [EtatController::class, 'devis']);
         Route::post('/etats/devis', [EtatController::class, 'storeDevis']);
         Route::get('/etats/validations', [EtatController::class, 'validations']);
+        Route::get('/etats/synthese-mensuelle', [EtatController::class, 'syntheseMensuelle']);
     });
 
-    // Validation devis : DSGL
-    Route::middleware('role:dsgl')->group(function () {
+    // Validation devis : DSGL, DAF
+    Route::middleware('role:dsgl,daf')->group(function () {
         Route::post('/etats/devis/{devis}/valider', [EtatController::class, 'validerDevis']);
         Route::post('/etats/devis/{devis}/rejeter', [EtatController::class, 'rejeterDevis']);
+    });
+
+    // ── Nutritionniste : Observatoire ─────────────────────────────────────
+    Route::middleware('role:nutritionniste,dsgl,csah')->group(function () {
+        Route::get('/nutritionniste/observatoire', [NutritionnisteController::class, 'observatoire']);
+        Route::get('/nutritionniste/regimes-actifs', [NutritionnisteController::class, 'regimesActifs']);
+        Route::get('/nutritionniste/analyse-menus', [NutritionnisteController::class, 'analyseMenus']);
+    });
+    Route::middleware('role:nutritionniste')->group(function () {
+        Route::post('/nutritionniste/proposer-menu', [NutritionnisteController::class, 'proposerMenu']);
+    });
+
+    // ── Hospitalisation : Salles, Lits, Patients, Admissions ──────────────
+    // Lecture : tous les rôles
+    Route::get('/hospitalisation/stats', [HospitalisationController::class, 'stats']);
+    Route::get('/hospitalisation/categories', [HospitalisationController::class, 'categories']);
+    Route::get('/hospitalisation/salles', [HospitalisationController::class, 'salles']);
+    Route::get('/hospitalisation/lits', [HospitalisationController::class, 'lits']);
+    Route::get('/hospitalisation/patients', [HospitalisationController::class, 'patients']);
+    Route::get('/hospitalisation/patients/{patient}', [HospitalisationController::class, 'showPatient']);
+    Route::get('/hospitalisation/admissions', [HospitalisationController::class, 'admissions']);
+
+    // Gestion : DSGL, CSAH, SUS
+    Route::middleware('role:dsgl,csah,sus')->group(function () {
+        Route::post('/hospitalisation/categories', [HospitalisationController::class, 'storeCategorie']);
+        Route::put('/hospitalisation/categories/{categorie}', [HospitalisationController::class, 'updateCategorie']);
+        Route::delete('/hospitalisation/categories/{categorie}', [HospitalisationController::class, 'deleteCategorie']);
+        Route::post('/hospitalisation/salles', [HospitalisationController::class, 'storeSalle']);
+        Route::put('/hospitalisation/salles/{salle}', [HospitalisationController::class, 'updateSalle']);
+        Route::delete('/hospitalisation/salles/{salle}', [HospitalisationController::class, 'deleteSalle']);
+        Route::post('/hospitalisation/lits', [HospitalisationController::class, 'storeLit']);
+        Route::put('/hospitalisation/lits/{lit}', [HospitalisationController::class, 'updateLit']);
+        Route::delete('/hospitalisation/lits/{lit}', [HospitalisationController::class, 'deleteLit']);
+        Route::post('/hospitalisation/patients', [HospitalisationController::class, 'storePatient']);
+        Route::put('/hospitalisation/patients/{patient}', [HospitalisationController::class, 'updatePatient']);
+        Route::post('/hospitalisation/admissions', [HospitalisationController::class, 'storeAdmission']);
+        Route::put('/hospitalisation/admissions/{admission}', [HospitalisationController::class, 'updateAdmission']);
+    });
+
+    // ── Marchés & Budget ─────────────────────────────────────────────────
+    // Lecture : DSGL, CSAH, DAF, prestataire
+    Route::middleware('role:dsgl,csah,daf,prestataire')->group(function () {
+        Route::get('/marches', [MarcheController::class, 'index']);
+        Route::get('/marches/kpis', [MarcheController::class, 'kpis']);
+        Route::get('/marches/couts-desagreges', [MarcheController::class, 'coutsDesagreges']);
+        Route::get('/marches/{marche}', [MarcheController::class, 'show']);
+        Route::get('/annees-budgetaires', [MarcheController::class, 'annees']);
+    });
+
+    // Gestion marchés : DSGL, DAF
+    Route::middleware('role:dsgl,daf')->group(function () {
+        Route::post('/marches', [MarcheController::class, 'store']);
+        Route::put('/marches/{marche}', [MarcheController::class, 'update']);
+        Route::delete('/marches/{marche}', [MarcheController::class, 'destroy']);
+        Route::post('/annees-budgetaires', [MarcheController::class, 'storeAnnee']);
+        Route::put('/annees-budgetaires/{annee}', [MarcheController::class, 'updateAnnee']);
+    });
+
+    // ── Liste Nominative ──────────────────────────────────────────────────
+    // Lecture : DSGL, CSAH, SUS, SUT, DAF, nutritionniste
+    Route::middleware('role:dsgl,csah,sus,sut,daf,nutritionniste')->group(function () {
+        Route::get('/liste-nominative', [ListeNominativeController::class, 'index']);
+    });
+
+    // Saisie : CSAH, SUS
+    Route::middleware('role:csah,sus')->group(function () {
+        Route::post('/liste-nominative', [ListeNominativeController::class, 'store']);
+        Route::put('/liste-nominative/{listeNominative}', [ListeNominativeController::class, 'update']);
+        Route::delete('/liste-nominative/{listeNominative}', [ListeNominativeController::class, 'destroy']);
+        Route::post('/liste-nominative/marquer-servis', [ListeNominativeController::class, 'marquerTousServis']);
     });
 
     // ── Administration : DSGL uniquement ──────────────────────────────────

@@ -9,6 +9,11 @@ const TYPE_ICON: Record<string, { icon: string; color: string; bg: string }> = {
   regime: { icon: "fa-heart-pulse", color: "#991B1B", bg: "#FEE2E2" },
   menu: { icon: "fa-calendar-week", color: "#065F46", bg: "#D1FAE5" },
   devis: { icon: "fa-file-invoice", color: "#5B21B6", bg: "#EDE9FE" },
+  alerte_marche: {
+    icon: "fa-triangle-exclamation",
+    color: "#92400E",
+    bg: "#FEF3C7",
+  },
 };
 
 function fmtDate(str: string): string {

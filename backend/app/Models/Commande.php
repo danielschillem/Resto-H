@@ -13,6 +13,9 @@ class Commande extends Model
         'menu_id', 'nb_portions', 'heure_livraison', 'montant',
         'statut', 'statut_paiement', 'client_nom', 'observations',
         'motif_rejet', 'soumis_par', 'valide_par', 'date_validation',
+        'valide_sus_par', 'date_validation_sus',
+        'marche_id',
+        'heure_livraison_effective', 'temperature', 'observations_livraison',
         'formation_id',
     ];
 
@@ -44,8 +47,18 @@ class Commande extends Model
         return $this->belongsTo(User::class, 'valide_par');
     }
 
+    public function valideSusPar(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'valide_sus_par');
+    }
+
     public function regimesSpeciaux(): BelongsToMany
     {
         return $this->belongsToMany(RegimeSpecial::class, 'commande_regimes', 'commande_id', 'regime_special_id');
+    }
+
+    public function marche(): BelongsTo
+    {
+        return $this->belongsTo(Marche::class);
     }
 }

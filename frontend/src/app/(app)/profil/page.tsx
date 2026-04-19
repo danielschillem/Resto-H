@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import { useAuth } from "@/lib/auth";
 import Modal from "@/components/Modal";
 
@@ -11,10 +12,13 @@ const ROLE_LABELS: Record<string, string> = {
   csah: "CSAH - Accueil & Hôtellerie",
   sus: "SUS - Soins",
   sut: "SUT - Technique",
+  nutritionniste: "Nutritionniste",
+  daf: "DAF - Direction Administrative & Financière",
   super_admin: "Super Administrateur",
 };
 
 export default function ProfilPage() {
+  const { showToast } = useToast();
   const { user, refresh } = useAuth();
   const [editModal, setEditModal] = useState(false);
   const [pwdModal, setPwdModal] = useState(false);
@@ -35,7 +39,7 @@ export default function ProfilPage() {
 
   const handleSaveProfile = async () => {
     if (!form.nom.trim() || !form.prenom.trim())
-      return alert("Nom et prénom sont requis.");
+      return showToast("Nom et prénom sont requis.", "error");
     setSaving(true);
     try {
       await api.updateProfile(form);
@@ -49,13 +53,14 @@ export default function ProfilPage() {
 
   const handleChangePassword = async () => {
     if (!pwdForm.current_password)
-      return alert("Saisissez votre mot de passe actuel.");
-    if (pwdForm.new_password.length < 4)
-      return alert(
-        "Le nouveau mot de passe doit contenir au moins 4 caractères.",
+      return showToast("Saisissez votre mot de passe actuel.", "error");
+    if (pwdForm.new_password.length < 8)
+      return showToast(
+        "Le nouveau mot de passe doit contenir au moins 8 caractères.",
+        "error",
       );
     if (pwdForm.new_password !== pwdForm.new_password_confirmation)
-      return alert("Les mots de passe ne correspondent pas.");
+      return showToast("Les mots de passe ne correspondent pas.", "error");
     setSaving(true);
     try {
       await api.changePassword(pwdForm);

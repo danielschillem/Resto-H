@@ -15,7 +15,7 @@ class RolePermission extends Model
 
     public static function allGrouped(): array
     {
-        $roles = ['prestataire', 'dsgl', 'csah', 'sus', 'sut'];
+        $roles = ['prestataire', 'dsgl', 'csah', 'sus', 'sut', 'nutritionniste', 'daf'];
         $result = [];
         foreach ($roles as $role) {
             $result[$role] = static::where('role', $role)->pluck('permission')->toArray();
@@ -47,6 +47,13 @@ class RolePermission extends Model
             'regimes.valider',
             'admin',
             'licence',
+            'observatoire',
+            'validation_financiere',
+            'marches',
+            'marches.creer',
+            'marches.modifier',
+            'liste_nominative',
+            'liste_nominative.creer',
         ];
     }
 }

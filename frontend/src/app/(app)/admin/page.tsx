@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { User, Service, Parametre, AuditLog, PaginatedResponse } from "@/types";
 import { isEmailValid } from "@/lib/validation";
 
@@ -45,6 +47,7 @@ type TabId = (typeof TABS)[number]["id"];
 // ── Composant principal ─────────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const { showToast } = useToast();
   const [tab, setTab] = useState<TabId>("users");
   const [users, setUsers] = useState<User[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -113,10 +116,19 @@ export default function AdminPage() {
     action: "",
     entity_type: "",
     user_name: "",
+    date_from: "",
+    date_to: "",
   });
 
   // Bulk selection
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+
+  // Confirm dialog
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    message: string;
+    onConfirm: () => void;
+  }>({ open: false, message: "", onConfirm: () => {} });
 
   // ── Chargement ──────────────────────────────────────────────────────────────
 
@@ -178,12 +190,17 @@ export default function AdminPage() {
   // ── Handlers utilisateurs ──────────────────────────────────────────────────
 
   const handleCreateUser = async () => {
-    if (!userForm.nom.trim()) return alert("Veuillez saisir le nom.");
-    if (!userForm.prenom.trim()) return alert("Veuillez saisir le prénom.");
+    if (!userForm.nom.trim())
+      return showToast("Veuillez saisir le nom.", "error");
+    if (!userForm.prenom.trim())
+      return showToast("Veuillez saisir le prénom.", "error");
     if (!userForm.email.trim() || !isEmailValid(userForm.email))
-      return alert("Veuillez saisir un email valide.");
-    if (!userForm.password || userForm.password.length < 4)
-      return alert("Le mot de passe doit contenir au moins 4 caractères.");
+      return showToast("Veuillez saisir un email valide.", "error");
+    if (!userForm.password || userForm.password.length < 8)
+      return showToast(
+        "Le mot de passe doit contenir au moins 8 caractères.",
+        "error",
+      );
     await api.createUser(userForm);
     setUserModal(false);
     setUserForm({
@@ -218,9 +235,9 @@ export default function AdminPage() {
 
   const handleCreateService = async () => {
     if (!serviceForm.nom.trim())
-      return alert("Veuillez saisir le nom du service.");
+      return showToast("Veuillez saisir le nom du service.", "error");
     if (Number(serviceForm.lits_actifs) < 0)
-      return alert("Le nombre de lits ne peut pas être négatif.");
+      return showToast("Le nombre de lits ne peut pas être négatif.", "error");
     await api.createService({
       ...serviceForm,
       lits_actifs: Number(serviceForm.lits_actifs),
@@ -258,8 +275,9 @@ export default function AdminPage() {
 
   const handleCreateParam = async () => {
     if (!paramForm.cle.trim())
-      return alert("Veuillez saisir la clé du paramètre.");
-    if (!paramForm.valeur.trim()) return alert("Veuillez saisir la valeur.");
+      return showToast("Veuillez saisir la clé du paramètre.", "error");
+    if (!paramForm.valeur.trim())
+      return showToast("Veuillez saisir la valeur.", "error");
     await api.createParametre({
       cle: paramForm.cle,
       valeur: paramForm.valeur,
@@ -276,9 +294,15 @@ export default function AdminPage() {
   };
 
   const handleDeleteParam = async (id: number) => {
-    if (!confirm("Supprimer ce paramètre tarifaire ?")) return;
-    await api.deleteParametre(id);
-    load();
+    setConfirmDialog({
+      open: true,
+      message: "Supprimer ce paramètre tarifaire ?",
+      onConfirm: async () => {
+        setConfirmDialog((d) => ({ ...d, open: false }));
+        await api.deleteParametre(id);
+        load();
+      },
+    });
   };
 
   // ── Audit logs ──────────────────────────────────────────────────────────────
@@ -290,6 +314,8 @@ export default function AdminPage() {
     if (auditFilter.entity_type)
       params.set("entity_type", auditFilter.entity_type);
     if (auditFilter.user_name) params.set("user_name", auditFilter.user_name);
+    if (auditFilter.date_from) params.set("date_from", auditFilter.date_from);
+    if (auditFilter.date_to) params.set("date_to", auditFilter.date_to);
     api
       .auditLogs(params.toString())
       .then((res) => {
@@ -328,10 +354,16 @@ export default function AdminPage() {
 
   const handleBulkDeactivate = async () => {
     if (!selectedUsers.length) return;
-    if (!confirm(`Désactiver ${selectedUsers.length} utilisateur(s) ?`)) return;
-    await api.bulkDeactivateUsers(selectedUsers);
-    setSelectedUsers([]);
-    load();
+    setConfirmDialog({
+      open: true,
+      message: `Désactiver ${selectedUsers.length} utilisateur(s) ?`,
+      onConfirm: async () => {
+        setConfirmDialog((d) => ({ ...d, open: false }));
+        await api.bulkDeactivateUsers(selectedUsers);
+        setSelectedUsers([]);
+        load();
+      },
+    });
   };
 
   const ACTION_LABELS: Record<string, string> = {
@@ -1132,12 +1164,32 @@ export default function AdminPage() {
               />
               Journal d&apos;audit ({auditTotal})
             </div>
-            <button
-              onClick={() => api.exportAuditLogs()}
-              style={{ ...btn, fontSize: 11, padding: "5px 12px" }}
-            >
-              <i className="fa-solid fa-download" /> Export CSV
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => {
+                  const w = window.open("", "_blank");
+                  if (!w) return;
+                  w.document.write(`<html><head><title>Journal d'audit</title>
+                    <style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}th{background:#f0f0f0;font-weight:bold}h2{margin-bottom:10px}@media print{button{display:none}}</style></head><body>
+                    <h2>Journal d'audit — SGRH</h2>
+                    <p style="font-size:12px;color:#666">Imprimé le ${new Date().toLocaleDateString("fr-FR")} — ${auditTotal} entrées</p>
+                    <table><thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Entité</th><th>Libellé</th><th>Détails</th></tr></thead><tbody>
+                    ${auditLogs.map((l) => `<tr><td>${new Date(l.created_at).toLocaleString("fr-FR")}</td><td>${l.user_name}</td><td>${l.action}</td><td>${l.entity_type}</td><td>${l.entity_label || "-"}</td><td>${l.details || "-"}</td></tr>`).join("")}
+                    </tbody></table></body></html>`);
+                  w.document.close();
+                  w.print();
+                }}
+                style={{ ...btn, fontSize: 11, padding: "5px 12px" }}
+              >
+                <i className="fa-solid fa-print" /> Imprimer
+              </button>
+              <button
+                onClick={() => api.exportAuditLogs()}
+                style={{ ...btn, fontSize: 11, padding: "5px 12px" }}
+              >
+                <i className="fa-solid fa-download" /> Export CSV
+              </button>
+            </div>
           </div>
 
           <div
@@ -1185,9 +1237,28 @@ export default function AdminPage() {
               <option value="menu_hebdomadaire">Menu hebdo</option>
               <option value="regime_special">Régime spécial</option>
               <option value="devis">Devis</option>
-              <option value="user">Utilisateur</option>
+              <option value="utilisateur">Utilisateur</option>
               <option value="service">Service</option>
+              <option value="marche">Marché</option>
             </select>
+            <input
+              type="date"
+              value={auditFilter.date_from}
+              onChange={(e) =>
+                setAuditFilter({ ...auditFilter, date_from: e.target.value })
+              }
+              title="Date début"
+              style={{ ...inputStyle, width: "auto", minWidth: 130 }}
+            />
+            <input
+              type="date"
+              value={auditFilter.date_to}
+              onChange={(e) =>
+                setAuditFilter({ ...auditFilter, date_to: e.target.value })
+              }
+              title="Date fin"
+              style={{ ...inputStyle, width: "auto", minWidth: 130 }}
+            />
             <button onClick={() => loadAuditLogs(1)} style={btn}>
               <i className="fa-solid fa-search" /> Filtrer
             </button>
@@ -1722,6 +1793,13 @@ export default function AdminPage() {
           />
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((d) => ({ ...d, open: false }))}
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import { RegimeSpecial, Service } from "@/types";
 import { useAuth } from "@/lib/auth";
@@ -39,6 +40,7 @@ const REGIME_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 export default function MenusSpeciauxPage() {
+  const { showToast } = useToast();
   const { user } = useAuth();
   const isPrestataire = user?.role === "prestataire";
   const [regimes, setRegimes] = useState<RegimeSpecial[]>([]);
@@ -116,14 +118,20 @@ export default function MenusSpeciauxPage() {
 
   const handleCreate = async () => {
     if (!form.patient_nom.trim())
-      return alert("Veuillez saisir le nom du patient.");
-    if (!form.lit.trim()) return alert("Veuillez saisir le numéro de lit.");
-    if (!form.service_id) return alert("Veuillez sélectionner un service.");
-    if (!form.date_debut) return alert("Veuillez saisir la date de début.");
+      return showToast("Veuillez saisir le nom du patient.", "error");
+    if (!form.lit.trim())
+      return showToast("Veuillez saisir le numéro de lit.", "error");
+    if (!form.service_id)
+      return showToast("Veuillez sélectionner un service.", "error");
+    if (!form.date_debut)
+      return showToast("Veuillez saisir la date de début.", "error");
     if (Number(form.duree_jours) < 1)
-      return alert("La durée doit être d'au moins 1 jour.");
+      return showToast("La durée doit être d'au moins 1 jour.", "error");
     if (!form.medecin_prescripteur.trim())
-      return alert("Veuillez saisir le nom du médecin prescripteur.");
+      return showToast(
+        "Veuillez saisir le nom du médecin prescripteur.",
+        "error",
+      );
     await api.createRegime({
       ...form,
       service_id: Number(form.service_id),

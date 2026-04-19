@@ -8,6 +8,25 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 
+interface ActionUrgente {
+  icon: string;
+  color: string;
+  label: string;
+  link: string;
+}
+
+const ACTION_COLORS: Record<
+  string,
+  { bg: string; color: string; border: string }
+> = {
+  red: { bg: "#FEF2F2", color: "#991B1B", border: "#FECACA" },
+  amber: { bg: "#FFFBEB", color: "#92400E", border: "#FDE68A" },
+  blue: { bg: "#EFF6FF", color: "#1E40AF", border: "#BFDBFE" },
+  green: { bg: "#F0FDF4", color: "#065F46", border: "#BBF7D0" },
+  purple: { bg: "#F5F3FF", color: "#5B21B6", border: "#DDD6FE" },
+  teal: { bg: "#F0FDFA", color: "#115E59", border: "#99F6E4" },
+};
+
 const KPI_COLORS: Record<string, { bg: string; color: string }> = {
   blue: { bg: "#EFF6FF", color: "var(--primary)" },
   teal: { bg: "#F0FDFA", color: "var(--teal)" },
@@ -43,6 +62,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [kpis, setKpis] = useState<KpiItem[]>([]);
   const [commandes, setCommandes] = useState<Commande[]>([]);
+  const [actionsUrgentes, setActionsUrgentes] = useState<ActionUrgente[]>([]);
   const [chartData, setChartData] = useState<{
     labels: string[];
     malades: number[];
@@ -52,6 +72,13 @@ export default function DashboardPage() {
   const [repartition, setRepartition] = useState<{
     labels: string[];
     data: number[];
+  } | null>(null);
+  const [marcheResume, setMarcheResume] = useState<{
+    marches_actifs: number;
+    en_alerte: number;
+    budget_restant: number;
+    budget_total: number;
+    taux_consommation: number;
   } | null>(null);
   const barRef = useRef<HTMLCanvasElement>(null);
   const donutRef = useRef<HTMLCanvasElement>(null);
@@ -65,6 +92,15 @@ export default function DashboardPage() {
         setCommandes(d.commandes_recentes || []);
         setChartData(d.chart_semaine || null);
         setRepartition(d.repartition || null);
+        setActionsUrgentes(
+          ((d as Record<string, unknown>)
+            .actions_urgentes as ActionUrgente[]) || [],
+        );
+        if ((d as Record<string, unknown>).marche_resume) {
+          setMarcheResume(
+            (d as Record<string, unknown>).marche_resume as typeof marcheResume,
+          );
+        }
       })
       .catch(() => {});
   }, []);
@@ -230,6 +266,68 @@ export default function DashboardPage() {
         })}
       </div>
 
+      {/* Actions urgentes */}
+      {actionsUrgentes.length > 0 && (
+        <div
+          style={{
+            background: "white",
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--border)",
+            padding: 20,
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              marginBottom: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <i className="fa-solid fa-bolt" style={{ color: "#F59E0B" }} />
+            Actions urgentes
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {actionsUrgentes.map((a, i) => {
+              const ac = ACTION_COLORS[a.color] || ACTION_COLORS.blue;
+              return (
+                <a
+                  key={i}
+                  href={a.link}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 16px",
+                    borderRadius: 10,
+                    background: ac.bg,
+                    border: `1px solid ${ac.border}`,
+                    textDecoration: "none",
+                    color: ac.color,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    transition: "transform 0.15s",
+                  }}
+                >
+                  <i
+                    className={`fa-solid ${a.icon}`}
+                    style={{ fontSize: 16 }}
+                  />
+                  {a.label}
+                  <i
+                    className="fa-solid fa-arrow-right"
+                    style={{ fontSize: 11, marginLeft: 4 }}
+                  />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Charts */}
       <div className="grid-2-1" style={{ gap: 16, marginBottom: 24 }}>
         <div
@@ -270,6 +368,90 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Marché résumé (DSGL/DAF) */}
+      {marcheResume && (
+        <div
+          style={{
+            background: marcheResume.en_alerte > 0 ? "#FEF2F2" : "white",
+            borderRadius: "var(--radius)",
+            border: `1px solid ${marcheResume.en_alerte > 0 ? "#FECACA" : "var(--border)"}`,
+            padding: 20,
+            marginBottom: 24,
+            display: "flex",
+            gap: 24,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                background: "#EFF6FF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--primary)",
+              }}
+            >
+              <i
+                className="fa-solid fa-file-contract"
+                style={{ fontSize: 20 }}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>
+                Budget & Marchés
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-sm)" }}>
+                {marcheResume.marches_actifs} marché(s) actif(s)
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: 13 }}>
+            <span style={{ fontWeight: 600 }}>Budget total :</span>{" "}
+            {Number(marcheResume.budget_total).toLocaleString("fr-FR")} FCFA
+          </div>
+          <div style={{ fontSize: 13 }}>
+            <span style={{ fontWeight: 600 }}>Restant :</span>{" "}
+            {Number(marcheResume.budget_restant).toLocaleString("fr-FR")} FCFA
+          </div>
+          <div style={{ fontSize: 13 }}>
+            <span style={{ fontWeight: 600 }}>Consommé :</span>{" "}
+            {marcheResume.taux_consommation}%
+          </div>
+          {marcheResume.en_alerte > 0 && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#991B1B",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <i className="fa-solid fa-triangle-exclamation" />
+              {marcheResume.en_alerte} marché(s) en alerte
+            </div>
+          )}
+          <a
+            href="/marches"
+            style={{
+              marginLeft: "auto",
+              fontSize: 12,
+              color: "var(--primary)",
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Voir détails <i className="fa-solid fa-arrow-right" />
+          </a>
+        </div>
+      )}
 
       {/* Recent Orders */}
       <div

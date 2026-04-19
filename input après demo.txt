@@ -1,0 +1,33 @@
+année budgétaire 
+
+double validation commande SUS/CSAH
+
+SUS ET SUT rôle facultatif
+
+Salle et le N°LIT 
+
+saisir pour un malade ordinaire toutes les information prévoir la liste nominative 
+
+Salle de catégorie 
+
+Profil nutritionniste (analyse des données et faire de nouvelle proposition --- observatoire)
+
+DAF processus de validation
+
+Identification des malades bénéficiaire des portions
+
+les nouveau entrant ( Admission) permettre d'ajouter
+
+Coût désagréger 
+
+N° des salle par rapport au lit 
+
+Ex : Salle 1 : Lit N° 1 à N°10
+
+Salle 1 : Catégorie : 2 lits ou 1 lit avec toutes les commodités
+
+Type de catégorie
+
+intégration du marché en lien avec les commandes 
+Montant du marché : 
+dévalué par rapport au consommation hebdomadaire jusqu'à alerte de fin de crédit 

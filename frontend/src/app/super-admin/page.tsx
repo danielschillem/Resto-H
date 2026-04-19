@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import { useAuth } from "@/lib/auth";
 import {
   User,
@@ -2258,6 +2259,7 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
 
 /* ── Sub-tab: Services ─────────────────────────────────────────────────────── */
 function SubTabServices() {
+  const { showToast } = useToast();
   type ServiceExt = Service & { commandes_count: number };
   const [services, setServices] = useState<ServiceExt[]>([]);
   const [search, setSearch] = useState("");
@@ -2290,7 +2292,7 @@ function SubTabServices() {
   );
 
   const handleCreate = async () => {
-    if (!form.nom.trim()) return alert("Nom requis.");
+    if (!form.nom.trim()) return showToast("Nom requis.", "error");
     await api.saCreateService(form);
     setShowForm(false);
     setForm({ nom: "", lits_actifs: 0, responsable: "" });
@@ -2308,7 +2310,10 @@ function SubTabServices() {
       await api.saDeleteService(s.id);
       load();
     } catch {
-      alert("Impossible de supprimer un service avec des commandes.");
+      showToast(
+        "Impossible de supprimer un service avec des commandes.",
+        "error",
+      );
     }
   };
   const openEdit = (s: ServiceExt) => {

@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { downloadCsv, exportPdf } from "@/lib/export";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
-import { Commande, Service, Menu, RegimeSpecial } from "@/types";
+import { Commande, Service, Menu, RegimeSpecial, Marche } from "@/types";
 import { isEmailValid, todayISO } from "@/lib/validation";
 import { useAuth } from "@/lib/auth";
 
@@ -14,6 +14,7 @@ const STATUT_BADGE: Record<
   { bg: string; color: string; label: string }
 > = {
   en_attente: { bg: "#FEF3C7", color: "#92400E", label: "En attente" },
+  validee_sus: { bg: "#E0E7FF", color: "#3730A3", label: "Validée SUS" },
   validee: { bg: "#D1FAE5", color: "#065F46", label: "Validée" },
   en_cours: { bg: "#DBEAFE", color: "#1E40AF", label: "En cours" },
   livree: { bg: "#D1FAE5", color: "#065F46", label: "Livrée" },
@@ -44,11 +45,17 @@ export default function CommandesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [regimesSpeciaux, setRegimesSpeciaux] = useState<RegimeSpecial[]>([]);
+  const [marchesActifs, setMarchesActifs] = useState<Marche[]>([]);
   const [tab, setTab] = useState<Tab>("malades");
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState<Commande | null>(null);
   const [rejectModal, setRejectModal] = useState<number | null>(null);
   const [livraisonModal, setLivraisonModal] = useState<Commande | null>(null);
+  const [livraisonForm, setLivraisonForm] = useState({
+    heure_livraison_effective: "",
+    temperature: "",
+    observations_livraison: "",
+  });
   const [paiementModal, setPaiementModal] = useState<Commande | null>(null);
   const { showToast } = useToast();
   const [rejectMotif, setRejectMotif] = useState("Informations incomplètes");
@@ -66,6 +73,7 @@ export default function CommandesPage() {
     nb_portions: 1,
     menu_id: "",
     observations: "",
+    marche_id: "",
   });
 
   const load = (p = page) => {
@@ -84,6 +92,7 @@ export default function CommandesPage() {
       })
       .catch(() => {});
     if (
+      user?.role === "sus" ||
       user?.role === "csah" ||
       user?.role === "dsgl" ||
       user?.role === "super_admin"
@@ -102,6 +111,13 @@ export default function CommandesPage() {
         .menus()
         .then(setMenus)
         .catch(() => {});
+      // Charger les marchés actifs pour le formulaire de commande
+      if (["dsgl", "csah", "daf", "super_admin"].includes(user?.role || "")) {
+        api
+          .marchesActifs()
+          .then(setMarchesActifs)
+          .catch(() => {});
+      }
     }
     if (user?.role === "prestataire") {
       api
@@ -143,19 +159,23 @@ export default function CommandesPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.service_id) return alert("Veuillez sélectionner un service.");
-    if (!form.date_repas) return alert("Veuillez saisir la date du repas.");
+    if (!form.service_id)
+      return showToast("Veuillez sélectionner un service.", "error");
+    if (!form.date_repas)
+      return showToast("Veuillez saisir la date du repas.", "error");
     if (form.date_repas < todayISO())
-      return alert(
+      return showToast(
         "La date du repas ne peut pas être antérieure à aujourd'hui.",
+        "error",
       );
     if (Number(form.nb_portions) < 1)
-      return alert("Le nombre de portions doit être au moins 1.");
+      return showToast("Le nombre de portions doit être au moins 1.", "error");
     await api.createCommande({
       ...form,
       service_id: Number(form.service_id),
       nb_portions: Number(form.nb_portions),
       menu_id: form.menu_id ? Number(form.menu_id) : null,
+      marche_id: form.marche_id ? Number(form.marche_id) : null,
     });
     setModalOpen(false);
     load();
@@ -620,7 +640,8 @@ export default function CommandesPage() {
             { key: "malades", label: "Malades", count: maladesCount },
             { key: "personnel", label: "Personnel" },
             { key: "clients", label: "Clients externes" },
-            ...(user?.role === "csah" ||
+            ...(user?.role === "sus" ||
+            user?.role === "csah" ||
             user?.role === "dsgl" ||
             user?.role === "super_admin"
               ? [
@@ -722,6 +743,7 @@ export default function CommandesPage() {
           >
             <option value="">Tous les statuts</option>
             <option value="en_attente">En attente</option>
+            <option value="validee_sus">Validée SUS</option>
             <option value="validee">Validée</option>
             <option value="en_cours">En cours</option>
             <option value="livree">Livrée</option>
@@ -762,8 +784,9 @@ export default function CommandesPage() {
                 </th>
                 <th style={thStyle}>Repas</th>
                 <th style={thStyle}>Menu</th>
-                {tab === "clients" && <th style={thStyle}>Montant</th>}
+                <th style={thStyle}>Montant</th>
                 {tab === "clients" && <th style={thStyle}>Paiement</th>}
+                {tab !== "clients" && <th style={thStyle}>Marché</th>}
                 <th style={thStyle}>Statut</th>
                 <th style={thStyle}>Actions</th>
               </tr>
@@ -784,11 +807,11 @@ export default function CommandesPage() {
                     </td>
                     <td style={tdStyle}>{REPAS_LABELS[c.repas] || c.repas}</td>
                     <td style={tdStyle}>{c.menu?.intitule || "-"}</td>
-                    {tab === "clients" && (
-                      <td style={tdStyle}>
-                        {c.montant?.toLocaleString("fr-FR")} FCFA
-                      </td>
-                    )}
+                    <td style={tdStyle}>
+                      {c.montant
+                        ? `${c.montant.toLocaleString("fr-FR")} FCFA`
+                        : "-"}
+                    </td>
                     {tab === "clients" && (
                       <td style={tdStyle}>
                         {(() => {
@@ -813,6 +836,35 @@ export default function CommandesPage() {
                         })()}
                       </td>
                     )}
+                    {tab !== "clients" && (
+                      <td style={tdStyle}>
+                        {c.marche ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              padding: "3px 10px",
+                              borderRadius: 20,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              background: c.marche.en_alerte
+                                ? "#FEE2E2"
+                                : "#EFF6FF",
+                              color: c.marche.en_alerte ? "#991B1B" : "#1E40AF",
+                            }}
+                          >
+                            {c.marche.en_alerte && (
+                              <i
+                                className="fa-solid fa-triangle-exclamation"
+                                style={{ marginRight: 4, fontSize: 10 }}
+                              />
+                            )}
+                            {c.marche.reference}
+                          </span>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    )}
                     <td style={tdStyle}>
                       <span
                         style={{
@@ -829,7 +881,9 @@ export default function CommandesPage() {
                       </span>
                     </td>
                     <td style={tdStyle}>
-                      {(c.statut === "en_attente" || tab === "valider") && (
+                      {(c.statut === "en_attente" ||
+                        c.statut === "validee_sus" ||
+                        tab === "valider") && (
                         <>
                           <button
                             onClick={() => handleValider(c.id)}
@@ -1051,7 +1105,59 @@ export default function CommandesPage() {
               ))}
             </select>
           </div>
+          {form.menu_id &&
+            (() => {
+              const selectedMenu = menus.find(
+                (m) => String(m.id) === form.menu_id,
+              );
+              if (!selectedMenu) return null;
+              const estimatedMontant =
+                selectedMenu.cout_unitaire * form.nb_portions;
+              return (
+                <div
+                  style={{
+                    marginBottom: 16,
+                    padding: "8px 12px",
+                    background: "#EFF6FF",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    color: "#1E40AF",
+                  }}
+                >
+                  <i
+                    className="fa-solid fa-calculator"
+                    style={{ marginRight: 6 }}
+                  />
+                  Montant estimé :{" "}
+                  <b>{estimatedMontant.toLocaleString("fr-FR")} FCFA</b>
+                  <span
+                    style={{ marginLeft: 8, color: "#6B7280", fontSize: 11 }}
+                  >
+                    ({selectedMenu.cout_unitaire.toLocaleString("fr-FR")} ×{" "}
+                    {form.nb_portions} portions)
+                  </span>
+                </div>
+              );
+            })()}
         </div>
+        {marchesActifs.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Imputer sur un marché (optionnel)</label>
+            <select
+              value={form.marche_id}
+              onChange={(e) => setForm({ ...form, marche_id: e.target.value })}
+              style={inputStyle}
+            >
+              <option value="">Aucun marché</option>
+              {marchesActifs.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.reference} — {m.objet} (reste{" "}
+                  {Number(m.montant_restant).toLocaleString("fr-FR")} FCFA)
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label style={labelStyle}>Observations</label>
           <textarea
@@ -1126,6 +1232,41 @@ export default function CommandesPage() {
                 </div>
               </div>
             </div>
+            {detailModal.marche && (
+              <div
+                style={{
+                  padding: 12,
+                  background: detailModal.marche.en_alerte
+                    ? "#FEF2F2"
+                    : "#F0FDF4",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  marginTop: 8,
+                  border: `1px solid ${detailModal.marche.en_alerte ? "#FECACA" : "#BBF7D0"}`,
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  <i
+                    className={`fa-solid ${detailModal.marche.en_alerte ? "fa-triangle-exclamation" : "fa-file-contract"}`}
+                    style={{ marginRight: 6 }}
+                  />
+                  Marché : {detailModal.marche.reference}
+                </div>
+                <div>
+                  {detailModal.marche.objet} — {detailModal.marche.fournisseur}
+                </div>
+                <div style={{ marginTop: 4 }}>
+                  Reste :{" "}
+                  <b>
+                    {Number(detailModal.marche.montant_restant).toLocaleString(
+                      "fr-FR",
+                    )}{" "}
+                    FCFA
+                  </b>{" "}
+                  ({detailModal.marche.pourcentage_consomme}% consommé)
+                </div>
+              </div>
+            )}
             {detailModal.observations && (
               <div
                 style={{
@@ -1186,7 +1327,7 @@ export default function CommandesPage() {
         onClose={() => setLivraisonModal(null)}
         title="Confirmer la livraison"
         icon="fa-truck"
-        maxWidth={440}
+        maxWidth={480}
         footer={
           <>
             <button
@@ -1198,12 +1339,23 @@ export default function CommandesPage() {
             <button
               onClick={async () => {
                 if (!livraisonModal) return;
-                await api.livrerCommande(livraisonModal.id);
+                await api.livrerCommande(livraisonModal.id, {
+                  heure_livraison_effective:
+                    livraisonForm.heure_livraison_effective || undefined,
+                  temperature: livraisonForm.temperature || undefined,
+                  observations_livraison:
+                    livraisonForm.observations_livraison || undefined,
+                });
                 showToast(
                   `Commande ${livraisonModal.reference} livrée`,
                   "success",
                 );
                 setLivraisonModal(null);
+                setLivraisonForm({
+                  heure_livraison_effective: "",
+                  temperature: "",
+                  observations_livraison: "",
+                });
                 load();
               }}
               style={{ ...btn, background: "var(--teal)" }}
@@ -1215,13 +1367,12 @@ export default function CommandesPage() {
       >
         {livraisonModal && (
           <div style={{ fontSize: 14, lineHeight: 1.8 }}>
-            <p>Confirmez-vous la livraison de cette commande ?</p>
             <div
               style={{
                 background: "#F0FDFA",
                 borderRadius: 8,
                 padding: 12,
-                marginTop: 8,
+                marginBottom: 12,
               }}
             >
               <div>
@@ -1236,6 +1387,97 @@ export default function CommandesPage() {
               </div>
               <div>
                 <b>Portions :</b> {livraisonModal.nb_portions}
+              </div>
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "block",
+                    marginBottom: 4,
+                  }}
+                >
+                  Heure de livraison effective
+                </label>
+                <input
+                  type="time"
+                  value={livraisonForm.heure_livraison_effective}
+                  onChange={(e) =>
+                    setLivraisonForm({
+                      ...livraisonForm,
+                      heure_livraison_effective: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "6px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "block",
+                    marginBottom: 4,
+                  }}
+                >
+                  Température des plats
+                </label>
+                <input
+                  placeholder="Ex: Chaud, 65°C"
+                  value={livraisonForm.temperature}
+                  onChange={(e) =>
+                    setLivraisonForm({
+                      ...livraisonForm,
+                      temperature: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "6px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "block",
+                    marginBottom: 4,
+                  }}
+                >
+                  Observations
+                </label>
+                <textarea
+                  placeholder="Observations de livraison..."
+                  value={livraisonForm.observations_livraison}
+                  onChange={(e) =>
+                    setLivraisonForm({
+                      ...livraisonForm,
+                      observations_livraison: e.target.value,
+                    })
+                  }
+                  rows={2}
+                  style={{
+                    width: "100%",
+                    padding: "6px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    resize: "vertical",
+                  }}
+                />
               </div>
             </div>
           </div>

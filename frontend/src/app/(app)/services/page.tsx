@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import { Service } from "@/types";
 
 export default function ServicesPage() {
+  const { showToast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,9 +60,9 @@ export default function ServicesPage() {
   // Handlers
   const handleCreate = async () => {
     if (!createForm.nom.trim())
-      return alert("Veuillez saisir le nom du service.");
+      return showToast("Veuillez saisir le nom du service.", "error");
     if (Number(createForm.lits_actifs) < 0)
-      return alert("Le nombre de lits ne peut pas être négatif.");
+      return showToast("Le nombre de lits ne peut pas être négatif.", "error");
     await api.createService({
       ...createForm,
       lits_actifs: Number(createForm.lits_actifs),

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import { useAuth } from "@/lib/auth";
 import { MenuHebdomadaire, Menu } from "@/types";
@@ -36,6 +37,7 @@ const STATUT_BADGE: Record<
 };
 
 export default function MenusHebdoPage() {
+  const { showToast } = useToast();
   const [menusHebdo, setMenusHebdo] = useState<MenuHebdomadaire[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [current, setCurrent] = useState<MenuHebdomadaire | null>(null);
@@ -111,14 +113,20 @@ export default function MenusHebdoPage() {
 
   const handleCreateWeek = async () => {
     if (!weekForm.semaine_debut || !weekForm.semaine_fin)
-      return alert("Veuillez saisir les dates de début et de fin de semaine.");
+      return showToast(
+        "Veuillez saisir les dates de début et de fin de semaine.",
+        "error",
+      );
     if (weekForm.semaine_fin <= weekForm.semaine_debut)
-      return alert("La date de fin doit être postérieure à la date de début.");
+      return showToast(
+        "La date de fin doit être postérieure à la date de début.",
+        "error",
+      );
     if (
       Number(weekForm.cout_matieres) < 0 ||
       Number(weekForm.cout_main_oeuvre) < 0
     )
-      return alert("Les coûts ne peuvent pas être négatifs.");
+      return showToast("Les coûts ne peuvent pas être négatifs.", "error");
     await api.createMenuHebdo({
       semaine_debut: weekForm.semaine_debut,
       semaine_fin: weekForm.semaine_fin,
@@ -158,6 +166,42 @@ export default function MenusHebdoPage() {
   const sb = current
     ? STATUT_BADGE[current.statut] || STATUT_BADGE.brouillon
     : null;
+
+  const printPlanning = () => {
+    if (!current) return;
+    const jours = [
+      "Lundi",
+      "Mardi",
+      "Mercredi",
+      "Jeudi",
+      "Vendredi",
+      "Samedi",
+      "Dimanche",
+    ];
+    const types = ["petit_dejeuner", "dejeuner", "diner"];
+    const typeLabels: Record<string, string> = {
+      petit_dejeuner: "Petit-déj.",
+      dejeuner: "Déjeuner",
+      diner: "Dîner",
+    };
+    let rows = "";
+    for (let j = 1; j <= 7; j++) {
+      const cells = types
+        .map((t) => {
+          const m = getMenuForSlot(j, t);
+          return `<td style="padding:8px;border:1px solid #ddd;font-size:12px;vertical-align:top">${m ? `<b>${m.nom}</b><br/><span style="color:#666">${m.cout_unitaire ? m.cout_unitaire + " FCFA" : ""}</span>` : "<em style='color:#999'>—</em>"}</td>`;
+        })
+        .join("");
+      rows += `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:600;background:#f8fafc">${jours[j - 1]}</td>${cells}</tr>`;
+    }
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(
+      `<html><head><title>Planning Hebdomadaire</title><style>@page{size:landscape}body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th{background:#7c3aed;color:#fff;padding:10px;border:1px solid #ddd;font-size:13px}h2{color:#7c3aed}</style></head><body><h2>Planning Hebdomadaire — Semaine du ${current.semaine_debut?.slice(0, 10)} au ${current.semaine_fin?.slice(0, 10)}</h2><p>Statut: <b>${current.statut}</b> | Coût matières: ${current.cout_matieres || 0} FCFA | Main d'œuvre: ${current.cout_main_oeuvre || 0} FCFA</p><table><thead><tr><th>Jour</th>${types.map((t) => `<th>${typeLabels[t]}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table><p style="margin-top:20px;font-size:11px;color:#666">Imprimé le ${new Date().toLocaleDateString("fr-FR")} — SGRH</p></body></html>`,
+    );
+    w.document.close();
+    w.print();
+  };
 
   return (
     <>
@@ -209,6 +253,11 @@ export default function MenusHebdoPage() {
           <button onClick={() => setCreateWeekOpen(true)} style={btnSecondary}>
             <i className="fa-solid fa-calendar-plus" /> Nouvelle semaine
           </button>
+          {current && (
+            <button onClick={printPlanning} style={btnSecondary}>
+              <i className="fa-solid fa-print" /> Imprimer
+            </button>
+          )}
           <button onClick={() => setModalOpen(true)} style={btn}>
             <i className="fa-solid fa-plus" /> Ajouter un repas
           </button>

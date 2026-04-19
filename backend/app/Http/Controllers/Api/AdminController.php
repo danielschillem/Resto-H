@@ -41,6 +41,8 @@ class AdminController extends Controller
             'formation_id' => TenantScope::$formationId,
         ]);
 
+        AuditLog::record('creer', 'utilisateur', $user->id, $user->nom . ' ' . $user->prenom, null, $request);
+
         return response()->json($user, 201);
     }
 
@@ -56,6 +58,8 @@ class AdminController extends Controller
         ]);
 
         $user->update($data);
+
+        AuditLog::record('modifier', 'utilisateur', $user->id, $user->nom . ' ' . $user->prenom, null, $request);
 
         return response()->json($user);
     }
@@ -77,10 +81,14 @@ class AdminController extends Controller
             'responsable' => 'nullable|string|max:255',
         ]);
 
-        return response()->json(Service::create([
+        $service = Service::create([
             ...$data,
             'formation_id' => TenantScope::$formationId,
-        ]), 201);
+        ]);
+
+        AuditLog::record('creer', 'service', $service->id, $service->nom, null, $request);
+
+        return response()->json($service, 201);
     }
 
     public function updateService(Request $request, Service $service): JsonResponse
@@ -93,6 +101,8 @@ class AdminController extends Controller
         ]);
 
         $service->update($data);
+
+        AuditLog::record('modifier', 'service', $service->id, $service->nom, null, $request);
 
         return response()->json($service);
     }

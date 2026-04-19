@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import { downloadCsv, exportPdf } from "@/lib/export";
 import Modal from "@/components/Modal";
 import { DevisEstimatif, ConsommationArticle } from "@/types";
 
-type Tab = "commandes" | "conso" | "devis" | "validation";
+type Tab = "commandes" | "conso" | "devis" | "validation" | "synthese";
 
 export default function EtatsPage() {
+  const { showToast } = useToast();
   const [tab, setTab] = useState<Tab>("commandes");
   const [etatCmd, setEtatCmd] = useState<{
     services: { nom: string; jours: number[]; total: number; pct: string }[];
@@ -48,6 +50,25 @@ export default function EtatsPage() {
     },
   ]);
 
+  // Synthèse mensuelle
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [synthese, setSynthese] = useState<any>(null);
+  const [synthMois, setSynthMois] = useState(
+    new Date().toISOString().slice(0, 7),
+  );
+
+  const loadSynthese = (mois: string) => {
+    api
+      .syntheseMensuelle(mois)
+      .then(setSynthese)
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (tab === "synthese") loadSynthese(synthMois);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, synthMois]);
+
   useEffect(() => {
     api
       .etatCommandes()
@@ -83,17 +104,23 @@ export default function EtatsPage() {
 
   const handleCreateDevis = async () => {
     if (!devisForm.semaine_debut || !devisForm.semaine_fin)
-      return alert("Veuillez saisir les dates de période.");
+      return showToast("Veuillez saisir les dates de période.", "error");
     if (devisForm.semaine_fin <= devisForm.semaine_debut)
-      return alert("La date de fin doit être postérieure à la date de début.");
+      return showToast(
+        "La date de fin doit être postérieure à la date de début.",
+        "error",
+      );
     const hasEmptyLine = devisLignes.some((l) => !l.article.trim());
     if (hasEmptyLine)
-      return alert("Tous les articles doivent être renseignés.");
+      return showToast("Tous les articles doivent être renseignés.", "error");
     const hasInvalidQte = devisLignes.some(
       (l) => l.qte_estimee <= 0 || l.prix_unitaire <= 0,
     );
     if (hasInvalidQte)
-      return alert("Les quantités et prix doivent être supérieurs à 0.");
+      return showToast(
+        "Les quantités et prix doivent être supérieurs à 0.",
+        "error",
+      );
     const lignes = devisLignes.map((l) => ({
       ...l,
       montant_estime: Math.round(l.qte_estimee * l.prix_unitaire),
@@ -333,6 +360,7 @@ export default function EtatsPage() {
             { key: "conso", label: "État des consommations" },
             { key: "devis", label: "Devis estimatif" },
             { key: "validation", label: "Validation DSGL" },
+            { key: "synthese", label: "Synthèse mensuelle" },
           ] as { key: Tab; label: string }[]
         ).map((t) => (
           <div
@@ -1024,6 +1052,357 @@ export default function EtatsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* ── Synthèse mensuelle ─────────────────────────────────────────────── */}
+      {tab === "synthese" && (
+        <div style={card}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 700 }}>
+              <i
+                className="fa-solid fa-chart-pie"
+                style={{ marginRight: 8, color: "var(--primary)" }}
+              />
+              Synthèse mensuelle
+              {synthese?.mois_label ? ` — ${synthese.mois_label}` : ""}
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                type="month"
+                value={synthMois}
+                onChange={(e) => setSynthMois(e.target.value)}
+                style={{ ...inputStyle, width: "auto", minWidth: 160 }}
+              />
+              <button
+                onClick={() => {
+                  if (!synthese) return;
+                  const k = synthese.kpis;
+                  const w = window.open("", "_blank");
+                  if (!w) return;
+                  w.document
+                    .write(`<html><head><title>Synthèse mensuelle — ${synthese.mois_label}</title>
+                    <style>body{font-family:Arial,sans-serif;padding:20px;color:#333}h2{margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}th{background:#f0f0f0}.kpi{display:inline-block;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;padding:12px 18px;margin:6px;text-align:center;min-width:140px}.kpi .val{font-size:20px;font-weight:700}.kpi .lab{font-size:11px;color:#888}@media print{button{display:none}}</style></head><body>
+                    <h2>Rapport de synthèse mensuelle — SGRH</h2>
+                    <p style="font-size:12px;color:#666">${synthese.mois_label} — Imprimé le ${new Date().toLocaleDateString("fr-FR")}</p>
+                    <div style="margin:16px 0">
+                      <div class="kpi"><div class="val">${k.nb_commandes}</div><div class="lab">Commandes</div></div>
+                      <div class="kpi"><div class="val">${k.total_portions?.toLocaleString("fr-FR")}</div><div class="lab">Portions</div></div>
+                      <div class="kpi"><div class="val">${k.total_montant?.toLocaleString("fr-FR")} F</div><div class="lab">Coût total</div></div>
+                      <div class="kpi"><div class="val">${k.cout_moyen_portion?.toLocaleString("fr-FR")} F</div><div class="lab">Coût / portion</div></div>
+                      <div class="kpi"><div class="val">${k.taux_rejet}%</div><div class="lab">Taux de rejet</div></div>
+                      <div class="kpi"><div class="val">${k.nb_livrees}</div><div class="lab">Livrées</div></div>
+                      <div class="kpi"><div class="val">${k.nb_regimes}</div><div class="lab">Régimes spéciaux</div></div>
+                      <div class="kpi"><div class="val">${k.marches_actifs}</div><div class="lab">Marchés actifs</div></div>
+                    </div>
+                    <h3>Par service</h3>
+                    <table><thead><tr><th>Service</th><th>Commandes</th><th>Portions</th><th>Montant (FCFA)</th></tr></thead><tbody>
+                    ${(synthese.par_service || []).map((s: { service: string; count: number; portions: number; montant: number }) => `<tr><td>${s.service}</td><td>${s.count}</td><td>${s.portions}</td><td>${s.montant?.toLocaleString("fr-FR")}</td></tr>`).join("")}
+                    </tbody></table>
+                    <h3 style="margin-top:16px">Par repas</h3>
+                    <table><thead><tr><th>Type</th><th>Portions</th><th>Montant (FCFA)</th></tr></thead><tbody>
+                    ${Object.entries(synthese.par_repas || {})
+                      .map(([type, d]: [string, unknown]) => {
+                        const data = d as { portions: number; montant: number };
+                        return `<tr><td>${type === "petit_dejeuner" ? "Petit-déjeuner" : type === "dejeuner" ? "Déjeuner" : "Dîner"}</td><td>${data.portions}</td><td>${data.montant?.toLocaleString("fr-FR")}</td></tr>`;
+                      })
+                      .join("")}
+                    </tbody></table>
+                    </body></html>`);
+                  w.document.close();
+                  w.print();
+                }}
+                style={btnExport}
+              >
+                <i className="fa-solid fa-print" /> Imprimer
+              </button>
+            </div>
+          </div>
+
+          {!synthese ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 40,
+                color: "var(--text-sm)",
+              }}
+            >
+              Chargement...
+            </div>
+          ) : (
+            <>
+              {/* KPIs */}
+              <div className="grid-kpi" style={{ gap: 12, marginBottom: 20 }}>
+                {[
+                  {
+                    icon: "fa-clipboard-list",
+                    label: "Commandes",
+                    value: synthese.kpis.nb_commandes,
+                    prev: synthese.kpis.nb_commandes_prec,
+                    bg: "#EDE9FE",
+                    color: "#5B21B6",
+                  },
+                  {
+                    icon: "fa-utensils",
+                    label: "Portions",
+                    value:
+                      synthese.kpis.total_portions?.toLocaleString("fr-FR"),
+                    prev: synthese.kpis.total_portions_prec,
+                    bg: "#DBEAFE",
+                    color: "#1E40AF",
+                  },
+                  {
+                    icon: "fa-coins",
+                    label: "Coût total",
+                    value: `${synthese.kpis.total_montant?.toLocaleString("fr-FR")} F`,
+                    prev: synthese.kpis.total_montant_prec,
+                    bg: "#D1FAE5",
+                    color: "#065F46",
+                    suffix: "F",
+                  },
+                  {
+                    icon: "fa-calculator",
+                    label: "Coût / portion",
+                    value: `${synthese.kpis.cout_moyen_portion?.toLocaleString("fr-FR")} F`,
+                    bg: "#FEF3C7",
+                    color: "#92400E",
+                  },
+                  {
+                    icon: "fa-ban",
+                    label: "Taux de rejet",
+                    value: `${synthese.kpis.taux_rejet}%`,
+                    prev: synthese.kpis.taux_rejet_prec,
+                    bg: "#FEE2E2",
+                    color: "#991B1B",
+                    suffix: "%",
+                    invertTrend: true,
+                  },
+                  {
+                    icon: "fa-truck",
+                    label: "Livrées",
+                    value: synthese.kpis.nb_livrees,
+                    bg: "#D1FAE5",
+                    color: "#065F46",
+                  },
+                ].map((k, i) => {
+                  const diff =
+                    k.prev !== undefined
+                      ? typeof k.prev === "number" &&
+                        typeof synthese.kpis[
+                          Object.keys(synthese.kpis).find(
+                            (key) => synthese.kpis[key] === k.prev,
+                          ) || ""
+                        ] === "number"
+                        ? (() => {
+                            const curr = parseFloat(
+                              String(k.value).replace(/[^0-9.-]/g, ""),
+                            );
+                            const prev = k.prev as number;
+                            if (prev === 0) return null;
+                            return Math.round(((curr - prev) / prev) * 100);
+                          })()
+                        : null
+                      : null;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        background: "#fff",
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        padding: 16,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 10,
+                          background: k.bg,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <i
+                          className={`fa-solid ${k.icon}`}
+                          style={{ color: k.color, fontSize: 18 }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, color: "var(--text-sm)" }}>
+                          {k.label}
+                        </div>
+                        <div style={{ fontSize: 22, fontWeight: 700 }}>
+                          {k.value}
+                        </div>
+                        {diff !== null && (
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color:
+                                (k.invertTrend ? -diff : diff) >= 0
+                                  ? "#059669"
+                                  : "#DC2626",
+                            }}
+                          >
+                            {diff > 0 ? "+" : ""}
+                            {diff}% vs mois préc.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Par service */}
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                <i
+                  className="fa-solid fa-building"
+                  style={{ marginRight: 6 }}
+                />
+                Répartition par service
+              </div>
+              <div style={{ overflowX: "auto", marginBottom: 20 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <th style={thStyle}>Service</th>
+                      <th style={thStyle}>Commandes</th>
+                      <th style={thStyle}>Portions</th>
+                      <th style={thStyle}>Montant (FCFA)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(synthese.par_service || []).map(
+                      (
+                        s: {
+                          service: string;
+                          count: number;
+                          portions: number;
+                          montant: number;
+                        },
+                        i: number,
+                      ) => (
+                        <tr key={i}>
+                          <td style={tdStyle}>{s.service}</td>
+                          <td style={tdStyle}>{s.count}</td>
+                          <td style={tdStyle}>
+                            {s.portions?.toLocaleString("fr-FR")}
+                          </td>
+                          <td style={tdStyle}>
+                            {s.montant?.toLocaleString("fr-FR")}
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Par repas */}
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                <i className="fa-solid fa-clock" style={{ marginRight: 6 }} />
+                Répartition par repas
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <th style={thStyle}>Type de repas</th>
+                      <th style={thStyle}>Portions</th>
+                      <th style={thStyle}>Montant (FCFA)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(synthese.par_repas || {}).map(
+                      ([type, d]: [string, unknown], i: number) => {
+                        const data = d as { portions: number; montant: number };
+                        return (
+                          <tr key={i}>
+                            <td style={tdStyle}>
+                              {type === "petit_dejeuner"
+                                ? "Petit-déjeuner"
+                                : type === "dejeuner"
+                                  ? "Déjeuner"
+                                  : "Dîner"}
+                            </td>
+                            <td style={tdStyle}>
+                              {data.portions?.toLocaleString("fr-FR")}
+                            </td>
+                            <td style={tdStyle}>
+                              {data.montant?.toLocaleString("fr-FR")}
+                            </td>
+                          </tr>
+                        );
+                      },
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Marchés résumé */}
+              <div
+                style={{
+                  marginTop: 20,
+                  padding: 16,
+                  background: "#F8FAFC",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                  <i
+                    className="fa-solid fa-file-contract"
+                    style={{ marginRight: 6 }}
+                  />
+                  Marchés publics
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 20,
+                    fontSize: 13,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span>
+                    <strong>{synthese.kpis.marches_actifs}</strong> marchés
+                    actifs
+                  </span>
+                  <span>
+                    Budget consommé :{" "}
+                    <strong>
+                      {synthese.kpis.marches_consomme?.toLocaleString("fr-FR")}
+                    </strong>{" "}
+                    / {synthese.kpis.marches_total?.toLocaleString("fr-FR")}{" "}
+                    FCFA (
+                    {synthese.kpis.marches_total > 0
+                      ? Math.round(
+                          (synthese.kpis.marches_consomme /
+                            synthese.kpis.marches_total) *
+                            100,
+                        )
+                      : 0}
+                    %)
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }

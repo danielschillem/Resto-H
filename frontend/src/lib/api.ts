@@ -213,8 +213,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ motif_rejet: motif }),
     }),
-  livrerCommande: (id: number) =>
-    request(`/commandes/${id}/livrer`, { method: "POST" }),
+  livrerCommande: (
+    id: number,
+    data?: {
+      heure_livraison_effective?: string;
+      temperature?: string;
+      observations_livraison?: string;
+    },
+  ) =>
+    request(`/commandes/${id}/livrer`, {
+      method: "POST",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
   enregistrerPaiement: (id: number) =>
     request(`/commandes/${id}/paiement`, { method: "POST" }),
 
@@ -285,6 +295,8 @@ export const api = {
       body: JSON.stringify(data),
     }),
   validations: () => request("/etats/validations"),
+  syntheseMensuelle: (mois?: string) =>
+    request(`/etats/synthese-mensuelle${mois ? `?mois=${mois}` : ""}`),
 
   // Admin
   // Services - accessible à tous les rôles authentifiés (formulaires, filtres)
@@ -548,5 +560,232 @@ export const api = {
     request("/super-admin/config", {
       method: "POST",
       body: JSON.stringify({ configs }),
+    }),
+
+  // ── Hospitalisation ──────────────────────────────────────────────────
+  hospiStats: () =>
+    request<import("@/types").HospitalisationStats>("/hospitalisation/stats"),
+
+  // Catégories de salles
+  hospiCategories: () =>
+    request<import("@/types").CategorieSalle[]>("/hospitalisation/categories"),
+  hospiCreateCategorie: (data: Record<string, unknown>) =>
+    request<import("@/types").CategorieSalle>("/hospitalisation/categories", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  hospiUpdateCategorie: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").CategorieSalle>(
+      `/hospitalisation/categories/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+    ),
+  hospiDeleteCategorie: (id: number) =>
+    request(`/hospitalisation/categories/${id}`, { method: "DELETE" }),
+
+  // Salles
+  hospiSalles: (params?: string) =>
+    request<import("@/types").Salle[]>(
+      `/hospitalisation/salles${params ? `?${params}` : ""}`,
+    ),
+  hospiCreateSalle: (data: Record<string, unknown>) =>
+    request<import("@/types").Salle>("/hospitalisation/salles", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  hospiUpdateSalle: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Salle>(`/hospitalisation/salles/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  hospiDeleteSalle: (id: number) =>
+    request(`/hospitalisation/salles/${id}`, { method: "DELETE" }),
+
+  // Lits
+  hospiLits: (params?: string) =>
+    request<import("@/types").Lit[]>(
+      `/hospitalisation/lits${params ? `?${params}` : ""}`,
+    ),
+  hospiCreateLit: (data: Record<string, unknown>) =>
+    request<import("@/types").Lit>("/hospitalisation/lits", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  hospiUpdateLit: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Lit>(`/hospitalisation/lits/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  hospiDeleteLit: (id: number) =>
+    request(`/hospitalisation/lits/${id}`, { method: "DELETE" }),
+
+  // Patients
+  hospiPatients: (params?: string) =>
+    request<import("@/types").Patient[]>(
+      `/hospitalisation/patients${params ? `?${params}` : ""}`,
+    ),
+  hospiShowPatient: (id: number) =>
+    request<import("@/types").Patient>(`/hospitalisation/patients/${id}`),
+  hospiCreatePatient: (data: Record<string, unknown>) =>
+    request<import("@/types").Patient>("/hospitalisation/patients", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  hospiUpdatePatient: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Patient>(`/hospitalisation/patients/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // Admissions
+  hospiAdmissions: (params?: string) =>
+    request<import("@/types").Admission[]>(
+      `/hospitalisation/admissions${params ? `?${params}` : ""}`,
+    ),
+  hospiCreateAdmission: (data: Record<string, unknown>) =>
+    request<import("@/types").Admission>("/hospitalisation/admissions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  hospiUpdateAdmission: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Admission>(`/hospitalisation/admissions/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // ── Nutritionniste / Observatoire ───────────────────────────────────────
+  nutriObservatoire: () =>
+    request<import("@/types").ObservatoireData>("/nutritionniste/observatoire"),
+  nutriRegimesActifs: () =>
+    request<import("@/types").RegimeSpecial[]>(
+      "/nutritionniste/regimes-actifs",
+    ),
+  nutriAnalyseMenus: (params?: {
+    semaine_debut?: string;
+    semaine_fin?: string;
+  }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<import("@/types").AnalyseMenu[]>(
+      `/nutritionniste/analyse-menus${qs}`,
+    );
+  },
+  nutriProposerMenu: (data: Record<string, unknown>) =>
+    request<import("@/types").Menu>("/nutritionniste/proposer-menu", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  // ── DAF / Validation financière ─────────────────────────────────────────
+  dafDevis: (params?: { statut?: string }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<import("@/types").DevisEstimatif[]>(`/etats/devis${qs}`);
+  },
+  dafValiderDevis: (id: number) =>
+    request<import("@/types").DevisEstimatif>(`/etats/devis/${id}/valider`, {
+      method: "POST",
+    }),
+  dafRejeterDevis: (id: number, commentaire: string) =>
+    request<import("@/types").DevisEstimatif>(`/etats/devis/${id}/rejeter`, {
+      method: "POST",
+      body: JSON.stringify({ commentaire }),
+    }),
+  dafEtatCommandes: (params?: {
+    semaine_debut?: string;
+    semaine_fin?: string;
+  }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<Record<string, unknown>>(`/etats/commandes${qs}`);
+  },
+
+  // ── Marchés & Budget ──────────────────────────────────────────────────
+  anneesBudgetaires: () =>
+    request<import("@/types").AnneeBudgetaire[]>("/annees-budgetaires"),
+  createAnneeBudgetaire: (data: Partial<import("@/types").AnneeBudgetaire>) =>
+    request<import("@/types").AnneeBudgetaire>("/annees-budgetaires", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateAnneeBudgetaire: (
+    id: number,
+    data: Partial<import("@/types").AnneeBudgetaire>,
+  ) =>
+    request<import("@/types").AnneeBudgetaire>(`/annees-budgetaires/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  marches: (params?: { statut?: string; annee_budgetaire_id?: string }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<import("@/types").Marche[]>(`/marches${qs}`);
+  },
+  marchesActifs: () =>
+    request<import("@/types").Marche[]>("/marches?statut=actif"),
+  marcheKpis: () => request<import("@/types").MarcheKpis>("/marches/kpis"),
+  marcheDetail: (id: number) =>
+    request<import("@/types").Marche>(`/marches/${id}`),
+  createMarche: (data: Record<string, unknown>) =>
+    request<import("@/types").Marche>("/marches", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateMarche: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Marche>(`/marches/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deleteMarche: (id: number) =>
+    request<{ message: string }>(`/marches/${id}`, { method: "DELETE" }),
+  coutsDesagreges: (params?: { date_debut?: string; date_fin?: string }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<import("@/types").CoutsDesagreges>(
+      `/marches/couts-desagreges${qs}`,
+    );
+  },
+
+  // ── Liste Nominative ──────────────────────────────────────────────────
+  listeNominative: (params?: {
+    date?: string;
+    repas?: string;
+    service_id?: string;
+  }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    return request<import("@/types").ListeNominativeResponse>(
+      `/liste-nominative${qs}`,
+    );
+  },
+  createListeNominative: (data: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/liste-nominative", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateListeNominative: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").ListeNominativeItem>(`/liste-nominative/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deleteListeNominative: (id: number) =>
+    request<void>(`/liste-nominative/${id}`, { method: "DELETE" }),
+  marquerTousServis: (data: {
+    date: string;
+    repas: string;
+    service_id?: number;
+  }) =>
+    request<{ message: string }>("/liste-nominative/marquer-servis", {
+      method: "POST",
+      body: JSON.stringify(data),
     }),
 };
