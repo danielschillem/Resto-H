@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('annees_budgetaires')) return;
+
         Schema::create('annees_budgetaires', function (Blueprint $table) {
             $table->id();
             $table->string('libelle'); // ex: "2026"

@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('liste_nominatives')) return;
+
         Schema::create('liste_nominatives', function (Blueprint $table) {
             $table->id();
             $table->date('date');

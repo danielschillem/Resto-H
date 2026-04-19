@@ -20,6 +20,7 @@ class DevisEstimatif extends Model
         'date_soumission',
         'date_validation',
         'commentaire_rejet',
+        'formation_id',
     ];
 
     protected function casts(): array

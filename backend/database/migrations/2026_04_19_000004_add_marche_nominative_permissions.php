@@ -37,6 +37,9 @@ return new class extends Migration
 
             // Prestataire: consultation marchés
             ['role' => 'prestataire', 'permission' => 'marches'],
+
+            // Nutritionniste: consultation listes nominatives
+            ['role' => 'nutritionniste', 'permission' => 'liste_nominative'],
         ];
 
         foreach ($permissions as $p) {

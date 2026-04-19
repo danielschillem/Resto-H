@@ -169,6 +169,7 @@ class CommandeController extends Controller
                                 'message' => "Le marché {$marche->reference} ({$marche->objet}) a atteint le seuil d'alerte. Reste : " . number_format($marche->montant_restant, 0, ',', ' ') . " FCFA ({$marche->pourcentage_consomme}% consommé).",
                                 'type' => 'alerte_marche',
                                 'reference_id' => $marche->id,
+                                'formation_id' => TenantScope::$formationId,
                             ]);
                         }
                     }

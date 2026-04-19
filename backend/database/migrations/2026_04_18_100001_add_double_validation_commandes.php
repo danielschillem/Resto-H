@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        if (Schema::hasColumn('commandes', 'valide_sus_par')) {
+            return;
+        }
+
         Schema::table('commandes', function (Blueprint $table) {
             $table->unsignedBigInteger('valide_sus_par')->nullable()->after('valide_par');
             $table->dateTime('date_validation_sus')->nullable()->after('date_validation');

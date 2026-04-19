@@ -47,6 +47,8 @@ class DatabaseSeeder extends Seeder
         $csah = User::create(['nom' => 'Ouédraogo', 'prenom' => 'Jean', 'email' => 'csah@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'csah', 'service' => 'Hôtellerie', 'formation_id' => $fid]);
         $sus = User::create(['nom' => 'Sawadogo', 'prenom' => 'Fatou', 'email' => 'sus@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'sus', 'service' => 'Pédiatrie', 'formation_id' => $fid]);
         User::create(['nom' => 'Compaoré', 'prenom' => 'Luc', 'email' => 'sut@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'sut', 'service' => 'Laboratoire', 'is_active' => false, 'formation_id' => $fid]);
+        User::create(['nom' => 'Zongo', 'prenom' => 'Mariam', 'email' => 'nutritionniste@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'nutritionniste', 'service' => 'Nutrition', 'formation_id' => $fid]);
+        User::create(['nom' => 'Diallo', 'prenom' => 'Ibrahim', 'email' => 'daf@chr-tenkodogo.bf', 'password' => Hash::make('1234'), 'role' => 'daf', 'service' => 'Finances', 'formation_id' => $fid]);
 
         // --- Services ---
         $pediatrie = Service::create(['nom' => 'Pédiatrie', 'lits_actifs' => 28, 'responsable' => 'Sawadogo F.', 'formation_id' => $fid]);
