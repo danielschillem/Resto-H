@@ -1,0 +1,87 @@
+name: resto-h
+region: fra
+databases:
+  - engine: PG
+    name: resto-db
+    num_nodes: 1
+    size: db-s-dev-database
+    version: "16"
+
+services:
+  - name: resto-api
+    dockerfile_path: backend/Dockerfile
+    source_dir: /backend
+    github:
+      repo: danielschillem/Resto-H
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    http_port: 8000
+    routes:
+      - path: /api
+    envs:
+      - key: APP_NAME
+        value: "Resto-H"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        value: "${resto-api.APP_KEY}"
+        type: SECRET
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        value: "${resto-db.DATABASE_URL}"
+        scope: RUN_TIME
+      - key: DB_HOST
+        value: "${resto-db.HOSTNAME}"
+        scope: RUN_TIME
+      - key: DB_PORT
+        value: "${resto-db.PORT}"
+        scope: RUN_TIME
+      - key: DB_DATABASE
+        value: "${resto-db.DATABASE}"
+        scope: RUN_TIME
+      - key: DB_USERNAME
+        value: "${resto-db.USERNAME}"
+        scope: RUN_TIME
+      - key: DB_PASSWORD
+        value: "${resto-db.PASSWORD}"
+        scope: RUN_TIME
+      - key: DB_SSLMODE
+        value: require
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: FRONTEND_URL
+        value: "${APP_URL}"
+        scope: RUN_TIME
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: "${APP_DOMAIN}"
+        scope: RUN_TIME
+
+  - name: resto-frontend
+    dockerfile_path: frontend/Dockerfile
+    source_dir: /frontend
+    github:
+      repo: danielschillem/Resto-H
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    http_port: 3000
+    routes:
+      - path: /
+    envs:
+      - key: NEXT_PUBLIC_API_URL
+        value: "${APP_URL}/api"
+        scope: BUILD_TIME
