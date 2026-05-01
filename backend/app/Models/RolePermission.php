@@ -40,6 +40,7 @@ class RolePermission extends Model
             'menus.valider',
             'commandes',
             'commandes.valider',
+            'commandes.livrer',
             'consommations',
             'etats',
             'etats.valider',
@@ -54,6 +55,8 @@ class RolePermission extends Model
             'marches.modifier',
             'liste_nominative',
             'liste_nominative.creer',
+            'hospitalisation',
+            'hospitalisation.gerer',
         ];
     }
 }

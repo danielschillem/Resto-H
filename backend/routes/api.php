@@ -53,8 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/menus-hebdomadaires', [MenuController::class, 'hebdomadaires']);
     Route::get('/menus-hebdomadaires/{menuHebdomadaire}', [MenuController::class, 'showHebdomadaire']);
 
-    // Menus : gestion (création, soumission) - prestataire, DSGL, CSAH
-    Route::middleware('role:prestataire,dsgl,csah')->group(function () {
+    // Menus : gestion (création, soumission)
+    Route::middleware('permission:menus')->group(function () {
         Route::post('/menus', [MenuController::class, 'store']);
         Route::put('/menus/{menu}', [MenuController::class, 'update']);
         Route::delete('/menus/{menu}', [MenuController::class, 'destroy']);
@@ -63,8 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/items', [MenuController::class, 'addItem']);
     });
 
-    // Validation menus hebdo : DSGL
-    Route::middleware('role:dsgl')->group(function () {
+    // Validation menus hebdo
+    Route::middleware('permission:menus.valider')->group(function () {
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/valider', [MenuController::class, 'validerMenu']);
         Route::post('/menus-hebdomadaires/{menuHebdomadaire}/rejeter', [MenuController::class, 'rejeterMenu']);
     });
@@ -76,20 +76,20 @@ Route::middleware('auth:sanctum')->group(function () {
     // Créer une commande : tous les rôles
     Route::post('/commandes', [CommandeController::class, 'store']);
 
-    // Valider/rejeter : SUS, CSAH, DSGL
-    Route::middleware('role:sus,csah,dsgl')->group(function () {
+    // Valider/rejeter commandes
+    Route::middleware('permission:commandes.valider')->group(function () {
         Route::get('/commandes-a-valider', [CommandeController::class, 'aValider']);
         Route::post('/commandes/{commande}/valider', [CommandeController::class, 'valider']);
         Route::post('/commandes/{commande}/rejeter', [CommandeController::class, 'rejeter']);
     });
 
-    // Paiement : CSAH, DSGL
-    Route::middleware('role:csah,dsgl')->group(function () {
+    // Paiement commandes
+    Route::middleware('permission:commandes.valider')->group(function () {
         Route::post('/commandes/{commande}/paiement', [CommandeController::class, 'enregistrerPaiement']);
     });
 
-    // Livrer : prestataire
-    Route::middleware('role:prestataire')->group(function () {
+    // Livrer commandes
+    Route::middleware('permission:commandes.livrer')->group(function () {
         Route::post('/commandes/{commande}/livrer', [CommandeController::class, 'livrer']);
     });
 
@@ -97,8 +97,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('regimes-speciaux', RegimeSpecialController::class)->only(['index', 'store', 'show'])->parameters(['regimes-speciaux' => 'regime']);
     Route::put('/regimes-speciaux/{regime}', [RegimeSpecialController::class, 'update']);
 
-    // Valider/rejeter/terminer régimes : CSAH, DSGL
-    Route::middleware('role:csah,dsgl')->group(function () {
+    // Valider/rejeter/terminer régimes
+    Route::middleware('permission:regimes.valider')->group(function () {
         Route::post('/regimes-speciaux/{regime}/valider', [RegimeSpecialController::class, 'valider']);
         Route::post('/regimes-speciaux/{regime}/rejeter', [RegimeSpecialController::class, 'rejeter']);
         Route::post('/regimes-speciaux/{regime}/terminer', [RegimeSpecialController::class, 'terminer']);
@@ -110,13 +110,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/consommations/articles', [ConsommationController::class, 'articles']);
     Route::get('/consommations/ecarts-services', [ConsommationController::class, 'ecartsParService']);
 
-    // Saisie consommations : CSAH, SUT
-    Route::middleware('role:csah,sut')->group(function () {
+    // Saisie consommations
+    Route::middleware('permission:consommations')->group(function () {
         Route::post('/consommations', [ConsommationController::class, 'store']);
     });
 
-    // ── États & Rapports : DSGL, CSAH, DAF ───────────────────────────────
-    Route::middleware('role:dsgl,csah,daf')->group(function () {
+    // ── États & Rapports ───────────────────────────────────────────────────
+    Route::middleware('permission:etats')->group(function () {
         Route::get('/etats/commandes', [EtatController::class, 'etatCommandes']);
         Route::get('/etats/devis', [EtatController::class, 'devis']);
         Route::post('/etats/devis', [EtatController::class, 'storeDevis']);
@@ -124,19 +124,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/etats/synthese-mensuelle', [EtatController::class, 'syntheseMensuelle']);
     });
 
-    // Validation devis : DSGL, DAF
-    Route::middleware('role:dsgl,daf')->group(function () {
+    // Validation devis
+    Route::middleware('permission:etats.valider')->group(function () {
         Route::post('/etats/devis/{devis}/valider', [EtatController::class, 'validerDevis']);
         Route::post('/etats/devis/{devis}/rejeter', [EtatController::class, 'rejeterDevis']);
     });
 
-    // ── Nutritionniste : Observatoire ─────────────────────────────────────
-    Route::middleware('role:nutritionniste,dsgl,csah')->group(function () {
+    // ── Observatoire nutritionnel ─────────────────────────────────────────
+    Route::middleware('permission:observatoire')->group(function () {
         Route::get('/nutritionniste/observatoire', [NutritionnisteController::class, 'observatoire']);
         Route::get('/nutritionniste/regimes-actifs', [NutritionnisteController::class, 'regimesActifs']);
         Route::get('/nutritionniste/analyse-menus', [NutritionnisteController::class, 'analyseMenus']);
     });
-    Route::middleware('role:nutritionniste')->group(function () {
+    Route::middleware('permission:observatoire')->group(function () {
         Route::post('/nutritionniste/proposer-menu', [NutritionnisteController::class, 'proposerMenu']);
     });
 
@@ -150,8 +150,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/hospitalisation/patients/{patient}', [HospitalisationController::class, 'showPatient']);
     Route::get('/hospitalisation/admissions', [HospitalisationController::class, 'admissions']);
 
-    // Gestion : DSGL, CSAH, SUS
-    Route::middleware('role:dsgl,csah,sus')->group(function () {
+    // Gestion hospitalisation
+    Route::middleware('permission:hospitalisation.gerer')->group(function () {
         Route::post('/hospitalisation/categories', [HospitalisationController::class, 'storeCategorie']);
         Route::put('/hospitalisation/categories/{categorie}', [HospitalisationController::class, 'updateCategorie']);
         Route::delete('/hospitalisation/categories/{categorie}', [HospitalisationController::class, 'deleteCategorie']);
@@ -168,8 +168,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── Marchés & Budget ─────────────────────────────────────────────────
-    // Lecture : DSGL, CSAH, DAF, prestataire
-    Route::middleware('role:dsgl,csah,daf,prestataire')->group(function () {
+    // Lecture marchés
+    Route::middleware('permission:marches')->group(function () {
         Route::get('/marches', [MarcheController::class, 'index']);
         Route::get('/marches/kpis', [MarcheController::class, 'kpis']);
         Route::get('/marches/couts-desagreges', [MarcheController::class, 'coutsDesagreges']);
@@ -177,8 +177,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/annees-budgetaires', [MarcheController::class, 'annees']);
     });
 
-    // Gestion marchés : DSGL, DAF
-    Route::middleware('role:dsgl,daf')->group(function () {
+    // Gestion marchés
+    Route::middleware('permission:marches.creer')->group(function () {
         Route::post('/marches', [MarcheController::class, 'store']);
         Route::put('/marches/{marche}', [MarcheController::class, 'update']);
         Route::delete('/marches/{marche}', [MarcheController::class, 'destroy']);
@@ -187,21 +187,21 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── Liste Nominative ──────────────────────────────────────────────────
-    // Lecture : DSGL, CSAH, SUS, SUT, DAF, nutritionniste
-    Route::middleware('role:dsgl,csah,sus,sut,daf,nutritionniste')->group(function () {
+    // Lecture liste nominative
+    Route::middleware('permission:liste_nominative')->group(function () {
         Route::get('/liste-nominative', [ListeNominativeController::class, 'index']);
     });
 
-    // Saisie : CSAH, SUS
-    Route::middleware('role:csah,sus')->group(function () {
+    // Saisie liste nominative
+    Route::middleware('permission:liste_nominative.creer')->group(function () {
         Route::post('/liste-nominative', [ListeNominativeController::class, 'store']);
         Route::put('/liste-nominative/{listeNominative}', [ListeNominativeController::class, 'update']);
         Route::delete('/liste-nominative/{listeNominative}', [ListeNominativeController::class, 'destroy']);
         Route::post('/liste-nominative/marquer-servis', [ListeNominativeController::class, 'marquerTousServis']);
     });
 
-    // ── Administration : DSGL uniquement ──────────────────────────────────
-    Route::middleware('role:dsgl')->group(function () {
+    // ── Administration ──────────────────────────────────────────────────────
+    Route::middleware('permission:admin')->group(function () {
         Route::get('/admin/users', [AdminController::class, 'users']);
         Route::post('/admin/users', [AdminController::class, 'storeUser']);
         Route::put('/admin/users/{user}', [AdminController::class, 'updateUser']);

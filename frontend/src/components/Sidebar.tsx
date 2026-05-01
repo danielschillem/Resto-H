@@ -182,6 +182,28 @@ const ROLE_COLORS: Record<string, string> = {
   sut: "var(--purple)",
 };
 
+/**
+ * Mapping nav item id → permission requise.
+ * Les items absents de ce mapping sont toujours visibles (profil, notifications…).
+ */
+const NAV_PERMISSION_MAP: Record<string, string> = {
+  dashboard: "dashboard",
+  "menus-hebdo": "menus",
+  commandes: "commandes",
+  "menus-speciaux": "regimes",
+  consommations: "consommations",
+  etats: "etats",
+  admin: "admin",
+  licence: "licence",
+  observatoire: "observatoire",
+  "validation-financiere": "validation_financiere",
+  marches: "marches",
+  "liste-nominative": "liste_nominative",
+  salles: "hospitalisation",
+  patients: "hospitalisation",
+  services: "admin",
+};
+
 export default function Sidebar({
   isOpen = true,
   onClose = () => {},
@@ -195,7 +217,26 @@ export default function Sidebar({
 
   if (!user) return null;
 
-  const items = NAV_ITEMS[user.role] || NAV_ITEMS.sus;
+  const rawItems = NAV_ITEMS[user.role] || NAV_ITEMS.sus;
+  const userPerms = user.permissions || [];
+
+  // Filtrer les items selon les permissions de l'utilisateur
+  const items = rawItems
+    .filter((item) => {
+      if (item.section) return true; // les sections passent toujours
+      const requiredPerm = NAV_PERMISSION_MAP[item.id!];
+      if (!requiredPerm) return true; // pas de permission requise (profil, notifications)
+      return userPerms.includes(requiredPerm);
+    })
+    .filter((item, i, arr) => {
+      // Supprimer les sections vides (section suivie d'une autre section ou en fin)
+      if (item.section) {
+        const next = arr[i + 1];
+        return next && !next.section;
+      }
+      return true;
+    });
+
   const initial =
     user.prenom?.[0]?.toUpperCase() || user.nom?.[0]?.toUpperCase() || "?";
 
