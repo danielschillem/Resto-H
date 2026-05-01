@@ -28,7 +28,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: APP_KEY
-        value: "${resto-api.APP_KEY}"
+        value: "base64:K4OZcDpmlVmbcV17Th0oK8ygXMY7wT+84Oj4EOniMPs="
         type: SECRET
       - key: DB_CONNECTION
         value: pgsql

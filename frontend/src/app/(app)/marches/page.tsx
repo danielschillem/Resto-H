@@ -224,13 +224,21 @@ export default function MarchesPage() {
 
   const exportCsvCouts = () => {
     if (!couts) return;
-    let csv = "\uFEFFType;Montant (FCFA)\n";
-    csv += `Matières premières;${couts.matieres_premieres}\n`;
-    csv += `Main d'oeuvre;${couts.main_oeuvre}\n`;
-    csv += `Frais généraux;${couts.frais_generaux}\n`;
-    csv += `Transport;${couts.transport}\n`;
-    csv += `Autres;${couts.autres}\n`;
-    csv += `Total;${couts.total}\n`;
+    let csv = "\uFEFFCatégorie;Détail;Commandes;Portions;Montant (FCFA)\n";
+    csv += `\nPériode;${couts.periode.debut} au ${couts.periode.fin};;;\n`;
+    csv += `Total;;;${couts.total_portions};${couts.total_montant}\n\n`;
+    csv += "--- Par service ---;;;;\n";
+    for (const s of couts.par_service) {
+      csv += `Service;${s.service};${s.nb_commandes};${s.nb_portions};${s.montant}\n`;
+    }
+    csv += "\n--- Par type de repas ---;;;;\n";
+    for (const r of couts.par_repas) {
+      csv += `Repas;${r.repas};${r.nb_commandes};${r.nb_portions};${r.montant}\n`;
+    }
+    csv += "\n--- Par type de commande ---;;;;\n";
+    for (const t of couts.par_type) {
+      csv += `Type;${t.type};${t.nb_commandes};${t.nb_portions};${t.montant}\n`;
+    }
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
