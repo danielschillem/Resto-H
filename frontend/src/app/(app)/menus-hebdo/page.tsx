@@ -189,7 +189,7 @@ export default function MenusHebdoPage() {
       const cells = types
         .map((t) => {
           const m = getMenuForSlot(j, t);
-          return `<td style="padding:8px;border:1px solid #ddd;font-size:12px;vertical-align:top">${m ? `<b>${m.nom}</b><br/><span style="color:#666">${m.cout_unitaire ? m.cout_unitaire + " FCFA" : ""}</span>` : "<em style='color:#999'>—</em>"}</td>`;
+          return `<td style="padding:8px;border:1px solid #ddd;font-size:12px;vertical-align:top">${m ? `<b>${m.intitule}</b><br/><span style="color:#666">${m.cout_unitaire ? m.cout_unitaire + " FCFA" : ""}</span>` : "<em style='color:#999'>—</em>"}</td>`;
         })
         .join("");
       rows += `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:600;background:#f8fafc">${jours[j - 1]}</td>${cells}</tr>`;
