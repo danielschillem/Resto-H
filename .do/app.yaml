@@ -20,6 +20,7 @@ services:
     http_port: 8000
     routes:
       - path: /api
+        preserve_path_prefix: true
     envs:
       - key: APP_NAME
         value: "Resto-H"
