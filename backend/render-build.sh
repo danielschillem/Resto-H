@@ -2,9 +2,8 @@
 
 echo "=== Resto-H Backend — Starting ==="
 echo "PORT=${PORT:-not set} | DB_CONNECTION=$DB_CONNECTION | APP_ENV=$APP_ENV"
-echo "DB_URL starts with: ${DB_URL:0:30}..."
 
-# Remove build-time .env so runtime env vars from Render take precedence
+# Remove build-time .env so runtime env vars take precedence
 rm -f .env
 
 # Generate APP_KEY if not set properly
@@ -17,9 +16,13 @@ fi
 echo "Clearing config cache..."
 php artisan config:clear 2>&1 || true
 
-# Test database connection
-echo "Testing database connection..."
-php artisan db:monitor 2>&1 || echo "DB monitor not available"
+# Wait for database to be ready
+echo "Waiting for database..."
+for i in $(seq 1 30); do
+  php artisan db:monitor 2>&1 && break
+  echo "  attempt $i/30..."
+  sleep 2
+done
 
 # Run database migrations (idempotent — creates missing tables only)
 echo "Running migrations..."
