@@ -72,6 +72,8 @@ const ROLE_LABELS: Record<string, string> = {
   csah: "CSAH",
   sus: "SUS",
   sut: "SUT",
+  nutritionniste: "Nutritionniste",
+  daf: "DAF",
   super_admin: "Super Admin",
 };
 const ROLE_COLORS: Record<string, string> = {
@@ -80,6 +82,8 @@ const ROLE_COLORS: Record<string, string> = {
   csah: "#10B981",
   sus: "#F59E0B",
   sut: "#F59E0B",
+  nutritionniste: "#D97706",
+  daf: "#0EA5E9",
   super_admin: "#EF4444",
 };
 const PERM_LABELS: Record<string, string> = {
@@ -125,7 +129,16 @@ const REGION_OPTIONS = [
   "Tapoa",
   "Yaadga",
 ];
-const ROLES_ACTEURS = ["prestataire", "dsgl", "csah", "sus", "sut"] as const;
+const ROLES_ACTEURS = [
+  "prestataire",
+  "dsgl",
+  "csah",
+  "sus",
+  "sut",
+  "nutritionniste",
+  "daf",
+] as const;
+type ActeurRole = (typeof ROLES_ACTEURS)[number];
 
 const thStyle: React.CSSProperties = {
   padding: "12px 16px",
@@ -175,9 +188,22 @@ const emptyActeur = () => ({
   prenom: "",
   email: "",
   password: "",
-  role: "sus" as string,
+  role: "sus" as ActeurRole,
   service: "",
 });
+const emptyEditActeur = (u?: User) => {
+  const role: ActeurRole =
+    u?.role && u.role !== "super_admin" ? (u.role as ActeurRole) : "sus";
+
+  return {
+    nom: u?.nom ?? "",
+    prenom: u?.prenom ?? "",
+    email: u?.email ?? "",
+    role,
+    service: u?.service ?? "",
+    is_active: u?.is_active ?? true,
+  };
+};
 function getLoginUrl(code: string): string {
   if (typeof window === "undefined") return `/login/${code.toLowerCase()}`;
   return `${window.location.origin}/login/${code.toLowerCase()}`;
@@ -1871,6 +1897,10 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [acteurForm, setActeurForm] = useState(emptyActeur());
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editActeurForm, setEditActeurForm] = useState(emptyEditActeur());
+  const [resetUser, setResetUser] = useState<User | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -1909,6 +1939,64 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
       load();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur lors de la création");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openEditUser = (u: User) => {
+    setEditingUser(u);
+    setEditActeurForm(emptyEditActeur(u));
+    setResetUser(null);
+    setError("");
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    if (!editActeurForm.nom.trim() || !editActeurForm.email.trim()) {
+      return setError("Nom et email requis.");
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await api.saUpdateUser(editingUser.id, editActeurForm);
+      setEditingUser(null);
+      notify("Acteur mis à jour");
+      load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erreur lors de la mise à jour");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openResetPassword = (u: User) => {
+    setResetUser(u);
+    setResetPassword("");
+    setEditingUser(null);
+    setError("");
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetUser) return;
+    if (resetPassword.length < 8) {
+      return setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await api.saResetPassword(resetUser.id, resetPassword);
+      setResetUser(null);
+      setResetPassword("");
+      notify("Mot de passe réinitialisé");
+    } catch (e: unknown) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Erreur lors de la réinitialisation du mot de passe",
+      );
     } finally {
       setSaving(false);
     }
@@ -2066,7 +2154,10 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
               <select
                 value={acteurForm.role}
                 onChange={(e) =>
-                  setActeurForm((f) => ({ ...f, role: e.target.value }))
+                  setActeurForm((f) => ({
+                    ...f,
+                    role: e.target.value as ActeurRole,
+                  }))
                 }
                 style={inputStyle}
               >
@@ -2196,6 +2287,32 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
                         {u.is_active ? "Actif" : "Inactif"}
                       </span>
                       <button
+                        onClick={() => openEditUser(u)}
+                        style={{
+                          ...btn,
+                          padding: "3px 7px",
+                          background: "#eff6ff",
+                          color: C.primary,
+                          fontSize: 11,
+                        }}
+                        title="Modifier"
+                      >
+                        <i className="fa-solid fa-pen" />
+                      </button>
+                      <button
+                        onClick={() => openResetPassword(u)}
+                        style={{
+                          ...btn,
+                          padding: "3px 7px",
+                          background: "#fefce8",
+                          color: C.warning,
+                          fontSize: 11,
+                        }}
+                        title="Réinitialiser le mot de passe"
+                      >
+                        <i className="fa-solid fa-key" />
+                      </button>
+                      <button
                         onClick={async () => {
                           await api.saUpdateUser(u.id, {
                             is_active: !u.is_active,
@@ -2252,6 +2369,211 @@ function SubTabUsers({ formation }: { formation: FormationSanitaire }) {
             );
           })}
         </div>
+      )}
+
+      {editingUser && (
+        <Modal
+          width={560}
+          onClose={() => {
+            setEditingUser(null);
+            setError("");
+          }}
+        >
+          <h3 style={{ color: C.text, fontSize: 18, marginBottom: 4 }}>
+            Modifier un acteur
+          </h3>
+          <p style={{ color: C.textSm, fontSize: 13, marginBottom: 18 }}>
+            {formation.nom} · {editingUser.email}
+          </p>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+          >
+            <div>
+              <label style={labelSm}>Nom *</label>
+              <input
+                value={editActeurForm.nom}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({ ...f, nom: e.target.value }))
+                }
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelSm}>Prénom</label>
+              <input
+                value={editActeurForm.prenom}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({ ...f, prenom: e.target.value }))
+                }
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelSm}>Email *</label>
+              <input
+                type="email"
+                value={editActeurForm.email}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({ ...f, email: e.target.value }))
+                }
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelSm}>Rôle *</label>
+              <select
+                value={editActeurForm.role}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({
+                    ...f,
+                    role: e.target.value as ActeurRole,
+                  }))
+                }
+                style={inputStyle}
+              >
+                {ROLES_ACTEURS.map((r) => (
+                  <option key={r} value={r}>
+                    {ROLE_LABELS[r]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={labelSm}>Service</label>
+              <input
+                value={editActeurForm.service}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({ ...f, service: e.target.value }))
+                }
+                style={inputStyle}
+              />
+            </div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                color: C.textSm,
+                fontSize: 13,
+                alignSelf: "end",
+                paddingBottom: 9,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={editActeurForm.is_active}
+                onChange={(e) =>
+                  setEditActeurForm((f) => ({
+                    ...f,
+                    is_active: e.target.checked,
+                  }))
+                }
+              />
+              Compte actif
+            </label>
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+            <button
+              onClick={handleUpdateUser}
+              disabled={
+                saving ||
+                !editActeurForm.nom.trim() ||
+                !editActeurForm.email.trim()
+              }
+              style={{
+                ...btn,
+                background: saving ? C.input : C.primary,
+                color: saving ? C.textSm : "white",
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              {saving ? (
+                <i className="fa-solid fa-spinner fa-spin" />
+              ) : (
+                <i className="fa-solid fa-floppy-disk" />
+              )}{" "}
+              Enregistrer
+            </button>
+            <button
+              onClick={() => {
+                setEditingUser(null);
+                setError("");
+              }}
+              style={{
+                ...btn,
+                background: C.input,
+                color: C.textSm,
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {resetUser && (
+        <Modal
+          width={460}
+          onClose={() => {
+            setResetUser(null);
+            setResetPassword("");
+            setError("");
+          }}
+        >
+          <h3 style={{ color: C.text, fontSize: 18, marginBottom: 4 }}>
+            Réinitialiser le mot de passe
+          </h3>
+          <p style={{ color: C.textSm, fontSize: 13, marginBottom: 18 }}>
+            {resetUser.prenom} {resetUser.nom} · {resetUser.email}
+          </p>
+          <label style={labelSm}>Nouveau mot de passe *</label>
+          <input
+            type="password"
+            value={resetPassword}
+            onChange={(e) => setResetPassword(e.target.value)}
+            style={inputStyle}
+            placeholder="Minimum 8 caractères"
+          />
+          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+            <button
+              onClick={handleResetPassword}
+              disabled={saving || resetPassword.length < 8}
+              style={{
+                ...btn,
+                background: saving ? C.input : C.warning,
+                color: saving ? C.textSm : "white",
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              {saving ? (
+                <i className="fa-solid fa-spinner fa-spin" />
+              ) : (
+                <i className="fa-solid fa-key" />
+              )}{" "}
+              Réinitialiser
+            </button>
+            <button
+              onClick={() => {
+                setResetUser(null);
+                setResetPassword("");
+                setError("");
+              }}
+              style={{
+                ...btn,
+                background: C.input,
+                color: C.textSm,
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );
