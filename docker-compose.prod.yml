@@ -50,7 +50,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: "http://${SERVER_IP:-localhost}/api"
+        NEXT_PUBLIC_API_URL: "/api"
     restart: unless-stopped
     depends_on:
       - backend
