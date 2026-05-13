@@ -42,12 +42,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("sgrh_user");
-    const token = localStorage.getItem("sgrh_token");
-    if (stored && token) {
-      setUser(JSON.parse(stored));
+    try {
+      const stored = localStorage.getItem("sgrh_user");
+      const token = localStorage.getItem("sgrh_token");
+
+      if (stored && token) {
+        const parsed = JSON.parse(stored) as User | null;
+
+        if (parsed && typeof parsed === "object" && "role" in parsed) {
+          setUser(parsed);
+        } else {
+          localStorage.removeItem("sgrh_token");
+          localStorage.removeItem("sgrh_user");
+        }
+      }
+    } catch {
+      localStorage.removeItem("sgrh_token");
+      localStorage.removeItem("sgrh_user");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = useCallback(

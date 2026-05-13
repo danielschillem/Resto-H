@@ -5,6 +5,8 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => array_filter([
         env('FRONTEND_URL', 'http://localhost:3000'),
+        'http://127.0.0.1:3000',
+        'http://localhost:3000',
         'https://sgrh-app.netlify.app',
     ]),
     'allowed_origins_patterns' => ['/^https:\/\/.*--sgrh-app\.netlify\.app$/'],
